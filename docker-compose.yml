@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tradeverse-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    environment:
+      - ENV=LIVE
+      - REDIS_URL=redis://redis:6379/0
+      # Secrets should be passed via .env file or environment
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - KITE_API_KEY=${KITE_API_KEY}
+      - KITE_ACCESS_TOKEN=${KITE_ACCESS_TOKEN}
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  frontend:
+    image: node:18-alpine
+    container_name: tradeverse-frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host"
+    environment:
+      - VITE_API_URL=http://backend:8000
+    depends_on:
+      - backend
+
+  redis:
+    image: redis:alpine
+    container_name: tradeverse-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  redis_data:

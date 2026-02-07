@@ -1,0 +1,15 @@
+{
+    "total_tokens": 150,
+    "total_input_tokens": 100,
+    "total_output_tokens": 50,
+    "total_requests": 1,
+    "models": {
+        "gemini-1.5-flash-test": {
+            "input_tokens": 100,
+            "output_tokens": 50,
+            "total_tokens": 150,
+            "requests": 1
+        }
+    },
+    "last_updated": "2026-02-03T07:30:30.875753"
+}

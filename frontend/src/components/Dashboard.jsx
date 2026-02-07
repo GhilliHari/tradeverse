@@ -1,0 +1,2112 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+// Tradeverse Dashboard Controller
+import {
+    TrendingUp, TrendingDown, Shield, Brain, Activity,
+    Settings, Zap, AlertTriangle, RefreshCw, CheckCircle, ChevronRight,
+    LayoutDashboard, ListOrdered, GraduationCap, BarChart3,
+    Lightbulb, Briefcase, HeartPulse, User, LogOut, Terminal,
+    Key, Eye, Cpu, Globe, Wifi, Bell, Search, Lock, Unlock
+} from 'lucide-react';
+import {
+    AreaChart, Area, XAxis, YAxis, CartesianGrid,
+    Tooltip, ResponsiveContainer, LineChart, Line
+} from 'recharts';
+import { motion, AnimatePresence } from 'framer-motion';
+import HUDCard from './ui/HUDCard';
+import ScrambleText from './ui/ScrambleText';
+import StatusBadge from './StatusBadge';
+import ConfidenceGauge from './ConfidenceGauge';
+import LoginModal from './LoginModal';
+import Strategies from './Strategies';
+import Analytics from './Analytics';
+import Insights from './Insights';
+import Smallcases from './Smallcases';
+import MarketPulse from './MarketPulse';
+import Portfolio from './Portfolio';
+import SystemHealth from './SystemHealth';
+import Orders from './Orders';
+import MarketMoodIndex from './MarketMoodIndex';
+
+const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
+    <button
+        onClick={onClick}
+        className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group ${active
+            ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-lg shadow-indigo-500/5'
+            : 'text-slate-500 hover:text-slate-300 hover:bg-white/5 border border-transparent'
+            }`}
+    >
+        <Icon className={`w-5 h-5 ${active ? 'text-indigo-400' : 'text-slate-600 group-hover:text-slate-400'}`} />
+        <span className="text-xs font-bold uppercase tracking-widest">{label}</span>
+        {active && <motion.div layoutId="activeInd" className="ml-auto w-1 h-4 bg-indigo-500 rounded-full" />}
+    </button>
+);
+
+const ControlToggle = ({ label, active, onClick, color = 'emerald' }) => (
+    <button
+        onClick={onClick}
+        className={`relative px-4 py-2 rounded-xl border transition-all duration-500 flex items-center gap-3 overflow-hidden group hover:scale-105 active:scale-95 cursor-pointer z-50 ${active
+            ? `bg-${color}-500/10 border-${color}-500/30 shadow-[0_0_20px_rgba(16,185,129,0.2)]`
+            : 'bg-white/5 border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/5'
+            }`}
+    >
+        <div className={`w-2 h-2 rounded-full shadow-inner transition-colors duration-500 ${active ? `bg-${color}-400 shadow-[0_0_10px_currentColor] animate-pulse` : 'bg-slate-600'}`} />
+        <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${active ? 'text-white' : 'text-slate-400'}`}>
+            {label}
+        </span>
+    </button>
+);
+
+// Agent Alignment Component
+const AgentStatus = ({ label, status, icon: Icon, colorClass }) => (
+    <div className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all duration-500 ${status === 'SYNC' ? 'bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'bg-white/5 border-white/5 opacity-40'}`}>
+        <Icon className={`w-4 h-4 ${status === 'SYNC' ? colorClass : 'text-slate-600'}`} />
+        <span className={`text-[8px] font-black uppercase tracking-widest ${status === 'SYNC' ? 'text-white' : 'text-slate-600'}`}>{label}</span>
+        <div className={`w-1 h-1 rounded-full ${status === 'SYNC' ? 'bg-emerald-400' : 'bg-slate-700'}`} />
+    </div>
+);
+
+const DashboardWithLogic = () => {
+    const [activeTab, setActiveTab] = useState('Live Terminal');
+    const [symbol, setSymbol] = useState('NSE:BANKNIFTY');
+    const [searchInput, setSearchInput] = useState(symbol);
+    const [data, setData] = useState({ price: 0, signal: 'HOLD', confidence: 0, status: 'NOMINAL', regime: 'NOMINAL' });
+    const [analysis, setAnalysis] = useState(null);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [isAutoMode, setIsAutoMode] = useState(false);
+    const [chartData, setChartData] = useState([]);
+    const [riskStatus, setRiskStatus] = useState({});
+    const [optionChain, setOptionChain] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [token, setToken] = useState(null); // Auth Token
+    const [showLogin, setShowLogin] = useState(true);
+    const [showEmergencyConfirm, setShowEmergencyConfirm] = useState(false);
+    const [showModeConfirm, setShowModeConfirm] = useState(false);
+    const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [toast, setToast] = useState(null);
+    const [emergencyResult, setEmergencyResult] = useState(null);
+    const [isLiquidating, setIsLiquidating] = useState(false);
+    const isConfirmingRef = useRef(false);
+
+    const [user, setUser] = useState({ name: 'Guest', initials: 'G', status: 'OFFLINE' });
+    const [marketStatus, setMarketStatus] = useState({ isOpen: false, countdown: '00:00:00' });
+    const [pipelineStats, setPipelineStats] = useState(null);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isTraining, setIsTraining] = useState(false);
+    const [modelMetrics, setModelMetrics] = useState(null);
+    const [settings, setSettings] = useState({
+        active_broker: 'ANGEL',
+        angel_connected: false,
+        env: 'MOCK'
+    });
+    const [activeSettingsTab, setActiveSettingsTab] = useState('API Keys');
+    const [credentials, setCredentials] = useState({
+        angel_client_id: '', angel_password: '', angel_api_key: '', angel_totp_key: '',
+        kite_api_key: '', kite_access_token: ''
+    });
+    const [isConnecting, setIsConnecting] = useState(false);
+    const [trustedIPs, setTrustedIPs] = useState([]);
+    const [newIP, setNewIP] = useState('');
+
+    const showToast = (message, type = 'info') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 4000);
+    };
+
+    const getAgentStatus = (agent) => {
+        if (!analysis) return 'IDLE';
+        const signal = data.signal;
+        if (agent === 'TECH') return analysis.ai_prediction === (signal === 'BUY' ? 'UP' : 'DOWN') ? 'SYNC' : 'IDLE';
+        if (agent === 'TFT') return analysis.tft_prediction === (signal === 'BUY' ? 'UP' : 'DOWN') ? 'SYNC' : 'IDLE';
+        if (agent === 'RL') return analysis.rl_action === (signal === 'BUY' ? 1 : 2) ? 'SYNC' : 'IDLE';
+        if (agent === 'SENT') return analysis.sentiment_label === (signal === 'BUY' ? 'POSITIVE' : 'NEGATIVE') ? 'SYNC' : 'IDLE';
+        if (agent === 'OPT') return (signal === 'BUY' ? analysis.pcr < 0.9 : analysis.pcr > 1.1) ? 'SYNC' : 'IDLE';
+        return 'IDLE';
+    };
+
+    const handleUpdateCredentials = async () => {
+        setIsConnecting(true);
+        try {
+            // Focus ONLY on Angel One
+            const payload = { ...credentials, active_broker: 'ANGEL' };
+            const res = await fetch('/api/settings/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                if (data.broker_connected) {
+                    showToast("Credentials Updated & Connected to Angel One!", "success");
+                    setSettings(prev => ({
+                        ...prev,
+                        active_broker: 'ANGEL',
+                        angel_connected: true
+                    }));
+                } else {
+                    const eMsg = data.error || "Check logs";
+                    showToast(`Connection Failed: ${eMsg}`, "error");
+                }
+            }
+        } catch (e) {
+            showToast("Network or Server Error", "error");
+        }
+        setIsConnecting(false);
+    };
+
+    const handleAngelDisconnect = async () => {
+        setShowDisconnectConfirm(false);
+        setIsConnecting(true);
+        try {
+            const res = await fetch('/api/settings/disconnect', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ broker: 'ANGEL' })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                showToast("Angel One Disconnected. Reverted to Mock mode.", "success");
+                setSettings(prev => ({
+                    ...prev,
+                    active_broker: data.active_broker,
+                    angel_connected: false,
+                    angel_credentials: null
+                }));
+                // Credentials retained for easy reconnect
+            }
+        } catch (e) {
+            showToast("Server Error during disconnect.", "error");
+        }
+        setIsConnecting(false);
+    };
+
+    const handleEmergencyStop = useCallback(() => {
+        console.log("Dashboard: Opening Emergency Modal...");
+        setShowEmergencyConfirm(true);
+    }, []);
+
+    const executeEmergencyProtocol = async () => {
+        setIsLiquidating(true);
+        setEmergencyResult(null);
+        console.log("Dashboard: Executing Emergency Protocol...");
+        try {
+            const res = await fetch("/api/broker/emergency", {
+                method: "POST",
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                console.log("Dashboard: Emergency Protocol Success");
+                setEmergencyResult({ success: true, message: data.message });
+                // Fix: Sync mode state immediately
+                setIsAutoMode(false);
+            } else {
+                console.error("Dashboard: Emergency Protocol Failed", data);
+                setEmergencyResult({
+                    success: false,
+                    message: data.detail || data.message || "Liquidation Failed"
+                });
+            }
+        } catch (e) {
+            console.error("Dashboard: Emergency Protocol Connection Error", e);
+            setEmergencyResult({
+                success: false,
+                message: "CRITICAL CONNECTION ERROR during Emergency Stop"
+            });
+        } finally {
+            // Fix: Ensure spinner stops regardless of outcome
+            setIsLiquidating(false);
+        }
+    };
+
+    const fetchSettings = async () => {
+        try {
+            const res = await fetch('/api/settings');
+            const data = await res.json();
+            setSettings(prev => ({
+                ...prev,
+                active_broker: data.active_broker,
+                env: data.env,
+                zerodha_connected: data.zerodha_connected,
+                angel_connected: data.angel_connected
+            }));
+            setIsAutoMode(data.mode === 'AUTO');
+
+            // Pre-fill credentials if available
+            if (data.angel_credentials) {
+                setCredentials(prev => ({
+                    ...prev,
+                    ...data.angel_credentials
+                }));
+            }
+        } catch (e) { console.error("Settings Fetch Failed", e); }
+    };
+
+    const fetchTrustedIPs = async () => {
+        try {
+            const res = await fetch('/api/settings/trusted-ips', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                setTrustedIPs(data.trusted_ips);
+            }
+        } catch (e) { console.error("Trusted IPs Fetch Failed", e); }
+    };
+
+    const handleAddTrustedIP = async () => {
+        if (!newIP.trim()) return;
+        try {
+            const res = await fetch('/api/settings/trusted-ips/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ ip_address: newIP.trim() })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                showToast(data.message, 'success');
+                setNewIP('');
+                fetchTrustedIPs();
+            } else {
+                showToast(data.detail || 'Invalid IP format', 'error');
+            }
+        } catch (e) {
+            showToast('Failed to add IP', 'error');
+        }
+    };
+
+    const handleRemoveTrustedIP = async (ip) => {
+        try {
+            const res = await fetch('/api/settings/trusted-ips/remove', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ ip_address: ip })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                showToast(data.message, 'success');
+                fetchTrustedIPs();
+            }
+        } catch (e) {
+            showToast('Failed to remove IP', 'error');
+        }
+    };
+
+    const handleBrokerSwitch = async (broker) => {
+        try {
+            const res = await fetch('/api/settings/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ active_broker: broker })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                setSettings(prev => ({
+                    ...prev,
+                    active_broker: data.active_broker,
+                    broker_connected: data.broker_connected,
+                    env: data.env
+                }));
+                // Also update the view to match the newly active broker
+                setViewBroker(data.active_broker);
+            }
+        } catch (e) {
+            console.error("Broker Switch Failed", e);
+        }
+    };
+
+    const handleEnvSwitch = async (env) => {
+        try {
+            const res = await fetch('/api/settings/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ env: env })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                setSettings(prev => ({
+                    ...prev,
+                    env: data.env,
+                    broker_connected: data.broker_connected
+                }));
+            }
+        } catch (e) {
+            console.error("Env Update Failed", e);
+        }
+    };
+
+    const handleModeToggle = useCallback(async () => {
+        const nextMode = isAutoMode ? 'MANUAL' : 'AUTO';
+
+        if (nextMode === 'AUTO') {
+            setShowModeConfirm(true);
+            return;
+        }
+
+        // If switching to MANUAL, do it immediately
+        await executeModeSwitch('MANUAL');
+    }, [isAutoMode]);
+
+    const executeModeSwitch = async (targetMode) => {
+        const previousAuto = isAutoMode;
+        console.log(`[MODE_TOGGLE] Executing switch to ${targetMode}`);
+
+        setIsAutoMode(targetMode === 'AUTO');
+        setShowModeConfirm(false);
+
+        try {
+            const res = await fetch('/api/settings/mode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ mode: targetMode })
+            });
+
+            if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+
+            const data = await res.json();
+            if (data.status !== 'success') {
+                throw new Error(data.message || 'Mode switch failed');
+            }
+
+            if (data.mode) {
+                setIsAutoMode(data.mode === 'AUTO');
+            }
+        } catch (e) {
+            console.error("[MODE_TOGGLE] Error:", e);
+            setIsAutoMode(previousAuto);
+            alert(`Critical Error: ${e.message}`);
+        }
+    };
+
+    const [params, setParams] = useState({
+        multiplier: 3.0,
+        adx: 25,
+        rsi: 14,
+        target: 0.3
+    });
+
+    const [searchResults, setSearchResults] = useState([]);
+    const [showResults, setShowResults] = useState(false);
+
+    // --- Heartbeat Effect ---
+    // Sends a pulse to backend every 5s if in Auto Mode
+    useEffect(() => {
+        let intervalId;
+
+        if (isAutoMode && token) {
+            const sendHeartbeat = async () => {
+                try {
+                    await fetch(`${API_URL}/api/monitoring/heartbeat`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                } catch (e) {
+                    console.error("Heartbeat Failed:", e);
+                    // Optional: If heartbeat fails consecutively, show warning
+                }
+            };
+
+            // Send immediately then interval
+            sendHeartbeat();
+            intervalId = setInterval(sendHeartbeat, 5000); // 5 seconds
+        }
+
+        return () => clearInterval(intervalId);
+    }, [isAutoMode, token]);
+
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (searchInput.length >= 3) {
+                try {
+                    const res = await fetch(`/api/market/search?query=${searchInput}`);
+                    const data = await res.json();
+                    if (Array.isArray(data)) {
+                        setSearchResults(data);
+                        setShowResults(true);
+                    }
+                } catch (e) { console.error("Search error", e); }
+            } else {
+                setSearchResults([]);
+                setShowResults(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchInput]);
+
+    const selectSymbol = (sym) => {
+        setSymbol(sym);
+        setSearchInput(sym);
+        setChartData([]);
+        setShowResults(false);
+    };
+
+    const navItems = [
+        { icon: Terminal, label: 'Live Terminal' },
+        { icon: ListOrdered, label: 'Orders' },
+        { icon: GraduationCap, label: 'Strategies' },
+        { icon: BarChart3, label: 'Analytics' },
+        { icon: Lightbulb, label: 'INSIGHTS' },
+        { icon: Briefcase, label: 'Smallcases' },
+        { icon: Activity, label: 'Market Pulse' },
+        { icon: LayoutDashboard, label: 'Portfolio' },
+        { icon: HeartPulse, label: 'System Health' },
+        { icon: Settings, label: 'Settings' },
+    ];
+
+    useEffect(() => {
+        console.log("Dashboard: Component MOUNTED");
+        return () => console.log("Dashboard: Component UNMOUNTED");
+    }, []);
+
+    useEffect(() => {
+        let priceInterval, optionsInterval, timerInterval;
+        if (isLoggedIn) {
+            fetchStatus();
+            fetchSettings();
+            calculateMarketStatus();
+
+            // Immediate fetch on symbol change
+            fetchPrice();
+            fetchOptionChain();
+
+            priceInterval = setInterval(fetchPrice, 3000);
+            optionsInterval = setInterval(fetchOptionChain, 5000);
+            timerInterval = setInterval(calculateMarketStatus, 1000);
+        }
+
+        return () => {
+            if (priceInterval) clearInterval(priceInterval);
+            if (optionsInterval) clearInterval(optionsInterval);
+            if (timerInterval) clearInterval(timerInterval);
+        };
+    }, [symbol, isLoggedIn]);
+
+    useEffect(() => {
+        let autoInterval;
+        if (isLoggedIn && isAutoMode) {
+            autoInterval = setInterval(executeAutoPilot, 30000);
+        } return () => {
+            if (autoInterval) clearInterval(autoInterval);
+        };
+    }, [isAutoMode, isLoggedIn, symbol]);
+
+    const calculateMarketStatus = () => {
+        const now = new Date();
+        const day = now.getDay();
+        const isWeekend = day === 0 || day === 6;
+
+        const openTime = new Date(now);
+        openTime.setHours(9, 15, 0, 0);
+
+        const closeTime = new Date(now);
+        closeTime.setHours(15, 30, 0, 0);
+
+        let isOpen = !isWeekend && now >= openTime && now <= closeTime;
+
+        let target;
+        if (isOpen) {
+            target = closeTime;
+        } else {
+            target = new Date(now);
+            // If after 3:30 or weekend, next open is tomorrow or Monday
+            if (now > closeTime || isWeekend) {
+                const daysToAdd = day === 5 ? 3 : day === 6 ? 2 : 1;
+                target.setDate(now.getDate() + (now > closeTime ? daysToAdd : (day === 6 ? 2 : 1)));
+            }
+            target.setHours(9, 15, 0, 0);
+        }
+
+        const diff = target - now;
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+
+        setMarketStatus({
+            isOpen,
+            countdown: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+        });
+    };
+
+    const fetchStatus = async () => {
+        try {
+            const res = await fetch('/api/risk/status');
+            if (res.ok) {
+                const risk = await res.json();
+                if (risk) setRiskStatus(risk);
+            }
+        } catch (e) { /* Silent fail for polling */ }
+    };
+
+    const fetchPrice = async () => {
+        try {
+            const res = await fetch(`/api/market/ltp/${symbol}`);
+            if (!res.ok) return; // Skip if backend fails
+            const info = await res.json();
+
+            // Validate data before state update
+            if (info && info.last_price !== undefined) {
+                setData(prev => ({ ...prev, price: info.last_price }));
+                setChartData(prev => {
+                    // Keep chart data array size manageable
+                    const newData = [...prev, { time: new Date().toLocaleTimeString(), price: info.last_price }];
+                    if (newData.length > 50) return newData.slice(-50);
+                    return newData;
+                });
+            }
+        } catch (e) {
+            // Silent fail for polling errors to prevent UI crash
+            // console.warn("Price Fetch Failed");
+        }
+    };
+
+    const fetchOptionChain = async () => {
+        try {
+            const res = await fetch(`/api/market/options/${symbol}`);
+            if (!res.ok) return;
+            const info = await res.json();
+            // Ensure info is an array
+            if (Array.isArray(info)) {
+                setOptionChain(info);
+            }
+        } catch (e) {
+            // console.warn("Options Fetch Failed");
+        }
+    };
+
+    const runAgentAnalysis = async () => {
+        if (!isLoggedIn) return;
+        setIsAnalyzing(true);
+        try {
+            const res = await fetch(`/api/intelligence/analyze/${symbol}`);
+            const result = await res.json();
+            setAnalysis(result);
+            setData(prev => ({
+                ...prev,
+                signal: result.final_signal,
+                confidence: result.confidence,
+                regime: result.regime || 'NOMINAL',
+                trade_recommendation: result.trade_recommendation
+            }));
+        } catch (e) { console.error("Analysis Failed", e); }
+        setIsAnalyzing(false);
+    };
+
+    const executeAutoPilot = async () => {
+        if (!isLoggedIn) return;
+        setIsAnalyzing(true);
+        console.log("AUTO-PILOT: Initiating Analysis & Execution Cycle...");
+        try {
+            const res = await fetch('/api/trading/autopilot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ symbol: symbol, quantity: 1 })
+            });
+            const result = await res.json();
+
+            // Result: { status, order_id, signal, analysis, reason }
+
+            if (result.analysis) {
+                setAnalysis(result.analysis);
+                setData(prev => ({
+                    ...prev,
+                    signal: result.analysis.final_signal,
+                    confidence: result.analysis.confidence,
+                    regime: result.analysis.regime || 'NOMINAL',
+                    trade_recommendation: result.analysis.trade_recommendation
+                }));
+            }
+
+            if (result.status === 'EXECUTED') {
+                console.log(`AUTO-PILOT: Order Executed! ID: ${result.order_id}`);
+                // Refresh orders to show the new trade
+                fetchOrders();
+            } else if (result.status === 'HOLD') {
+                console.log(`AUTO-PILOT: Hold Signal. Reason: ${result.reason}`);
+            }
+
+        } catch (e) {
+            console.error("AutoPilot Execution Failed", e);
+        }
+        setIsAnalyzing(false);
+    };
+
+    const handleLogin = (e) => {
+        e.preventDefault();
+        setIsLoggedIn(true);
+        setShowLogin(false);
+        setUser({ name: 'Pro Trader', initials: 'P', status: 'ONLINE' });
+    };
+
+    const confirmLogout = async () => {
+        setShowLogoutConfirm(false);
+        try {
+            console.log("Dashboard: Calling logout API...");
+            await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (e) {
+            console.error("Dashboard: Logout API failed", e);
+        }
+
+        console.log("Dashboard: Resetting auth state...");
+        setIsLoggedIn(false);
+        setUser({ name: 'Guest', initials: 'G', status: 'OFFLINE' });
+        setShowLogin(true);
+    };
+
+    const handleLogout = () => {
+        setShowLogoutConfirm(true);
+    };
+
+    const handleGuestLogin = () => {
+        setIsLoggedIn(true);
+        setShowLogin(false);
+        setUser({ name: 'Guest Trader', initials: 'G', status: 'GUEST' });
+    };
+
+    const handleTriggerPipeline = async () => {
+        setIsProcessing(true);
+        try {
+            const res = await fetch(`/api/data/pipeline/trigger?symbol=${symbol}`);
+            const result = await res.json();
+            if (result.status === 'success') {
+                setPipelineStats(result.data);
+            }
+        } catch (e) { console.error("Pipeline Trigger Failed", e); }
+        setIsProcessing(false);
+    };
+
+    const handleTrainModel = async () => {
+        setIsTraining(true);
+        try {
+            const res = await fetch(`/api/ai/train?symbol=${symbol}`);
+            const result = await res.json();
+            if (result.status === 'success') {
+                setModelMetrics(result.metrics);
+            }
+        } catch (e) { console.error("Training Trigger Failed", e); }
+        setIsTraining(false);
+    };
+
+    const fetchOrders = async () => {
+        try {
+            const res = await fetch('/api/orders');
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                setOrders(data);
+            }
+        } catch (e) { console.error("Orders Fetch Failed", e); }
+    };
+
+    const testOrder = async () => {
+        if (!window.confirm("Place a TEST LIMIT BUY order for SBIN at ₹10? This checks connection.")) return;
+        try {
+            const res = await fetch('/api/order/place', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tradingsymbol: "SBIN",
+                    transaction_type: "BUY",
+                    quantity: 1,
+                    exchange: "NSE",
+                    product: "MIS",
+                    order_type: "LIMIT",
+                    price: 10.0
+                })
+            });
+            const data = await res.json();
+            if (data.status === "COMPLETE" || data.order_id) {
+                alert(`Order Placed! ID: ${data.order_id}`);
+                // Refresh orders after short delay
+                setTimeout(fetchOrders, 2000);
+            } else {
+                alert(`Order Failed: ${data.reason || JSON.stringify(data)}`);
+            }
+        } catch (e) {
+            alert(`Execution Error: ${e.message}`);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'Orders') {
+            fetchOrders();
+            const interval = setInterval(fetchOrders, 5000);
+            return () => clearInterval(interval);
+        }
+    }, [activeTab]);
+
+    return (
+        <div className="flex h-screen w-screen bg-[#0c0d12] overflow-hidden">
+            {/* Sidebar Pane */}
+            <aside className="w-72 glass-panel border-r border-white/10 flex flex-col p-6 hidden lg:flex shadow-[20px_0_50px_rgba(0,0,0,0.3)]">
+                <div className="mb-10">
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent italic">
+                            TRADEVERSE
+                        </h1>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 mt-1 px-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_#10b981]" />
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">TERMINAL ACTIVE</p>
+                </div>
+
+                {/* System Health Panel */}
+                <div className="mb-6 space-y-3 px-4 py-4 rounded-xl bg-white/5 border border-white/5 mx-1">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">System Status</span>
+                    </div>
+
+                    {/* Backend Status */}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Activity className="w-3 h-3 text-slate-400" />
+                            <span className="text-xs font-medium text-slate-300">Backend</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
+                            <span className="text-[10px] font-bold text-emerald-500">ONLINE</span>
+                        </div>
+                    </div>
+
+                    {/* Broker Status */}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Briefcase className="w-3 h-3 text-slate-400" />
+                            <span className="text-xs font-medium text-slate-300">Broker</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <div className={`w-1.5 h-1.5 rounded-full ${settings.angel_connected ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-red-500 shadow-[0_0_8px_#ef4444]'}`} />
+                            <span className={`text-[10px] font-bold ${settings.angel_connected ? 'text-emerald-500' : 'text-red-500'}`}>
+                                {settings.angel_connected ? 'LIVE' : 'OFFLINE'}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* AI / Intelligence Status */}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Zap className="w-3 h-3 text-slate-400" />
+                            <span className="text-xs font-medium text-slate-300">Intelligence</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_#6366f1]" />
+                            <span className="text-[10px] font-bold text-indigo-500">ACTIVE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <nav className="flex-1 space-y-1 overflow-y-auto custom-scrollbar pr-2">
+                    {navItems.map((item) => (
+                        <SidebarItem
+                            key={item.label}
+                            icon={item.icon}
+                            label={item.label}
+                            active={activeTab === item.label}
+                            onClick={() => setActiveTab(item.label)}
+                        />
+                    ))}
+
+                    {/* Logout Button in Sidebar */}
+                    <div className="mt-8 pt-6 border-t border-white/5 relative z-20">
+                        <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-red-500 hover:bg-red-500/10 hover:shadow-[0_0_15px_rgba(239,68,68,0.1)] transition-all group cursor-pointer hover:scale-105 active:scale-95"
+                        >
+                            <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            <span className="text-xs font-bold uppercase tracking-widest">Disconnect</span>
+                        </button>
+                    </div>
+                </nav >
+            </aside >
+
+            {/* Main Content Area */}
+            < main className="flex-1 overflow-y-auto custom-scrollbar" >
+                <div className="p-4 md:p-8 space-y-8">
+                    {/* Top Bar */}
+                    {/* Top Bar - Floating HUD */}
+                    <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sticky top-0 z-50 py-2 -mx-2 px-2">
+                        <div className="glass-premium px-6 py-2 rounded-full border border-white/15 shadow-2xl flex items-center gap-4 backdrop-blur-xl">
+                            <h2 className="text-xl font-black text-white tracking-widest uppercase">{activeTab}</h2>
+                            <div className="h-4 w-[1px] bg-white/10" />
+                            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest group relative">
+                                <input
+                                    type="text"
+                                    value={searchInput}
+                                    onChange={(e) => setSearchInput(e.target.value.toUpperCase())}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            if (searchResults.length > 0) {
+                                                selectSymbol(searchResults[0].symbol);
+                                            } else {
+                                                setSymbol(searchInput);
+                                                setChartData([]);
+                                            }
+                                            setShowResults(false);
+                                        }
+                                    }}
+                                    onFocus={() => {
+                                        setSearchInput(''); // Auto-clear on focus for better UX
+                                        if (searchResults.length > 0) setShowResults(true);
+                                    }}
+                                    onBlur={() => {
+                                        // Delay hiding to allow click
+                                        setTimeout(() => {
+                                            if (!searchInput) setSearchInput(symbol); // Revert to current symbol if empty
+                                            setShowResults(false);
+                                        }, 200);
+                                    }}
+                                    placeholder="SEARCH NSE..."
+                                    className="bg-transparent border-none outline-none text-white font-black w-32 focus:ring-0 placeholder:text-slate-700"
+                                />
+                                {searchInput && searchInput !== symbol && (
+                                    <button
+                                        onClick={() => { setSearchInput(''); setShowResults(false); }}
+                                        className="absolute right-8 text-slate-500 hover:text-white transition-colors"
+                                    >
+                                        <LogOut className="w-3 h-3 rotate-90" /> {/* Using a simple icon as clear */}
+                                    </button>
+                                )}
+                                <Search className="w-3 h-3 text-slate-600 group-focus-within:text-indigo-400 transition-colors" />
+
+                                {/* Search Results Dropdown */}
+                                {showResults && searchResults.length > 0 && (
+                                    <div className="absolute top-full left-0 mt-2 w-64 bg-black/90 border border-white/10 rounded-xl backdrop-blur-xl shadow-2xl z-50 overflow-hidden">
+                                        {searchResults.map((res) => (
+                                            <div
+                                                key={res.token}
+                                                onClick={() => selectSymbol(res.symbol)}
+                                                className="px-4 py-3 hover:bg-white/10 cursor-pointer border-b border-white/5 last:border-0"
+                                            >
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm font-bold text-white">{res.symbol}</span>
+                                                    <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">{res.exchange}</span>
+                                                </div>
+                                                <div className="text-[10px] text-slate-500 font-mono mt-0.5">{res.name}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            {/* Controls Group */}
+                            <div className="flex items-center gap-2 mr-2">
+                                {/* Auto Pilot Switch */}
+                                <ControlToggle
+                                    label={isAutoMode ? "AUTO PILOT" : "MANUAL MODE"}
+                                    active={isAutoMode}
+                                    onClick={handleModeToggle}
+                                    color="emerald"
+                                />
+
+                                {/* Emergency Kill Switch */}
+                                <button
+                                    onClick={handleEmergencyStop}
+                                    className="px-4 py-2 rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 hover:border-red-500/40 transition-all flex items-center gap-3 hover:scale-105 active:scale-95 cursor-pointer z-50 group"
+                                    title="CRITICAL EMERGENCY STOP"
+                                >
+                                    <AlertTriangle className="w-4 h-4 text-red-500/60 group-hover:text-red-500" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500/60 group-hover:text-red-500">KILL SWITCH</span>
+                                </button>
+                            </div>
+
+                            {/* System Status Badges */}
+                            <div className="flex gap-2">
+                                <StatusBadge
+                                    label="SYSTEM"
+                                    status={riskStatus.circuit_breaker_status === 'NOMINAL' ? 'NOMINAL' : 'HALTED'}
+                                    color={riskStatus.circuit_breaker_status === 'NOMINAL' ? 'emerald' : 'red'}
+                                    pulse={riskStatus.circuit_breaker_status !== 'NOMINAL'}
+                                />
+
+                                <StatusBadge
+                                    label="MARKET"
+                                    status={marketStatus.isOpen ? 'OPEN' : 'CLOSED'}
+                                    color={marketStatus.isOpen ? 'indigo' : 'amber'}
+                                />
+
+                                {settings.angel_connected && (
+                                    <StatusBadge
+                                        label="BROKER"
+                                        status="CONNECTED"
+                                        color="emerald"
+                                        pulse={true}
+                                    />
+                                )}
+
+                                <StatusBadge
+                                    label="REGIME"
+                                    status={data.regime}
+                                    color={data.regime === 'NOMINAL' ? 'emerald' : data.regime === 'VOLATILE' ? 'amber' : 'red'}
+                                />
+                            </div>
+                        </div>
+                    </header>
+
+                    {activeTab === 'Live Terminal' ? (
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            {/* Tactical Monitor Box (Side-by-Side) */}
+                            <div className="lg:col-span-3">
+                                <HUDCard title="TACTICAL MONITOR" neonColor="indigo" className="relative">
+
+                                    <div className="pt-10 p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {/* System Health Path */}
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-3 rounded-xl border transition-all duration-500 ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-red-500/10 text-red-400 border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)]'}`}>
+                                                        <Shield className={`w-6 h-6 ${riskStatus.circuit_breaker_status !== 'NOMINAL' ? 'animate-pulse' : ''}`} />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-sm font-black text-white uppercase tracking-wider italic">System Integrity</h3>
+                                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Risk Guardrail Status</p>
+                                                    </div>
+                                                </div>
+                                                <div className={`px-4 py-2 rounded-lg border font-black text-[10px] tracking-widest transition-all duration-500 ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/20 border-red-500/50 text-red-400 animate-pulse'}`}>
+                                                    {riskStatus.circuit_breaker_status === 'NOMINAL' ? 'NOMINAL' : 'HALTED'}
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-white/5 border border-white/5 p-4 rounded-2xl relative">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Perimeter Breach Check</span>
+                                                    <span className="text-[10px] font-mono text-white italic">₹{riskStatus.current_daily_loss?.toFixed(0)} / ₹{riskStatus.daily_loss_limit}</span>
+                                                </div>
+                                                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                                    <motion.div
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${Math.min(((riskStatus.current_daily_loss || 0) / (riskStatus.daily_loss_limit || 1)) * 100, 100) || 0}%` }}
+                                                        className={`h-full transition-all duration-1000 ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'bg-emerald-500/50' : 'bg-red-500 shadow-[0_0_10px_#ef4444]'}`}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Market Analysis Path */}
+                                        <div className="space-y-4 border-l border-white/5 pl-0 md:pl-8">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-3 rounded-xl border transition-all duration-500 ${data.regime === 'NOMINAL' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : data.regime === 'VOLATILE' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 'bg-red-500/10 text-red-500 border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)]'}`}>
+                                                        <Globe className={`w-6 h-6 ${data.regime !== 'NOMINAL' ? 'animate-spin-slow' : ''}`} />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-sm font-black text-white uppercase tracking-wider italic">Market Regime</h3>
+                                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Structural State Engine</p>
+                                                    </div>
+                                                </div>
+                                                <div className={`px-4 py-2 rounded-lg border font-black text-[10px] tracking-widest transition-all duration-500 ${data.regime === 'NOMINAL' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : data.regime === 'VOLATILE' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-red-500/20 border-red-500/50 text-red-400 animate-pulse'}`}>
+                                                    {data.regime}
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-white/5 border border-white/5 p-4 rounded-2xl relative">
+                                                <div className="flex justify-between items-center mb-3">
+                                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Committee Sync Status</span>
+                                                    <span className="text-[10px] font-mono text-white italic">{data.regime === 'NOMINAL' ? '3/5 REQ' : data.regime === 'VOLATILE' ? '4/5 REQ' : '5/5 REQ'}</span>
+                                                </div>
+                                                <div className="grid grid-cols-5 gap-2">
+                                                    <AgentStatus label="TECH" status={getAgentStatus('TECH')} icon={TrendingUp} colorClass="text-emerald-400" />
+                                                    <AgentStatus label="TFT" status={getAgentStatus('TFT')} icon={Activity} colorClass="text-purple-400" />
+                                                    <AgentStatus label="RL" status={getAgentStatus('RL')} icon={Zap} colorClass="text-amber-400" />
+                                                    <AgentStatus label="SENT" status={getAgentStatus('SENT')} icon={Brain} colorClass="text-blue-400" />
+                                                    <AgentStatus label="OPT" status={getAgentStatus('OPT')} icon={ListOrdered} colorClass="text-indigo-400" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </HUDCard>
+                            </div>
+
+                            {/* Tactical Command Row (Swarm + Risk) */}
+                            <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                <div className="lg:col-span-2">
+                                    <HUDCard title="AGENT SWARM" neonColor="purple">
+                                        <div className="p-6">
+                                            <div className="flex items-center gap-2 pb-4 border-b border-purple-500/20">
+                                                <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg">
+                                                    <Zap className="w-5 h-5 animate-pulse" />
+                                                </div>
+                                                <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-slate-400 italic">Live Consensus Matrix</h3>
+                                            </div>
+
+                                            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar mt-6">
+                                                <AnimatePresence mode="wait">
+                                                    {analysis && analysis.sentiment_analysis ? (
+                                                        <motion.div
+                                                            key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3"
+                                                        >
+                                                            {[
+                                                                { role: "Sentiment", text: analysis.sentiment_analysis, icon: Brain, color: "text-blue-400 border-blue-500/20 bg-blue-500/10" },
+                                                                { role: "Technical", text: analysis.technical_analysis || "Processing technicals...", icon: TrendingUp, color: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" },
+                                                                { role: "Options (OI/PCR)", text: `PCR: ${analysis.pcr?.toFixed(2)} | OI Support: ${analysis.pcr < 0.9 ? 'STRONG' : 'NEUTRAL'}. Institutional positioning detected.`, icon: ListOrdered, color: "text-indigo-400 border-indigo-500/20 bg-indigo-500/10" },
+                                                                { role: "Temporal (TFT)", text: `Prediction: ${analysis.tft_prediction || 'SYNCHRONIZING'}. Deep Sequence Context active.`, icon: Activity, color: "text-purple-400 border-purple-500/20 bg-purple-500/10" },
+                                                                { role: "Sniper (RL)", text: `Action Code: ${analysis.rl_action || 0}. Timing optimizer targeting high-velocity entries.`, icon: Zap, color: "text-amber-400 border-amber-500/20 bg-amber-500/10" },
+                                                                { role: "Risk Guard", text: analysis.risk_approval === undefined ? "Risk scan pending..." : (analysis.risk_approval ? "Risk Parameters Nominal. Trade Authorized." : "CRITICAL RISK DETECTED. HALTING."), icon: Shield, color: analysis.risk_approval ? "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" : "text-red-400 border-red-500/20 bg-red-500/10" },
+                                                            ].map((report, idx) => (
+                                                                <div key={idx} className={`p-5 rounded-2xl border transition-all hover:bg-white/[0.07] shadow-xl ${report.color.split(' ').slice(1).join(' ')}`}>
+                                                                    <div className={`flex items-center justify-between text-[10px] font-black uppercase tracking-widest mb-3 ${report.color.split(' ')[0]}`}>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <report.icon className="w-3.5 h-3.5" /> {report.role}
+                                                                        </div>
+                                                                        <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                                                                    </div>
+                                                                    <div className="bg-black/20 p-3 rounded-lg border border-white/5">
+                                                                        <p className="text-[10px] text-slate-200 leading-relaxed font-mono whitespace-pre-wrap">{report.text}</p>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </motion.div>
+                                                    ) : (
+                                                        <div className="h-40 flex flex-col items-center justify-center text-slate-700">
+                                                            <Activity className="w-10 h-10 opacity-10 mb-2 animate-pulse" />
+                                                            <p className="text-[10px] font-black tracking-widest text-indigo-500/40">AWAITING FEED</p>
+                                                        </div>
+                                                    )}
+                                                </AnimatePresence>
+
+                                                {/* Disconnect Confirmation Modal */}
+                                                <AnimatePresence>
+                                                    {showDisconnectConfirm && (
+                                                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                                                            <motion.div
+                                                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                                                onClick={() => setShowDisconnectConfirm(false)}
+                                                                className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+                                                            />
+                                                            <motion.div
+                                                                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                                                                className="relative w-full max-w-sm glass-panel p-8 rounded-[40px] border-white/10 bg-black/90 shadow-2xl"
+                                                            >
+                                                                <div className="text-center space-y-4 mb-8">
+                                                                    <div className="w-16 h-16 mx-auto mb-4 rounded-3xl flex items-center justify-center bg-red-500/10 text-red-400 border border-red-500/20">
+                                                                        <LogOut className="w-8 h-8" />
+                                                                    </div>
+                                                                    <h3 className="text-2xl font-black tracking-tight text-white">DISCONNECT BROKER?</h3>
+                                                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-relaxed">
+                                                                        This will <span className="text-red-400">CLEAR ALL CREDENTIALS</span> and revert the system to MOCK mode.
+                                                                    </p>
+                                                                </div>
+                                                                <div className="space-y-3">
+                                                                    <button
+                                                                        onClick={handleAngelDisconnect}
+                                                                        className="w-full bg-red-500 hover:bg-red-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95"
+                                                                    >
+                                                                        CONFIRM DISCONNECT
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setShowDisconnectConfirm(false)}
+                                                                        className="w-full bg-white/5 hover:bg-white/10 text-slate-400 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+                                                                    >
+                                                                        ABORT
+                                                                    </button>
+                                                                </div>
+                                                            </motion.div>
+                                                        </div>
+                                                    )}
+                                                </AnimatePresence>
+
+                                                {/* Toast Notification */}
+                                                <AnimatePresence>
+                                                    {toast && (
+                                                        <motion.div
+                                                            initial={{ opacity: 0, y: 50, x: '-50%' }}
+                                                            animate={{ opacity: 1, y: 0, x: '-50%' }}
+                                                            exit={{ opacity: 0, y: 20, x: '-50%' }}
+                                                            className="fixed bottom-10 left-1/2 z-[300] px-6 py-4 rounded-2xl border backdrop-blur-xl shadow-2xl flex items-center gap-4 min-w-[300px]"
+                                                            style={{
+                                                                backgroundColor: toast.type === 'error' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                                                                borderColor: toast.type === 'error' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)'
+                                                            }}
+                                                        >
+                                                            <div className={`p-2 rounded-lg ${toast.type === 'error' ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                                                                {toast.type === 'error' ? <AlertTriangle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                                                            </div>
+                                                            <div className="space-y-0.5">
+                                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 leading-none">System Notification</p>
+                                                                <p className="text-xs font-bold text-white">{toast.message}</p>
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
+                                        </div>
+                                    </HUDCard>
+                                </div>
+
+                                <div className="lg:col-span-1">
+                                    <HUDCard title="RISK PERIMETER" neonColor="red" className="bg-red-500/[0.02] border-red-500/10 h-full">
+                                        <div className="p-6">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <div className="p-3 bg-red-500/10 text-red-500 rounded-2xl shadow-[0_0_15px_rgba(239,68,68,0.2)] border border-red-500/20">
+                                                    <AlertTriangle className="w-6 h-6 animate-pulse" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-black text-xs uppercase tracking-widest text-red-400 neon-text-red">Protocol & Guardrails</h3>
+                                                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-tighter">Active System Defense</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Side-by-Side Mode Matrix */}
+                                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                                <div className={`p-3 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-500 ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'bg-emerald-500/5 border-emerald-500/10' : 'bg-red-500/10 border-red-500/20'}`}>
+                                                    <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">System State</span>
+                                                    <div className={`text-[10px] font-black tracking-tighter ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'text-emerald-400' : 'text-red-400 animate-pulse'}`}>
+                                                        {riskStatus.circuit_breaker_status === 'NOMINAL' ? 'STABLE' : 'HALTED'}
+                                                    </div>
+                                                </div>
+                                                <div className={`p-3 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-500 ${data.regime === 'NOMINAL' ? 'bg-emerald-500/5 border-emerald-500/10' : 'bg-amber-500/5 border-amber-500/20'}`}>
+                                                    <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Market Regime</span>
+                                                    <div className={`text-[10px] font-black tracking-tighter ${data.regime === 'NOMINAL' ? 'text-emerald-400' : data.regime === 'VOLATILE' ? 'text-amber-400' : 'text-red-400'}`}>
+                                                        {data.regime}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-4 pt-4 border-t border-white/5">
+                                                <div className="flex justify-between items-center text-[11px] font-bold px-1">
+                                                    <span className="text-slate-500 uppercase tracking-[0.1em]">Daily Loss Perimeter</span>
+                                                    <span className="text-white font-black text-xs italic">
+                                                        ₹<ScrambleText text={riskStatus.current_daily_loss?.toLocaleString('en-IN') || '0'} /> / ₹{riskStatus.daily_loss_limit?.toLocaleString('en-IN')}
+                                                    </span>
+                                                </div>
+                                                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden p-[2px]">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_currentColor] ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'bg-emerald-500/50 text-emerald-500' : 'bg-red-500 text-red-500'}`}
+                                                        style={{ width: `${Math.min(((riskStatus.current_daily_loss || 0) / (riskStatus.daily_loss_limit || 1)) * 100, 100) || 0}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </HUDCard>
+                                </div>
+                            </div>
+
+                            {/* Market Mood Index Row */}
+                            <div className="lg:col-span-3">
+                                <MarketMoodIndex />
+                            </div>
+
+                            {/* Charts & Signals */}
+                            <div className="lg:col-span-2 space-y-6">
+                                <div className="glass-premium holographic-border p-6 rounded-[32px] overflow-hidden relative group transition-all duration-500 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)] border border-white/10">
+                                    <div className="flex justify-between items-end mb-8 relative z-10">
+                                        <div>
+                                            <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Live Tick Streams</span>
+                                            <div className="flex items-baseline gap-2 mt-1">
+                                                <h2 className="text-5xl font-black tabular-nums tracking-tighter">₹{data.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h2>
+                                                <span className="text-emerald-400/80 font-bold text-sm tracking-widest">LIVE_FEED</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="text-right">
+                                            <div className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Exchange</div>
+                                            <div className="text-lg font-black text-indigo-400">NSE INDIA</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="h-[280px] w-full -mx-4">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={chartData}>
+                                                <defs>
+                                                    <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
+                                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
+                                                <XAxis
+                                                    dataKey="time"
+                                                    hide={true} // Hide labels for clean look, but keep axis structure
+                                                />
+                                                <YAxis
+                                                    domain={['auto', 'auto']}
+                                                    orientation="right"
+                                                    tick={{ fontSize: 10, fill: '#64748b' }}
+                                                    axisLine={false}
+                                                    tickLine={false}
+                                                    width={40}
+                                                />
+                                                <Tooltip
+                                                    contentStyle={{ backgroundColor: '#161720', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                                                    itemStyle={{ color: '#fff' }}
+                                                    labelStyle={{ color: '#94a3b8' }}
+                                                />
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="price"
+                                                    stroke="#6366f1"
+                                                    strokeWidth={3}
+                                                    fillOpacity={1}
+                                                    fill="url(#colorPrice)"
+                                                    animationDuration={500}
+                                                    isAnimationActive={true}
+                                                />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="lg:col-span-1">
+                                <HUDCard title="CORTEX.AI" neonColor="purple" className="h-full">
+                                    <div className="p-5 h-full flex flex-col">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <div className="p-3 bg-purple-500/10 text-purple-400 rounded-lg border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+                                                <Brain className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xs font-black text-white uppercase tracking-wider neon-text-indigo">Neural Command</h3>
+                                                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Inference v9.0</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-6 relative z-10 flex-1 flex flex-col">
+                                            <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/5 flex items-center justify-between">
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Signal Output</span>
+                                                        {isAnalyzing && (
+                                                            <div className="flex items-center gap-2 text-indigo-400">
+                                                                <RefreshCw className="w-3 h-3 animate-spin" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className={`text-4xl font-black tracking-tighter ${data.signal === 'BUY' ? 'text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)]' :
+                                                        data.signal === 'SELL' ? 'text-red-400 shadow-[0_0_20px_rgba(244,63,94,0.4)]' : 'text-amber-400'
+                                                        }`}>
+                                                        {isAnalyzing ? <span className="opacity-50 italic text-xl">SYNC...</span> : data.signal}
+                                                    </div>
+                                                </div>
+
+                                                <ConfidenceGauge score={data.confidence || 0} />
+                                            </div>
+
+                                            <div className="bg-black/40 p-5 border border-white/5 relative overflow-hidden rounded-2xl flex-1 min-h-[100px]">
+                                                <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-white/10" />
+                                                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-indigo-500/50" />
+
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <Terminal className="w-3.5 h-3.5 text-emerald-500" />
+                                                    <span className="text-[10px] font-black text-emerald-500/70 uppercase tracking-widest">LOG OUTPUT</span>
+                                                </div>
+                                                <p className="text-[11px] font-mono text-emerald-400/80 leading-relaxed">
+                                                    {">"} {data.trade_recommendation?.reasoning || "Neural core idle. Awaiting market volatility signal..."}
+                                                </p>
+                                            </div>
+
+                                            {!isAnalyzing && (
+                                                <button onClick={runAgentAnalysis} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.4)] text-[10px] font-black uppercase tracking-[0.2em] transition-all clip-path-polygon active:scale-95">
+                                                    INITIALIZE SCAN
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </HUDCard>
+                            </div>
+
+                            {/* Option Chain / Strikes Section */}
+                            <div className="lg:col-span-3">
+                                <HUDCard title="DERIVATIVE MATRIX" neonColor="indigo" className="space-y-4">
+                                    <div className="p-6">
+                                        <div className="flex justify-between items-center border-b border-indigo-500/20 pb-4">
+                                            <div className="flex items-center gap-2">
+                                                <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg">
+                                                    <ListOrdered className="w-5 h-5" />
+                                                </div>
+                                                <h3 className="font-black text-sm uppercase tracking-widest text-slate-300 italic">Option Chain: {symbol} Strikes</h3>
+                                            </div>
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Expiries: Weekly | Monthly</span>
+                                        </div>
+
+                                        <div className="overflow-x-auto mt-4">
+                                            <table className="w-full text-left border-separate border-spacing-y-2">
+                                                <thead>
+                                                    <tr className="text-[10px] font-black uppercase text-slate-600 tracking-widest">
+                                                        <th className="px-4 py-2">CALLS (CE)</th>
+                                                        <th className="px-4 py-2">OI (CE)</th>
+                                                        <th className="px-4 py-2 text-center bg-indigo-500/5 rounded-t-xl">STRIKE PRICE</th>
+                                                        <th className="px-4 py-2 text-right">OI (PE)</th>
+                                                        <th className="px-4 py-2 text-right">PUTS (PE)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="text-xs font-bold tabular-nums">
+                                                    {(Array.isArray(optionChain) ? optionChain : []).map((item, idx) => {
+                                                        const isATM = data && data.price && item && item.strike ? Math.abs(data.price - item.strike) < 100 : false;
+                                                        return (
+                                                            <tr key={idx} className={`group hover:bg-white/5 transition-all ${isATM ? 'bg-indigo-500/10' : ''}`}>
+                                                                <td className="px-4 py-3 text-emerald-400">₹{item.ce_premium}</td>
+                                                                <td className="px-4 py-3 text-slate-500">{(item.oi_ce / 1000).toFixed(1)}k</td>
+                                                                <td className={`px-4 py-3 text-center transition-all ${isATM ? 'bg-indigo-500 text-white shadow-lg font-black scale-105 rounded-xl border border-indigo-400/30 shadow-[0_0_15px_rgba(99,102,241,0.3)]' : 'bg-white/5 text-slate-400 group-hover:text-white'}`}>
+                                                                    {item.strike}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-right text-slate-500">{(item.oi_pe / 1000).toFixed(1)}k</td>
+                                                                <td className="px-4 py-3 text-right text-red-400">₹{item.pe_premium}</td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </HUDCard>
+                            </div>
+
+                        </div>
+                    ) : activeTab.toLowerCase() === 'analytics' ? (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-700">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="glass-panel p-8 rounded-[40px] border-indigo-500/20 col-span-2">
+                                    <div className="flex justify-between items-start mb-10">
+                                        <div>
+                                            <h3 className="text-3xl font-black tracking-tighter mb-1">Intelligence Pipeline</h3>
+                                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">12-Year Historical Ingestion Engine</p>
+                                        </div>
+                                        <button
+                                            onClick={handleTriggerPipeline}
+                                            disabled={isProcessing}
+                                            className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-800 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-3"
+                                        >
+                                            {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Activity className="w-4 h-4" />}
+                                            {isProcessing ? 'PROCESSING...' : 'TRIGGER INGESTION'}
+                                        </button>
+                                    </div>
+
+                                    {pipelineStats ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-6">
+                                                <HUDCard title="TRAINING SET" neonColor="indigo" className="p-6">
+                                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Training Horizon (10Y)</span>
+                                                    <p className="text-2xl font-black text-indigo-400 mt-2"><ScrambleText text={pipelineStats.train_size} /> Rows</p>
+                                                    <div className="flex items-center gap-2 mt-2 text-[10px] font-bold text-slate-400">
+                                                        <span>{pipelineStats.train_start}</span>
+                                                        <ChevronRight className="w-3 h-3 text-indigo-500" />
+                                                        <span>{pipelineStats.train_end}</span>
+                                                    </div>
+                                                </HUDCard>
+                                                <HUDCard title="TESTING SET" neonColor="emerald" className="p-6">
+                                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Testing Horizon (2Y)</span>
+                                                    <p className="text-2xl font-black text-emerald-400 mt-2"><ScrambleText text={pipelineStats.test_size} /> Rows</p>
+                                                    <div className="flex items-center gap-2 mt-2 text-[10px] font-bold text-slate-400">
+                                                        <span>{pipelineStats.test_start}</span>
+                                                        <ChevronRight className="w-3 h-3 text-emerald-500" />
+                                                        <span>{pipelineStats.test_end}</span>
+                                                    </div>
+                                                </HUDCard>
+                                            </div>
+
+                                            <HUDCard title="DATA INTEGRITY" neonColor="indigo" className="p-6 flex flex-col items-center justify-center text-center space-y-4">
+                                                <div className="w-24 h-24 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 flex items-center justify-center relative shadow-[0_0_30px_rgba(99,102,241,0.2)]">
+                                                    <span className="text-3xl font-black text-white"><ScrambleText text={pipelineStats.quality?.quality_percentage || 0} />%</span>
+                                                    <div className="absolute -inset-2 rounded-full border border-indigo-500/10 animate-spin-slow"></div>
+                                                </div>
+                                                <div>
+                                                    <p className="font-black text-xs uppercase tracking-widest text-indigo-400 neon-text-indigo">Data Integrity</p>
+                                                    <div className="flex flex-col gap-2 mt-4 w-full">
+                                                        <div className="flex items-center justify-between gap-8 text-[9px] font-black text-slate-500 uppercase border-b border-white/5 pb-1">
+                                                            <span>Completeness</span>
+                                                            <span className="text-white">{pipelineStats.quality?.completeness}%</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between gap-8 text-[9px] font-black text-slate-500 uppercase border-b border-white/5 pb-1">
+                                                            <span>Logic Check</span>
+                                                            <span className="text-white">{pipelineStats.quality?.logical_integrity}%</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between gap-8 text-[9px] font-black text-slate-500 uppercase border-b border-white/5 pb-1">
+                                                            <span>Continuity</span>
+                                                            <span className="text-white">{pipelineStats.quality?.continuity_score}%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </HUDCard>
+                                        </div>
+                                    ) : (
+                                        <div className="h-60 flex flex-col items-center justify-center text-slate-700 bg-white/5 rounded-[32px] border border-dashed border-white/5">
+                                            <Activity className="w-12 h-12 opacity-10 mb-4" />
+                                            <p className="text-xs font-black tracking-widest opacity-20 uppercase">No Pipeline Data Fetched</p>
+                                        </div>
+                                    )}
+
+                                    <div className="mt-10 pt-10 border-t border-white/5">
+                                        <div className="flex justify-between items-center mb-8">
+                                            <div>
+                                                <h4 className="text-xl font-black tracking-tighter">AI Training Engine</h4>
+                                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">XGBoost Optimized Classifier</p>
+                                            </div>
+                                            <button
+                                                onClick={handleTrainModel}
+                                                disabled={isTraining || !pipelineStats}
+                                                className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-800 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-emerald-500/20 active:scale-95 flex items-center gap-3"
+                                            >
+                                                {isTraining ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
+                                                {isTraining ? 'TRAINING MODEL...' : 'START TRAINING'}
+                                            </button>
+                                        </div>
+
+                                        {modelMetrics ? (
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                {[
+                                                    { label: "Accuracy", value: modelMetrics.accuracy * 100, color: "text-indigo-400" },
+                                                    { label: "Precision", value: modelMetrics.precision * 100, color: "text-emerald-400" },
+                                                    { label: "Recall", value: modelMetrics.recall * 100, color: "text-amber-400" },
+                                                    { label: "F1 Score", value: modelMetrics.f1 * 100, color: "text-purple-400" },
+                                                ].map((metric, i) => (
+                                                    <HUDCard key={i} title={metric.label} neonColor="indigo" className="p-4">
+                                                        <p className={`text-xl font-black mt-1 ${metric.color}`}>
+                                                            <ScrambleText text={metric.value.toFixed(1)} />%
+                                                        </p>
+                                                    </HUDCard>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="p-8 bg-white/5 rounded-[32px] border border-dashed border-white/5 text-center">
+                                                <p className="text-[10px] font-black uppercase text-slate-700 tracking-widest italic">Awaiting Model Training for Results</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <HUDCard title="SAFEGUARD PROTOCOLS" neonColor="emerald" className="p-8 space-y-6">
+                                    <div className="p-4 bg-emerald-500/10 text-emerald-400 rounded-2xl w-fit shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                                        <Shield className="w-6 h-6" />
+                                    </div>
+                                    <div className="space-y-4">
+                                        {[
+                                            "Zero-Leakage Split",
+                                            "Outlier Hard-Clipping",
+                                            "Forward-Fill Continuity",
+                                            "ADX Strength Verifier"
+                                        ].map((item, i) => (
+                                            <div key={i} className="flex items-center gap-3">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                <span className="text-[10px] font-black uppercase text-slate-400">{item}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="pt-6 border-t border-white/5">
+                                        <p className="text-[11px] text-slate-500 italic leading-relaxed">
+                                            The data pipeline enforces strict sequence protection during the 10-year training phase to ensure testing on the final 2 years remains blind and unbiased.
+                                        </p>
+                                    </div>
+                                </HUDCard>
+                            </div>
+                        </div>
+                    ) : activeTab.toLowerCase() === 'settings' ? (
+                        <div className="h-full flex gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            {/* Left Column: Sidebar & Environment */}
+                            <div className="w-80 flex flex-col gap-6">
+                                {/* Settings Navigation */}
+                                <div className="glass-panel p-4 rounded-[32px] space-y-2">
+                                    {[
+                                        { id: 'API Keys', icon: Key, label: 'API Keys', desc: 'Manage Credentials' },
+                                        { id: 'Notifications', icon: Bell, label: 'Notifications', desc: 'Alert Configuration' },
+                                        { id: 'Appearance', icon: Eye, label: 'Appearance', desc: 'Theme & Layout' },
+                                        { id: 'System', icon: Cpu, label: 'System', desc: 'Logs & Diagnostics' },
+                                    ].map((item) => (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => setActiveSettingsTab(item.id)}
+                                            className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 text-left group ${activeSettingsTab === item.id
+                                                ? 'bg-indigo-500/10 border border-indigo-500/20'
+                                                : 'hover:bg-white/5 border border-transparent'
+                                                }`}
+                                        >
+                                            <div className={`p-2 rounded-xl ${activeSettingsTab === item.id ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-white/5 text-slate-500 group-hover:text-indigo-400'}`}>
+                                                <item.icon className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <h4 className={`text-sm font-black tracking-tight ${activeSettingsTab === item.id ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}>{item.label}</h4>
+                                                <p className="text-[10px] uppercase font-bold text-slate-600 tracking-wider group-hover:text-slate-500">{item.desc}</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Environment Control Card */}
+                                <HUDCard title="ENVIRONMENT" neonColor="emerald" className="p-6 mt-auto">
+                                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                                        <Globe className="w-24 h-24 text-emerald-500 rotate-12" />
+                                    </div>
+                                    <h4 className="text-xs font-black uppercase tracking-[0.2em] text-emerald-400 mb-6 flex items-center gap-2 neon-text-emerald">
+                                        <Zap className="w-4 h-4" /> System Environment
+                                    </h4>
+
+                                    <div className="bg-black/40 p-1.5 rounded-xl flex relative mb-6 border border-emerald-500/20 shadow-inner">
+                                        <div className={`absolute inset-y-1.5 w-1/2 bg-emerald-500/20 rounded-lg transition-all duration-300 border border-emerald-500/30 ${settings.env === 'LIVE' ? 'left-[4px]' : 'left-[50%]'}`} />
+                                        <button
+                                            onClick={() => handleEnvSwitch('LIVE')}
+                                            className={`relative flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10 ${settings.env === 'LIVE' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                                        >
+                                            Live
+                                        </button>
+                                        <button
+                                            onClick={() => handleEnvSwitch('MOCK')}
+                                            className={`relative flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10 ${settings.env === 'MOCK' ? 'text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'text-slate-500'}`}
+                                        >
+                                            Mock
+                                        </button>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center bg-black/20 px-4 py-3 rounded-lg border border-white/5">
+                                            <span className="text-[10px] font-black uppercase text-slate-500">API Link</span>
+                                            <span className={`text-[10px] font-black uppercase px-2 py-1 rounded border ${settings.angel_connected
+                                                ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                                                : 'text-red-400 bg-red-500/10 border-red-500/20'}`}>
+                                                {settings.angel_connected ? 'Connected' : 'Missing'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center bg-black/20 px-4 py-3 rounded-lg border border-white/5">
+                                            <span className="text-[10px] font-black uppercase text-slate-500">Session</span>
+                                            <span className={`text-[10px] font-black uppercase px-2 py-1 rounded border ${settings.angel_connected
+                                                ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                                                : 'text-slate-500 bg-slate-500/10 border-slate-500/20'}`}>
+                                                {settings.angel_connected ? 'Active' : 'Offline'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center bg-black/20 px-4 py-3 rounded-lg border border-white/5">
+                                            <span className="text-[10px] font-black uppercase text-slate-500">Ping</span>
+                                            <span className="text-[10px] font-black uppercase text-amber-400"><ScrambleText text="988ms" /></span>
+                                        </div>
+                                    </div>
+                                </HUDCard>
+                            </div>
+
+                            {/* Right Column: Content Area */}
+                            <div className="flex-1 glass-panel p-10 rounded-[40px] relative overflow-hidden">
+                                {activeSettingsTab === 'API Keys' ? (
+                                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                                        <div className="flex items-start gap-6 mb-8">
+                                            <div className="p-4 bg-indigo-500/10 rounded-3xl text-indigo-400 border border-indigo-500/20 shadow-lg shadow-indigo-500/10">
+                                                <Key className="w-8 h-8" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl font-black text-white tracking-tight">API Credentials</h3>
+                                                <p className="text-slate-500 text-sm font-medium mt-2 max-w-md">Securely manage your broker credentials. Keys are encrypted at rest.</p>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-6 pt-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">Client ID</label>
+                                                    <input
+                                                        type="text"
+                                                        value={credentials.angel_client_id}
+                                                        onChange={(e) => setCredentials({ ...credentials, angel_client_id: e.target.value })}
+                                                        placeholder="Client ID"
+                                                        className="w-full bg-black/20 border border-white/5 rounded-2xl px-6 py-4 text-sm font-mono text-slate-300 focus:outline-none focus:border-indigo-500/50 focus:bg-black/40 transition-all placeholder:text-slate-700"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">Password / MPIN</label>
+                                                    <input
+                                                        type="password"
+                                                        value={credentials.angel_password}
+                                                        onChange={(e) => setCredentials({ ...credentials, angel_password: e.target.value })}
+                                                        placeholder="Password"
+                                                        className="w-full bg-black/20 border border-white/5 rounded-2xl px-6 py-4 text-sm font-mono text-slate-300 focus:outline-none focus:border-indigo-500/50 focus:bg-black/40 transition-all placeholder:text-slate-700"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">Angel API Key</label>
+                                                <input
+                                                    type="text"
+                                                    value={credentials.angel_api_key}
+                                                    onChange={(e) => setCredentials({ ...credentials, angel_api_key: e.target.value })}
+                                                    placeholder="SmartAPI Key"
+                                                    className="w-full bg-black/20 border border-white/5 rounded-2xl px-6 py-4 text-sm font-mono text-slate-300 focus:outline-none focus:border-indigo-500/50 focus:bg-black/40 transition-all placeholder:text-slate-700"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">TOTP Secret Key</label>
+                                                <input
+                                                    type="password"
+                                                    value={credentials.angel_totp_key}
+                                                    onChange={(e) => setCredentials({ ...credentials, angel_totp_key: e.target.value })}
+                                                    placeholder="TOTP Secret (for 2FA)"
+                                                    className="w-full bg-black/20 border border-white/5 rounded-2xl px-6 py-4 text-sm font-mono text-slate-300 focus:outline-none focus:border-indigo-500/50 focus:bg-black/40 transition-all placeholder:text-slate-700"
+                                                />
+                                            </div>
+
+                                            <div className="pt-8">
+                                                <button
+                                                    onClick={handleUpdateCredentials}
+                                                    disabled={isConnecting}
+                                                    className={`w-full py-4 ${isConnecting ? 'bg-indigo-500/50 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'} text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-3 active:scale-95`}
+                                                >
+                                                    {isConnecting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                                                    {isConnecting ? 'Connecting to Exchange...' : 'Connect Angel One'}
+                                                </button>
+
+
+                                                {settings.angel_connected && (
+                                                    <button
+                                                        onClick={() => setShowDisconnectConfirm(true)}
+                                                        className="w-full mt-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
+                                                    >
+                                                        <LogOut className="w-4 h-4" /> Disconnect Angel One
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center opacity-30">
+                                        <Settings className="w-16 h-16 mb-4 animate-spin-slow" />
+                                        <p className="text-xs font-black uppercase tracking-widest">Section Under Construction</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ) : activeTab.toLowerCase() === 'orders' ? (
+                        <Orders />
+                    ) : activeTab.toLowerCase() === 'settings' ? (
+                        <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-6">
+                            <div className="flex justify-between items-center">
+                                <HUDCard title="ORDER BOOK" neonColor="indigo" className="w-full">
+                                    <div className="p-6 flex justify-between items-center border-b border-white/5">
+                                        <div>
+                                            <h3 className="text-xl font-black text-white tracking-tight">Active Orders</h3>
+                                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">{settings.active_broker} Execution Engine</p>
+                                        </div>
+                                        <div className="flex gap-4">
+                                            <button
+                                                onClick={fetchOrders}
+                                                className="p-3 bg-white/5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-all"
+                                            >
+                                                <RefreshCw className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={placeTestOrder}
+                                                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+                                            >
+                                                <Zap className="w-4 h-4" /> Place Test Order
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end mb-4 px-1" style={{ border: '1px solid yellow' }}>
+                                        <button
+                                            onClick={placeTestOrder}
+                                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+                                        >
+                                            <Zap className="w-3 h-3" /> Place Test Order (DEBUG)
+                                        </button>
+                                    </div>
+                                    <div className="overflow-x-auto" style={{ border: '2px solid red', minHeight: '100px' }}>
+                                        <div className="p-2 text-red-500 font-bold">
+                                            DEBUG: Orders Count = {orders ? orders.length : 'NULL'}
+                                        </div>
+                                        <table className="w-full text-left">
+                                            <thead>
+                                                <tr className="bg-black/20 text-[10px] font-black uppercase text-slate-500 tracking-widest">
+                                                    <th className="px-6 py-4">Time</th>
+                                                    <th className="px-6 py-4">Output Log</th>
+                                                    <th className="px-6 py-4">Symbol</th>
+                                                    <th className="px-6 py-4">Side</th>
+                                                    <th className="px-6 py-4 text-right">Qty</th>
+                                                    <th className="px-6 py-4 text-right">Price</th>
+                                                    <th className="px-6 py-4 text-right">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="text-xs font-bold font-mono">
+                                                {orders.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan="7" className="px-6 py-12 text-center text-slate-600">
+                                                            <div className="flex flex-col items-center justify-center gap-4">
+                                                                <p className="uppercase tracking-widest italic">No Active Orders in Registry</p>
+                                                                <button
+                                                                    onClick={placeTestOrder}
+                                                                    className="px-6 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 rounded-lg border border-indigo-500/30 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+                                                                >
+                                                                    <Zap className="w-3 h-3" /> Place First Test Order
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    orders.map((o, i) => (
+                                                        <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                                            <td className="px-6 py-4 text-slate-400">{o.order_timestamp}</td>
+                                                            <td className="px-6 py-4 text-slate-500">{o.order_id}</td>
+                                                            <td className="px-6 py-4 text-white">{o.tradingsymbol}</td>
+                                                            <td className={`px-6 py-4 ${o.transaction_type === 'BUY' ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                                {o.transaction_type}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right text-slate-300">{o.filled_quantity}/{o.quantity}</td>
+                                                            <td className="px-6 py-4 text-right text-indigo-300">₹{o.average_price || o.price}</td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${o.status === 'complete' ? 'bg-emerald-500/10 text-emerald-400' : o.status === 'rejected' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                                                                    {o.status}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </HUDCard>
+                            </div>
+                        </div>
+                    ) : activeTab.toLowerCase() === 'strategies' ? (
+                        <Strategies />
+                    ) : activeTab.toLowerCase() === 'analytics' ? (
+                        <Analytics />
+                    ) : activeTab.toLowerCase() === 'insights' ? (
+                        <Insights />
+                    ) : activeTab.toLowerCase() === 'smallcases' ? (
+                        <Smallcases />
+                    ) : activeTab.toLowerCase() === 'market pulse' ? (
+                        <MarketPulse />
+                    ) : activeTab.toLowerCase() === 'portfolio' ? (
+                        <Portfolio />
+                    ) : activeTab.toLowerCase() === 'system health' ? (
+                        <SystemHealth />
+                    ) : (
+                        <div className="h-[70vh] flex flex-col items-center justify-center text-slate-600 space-y-4 animate-in fade-in zoom-in duration-500">
+                            <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center border border-white/5">
+                                <LayoutDashboard className="w-10 h-10 opacity-20" />
+                            </div>
+                            <p className="text-xs font-black uppercase tracking-[0.3em] opacity-30 italic">{activeTab} section under development</p>
+                        </div>
+                    )
+                    }
+                </div >
+            </main >
+
+            {/* Login Modal */}
+            <AnimatePresence>
+                {showLogin && (
+                    <LoginModal
+                        isOpen={showLogin}
+                        onClose={() => setShowLogin(false)}
+                        onLogin={(authToken) => {
+                            setIsLoggedIn(true);
+                            setToken(authToken); // Store valid token
+                            setUser({ name: 'TEJU', initials: 'TJ', status: 'PRO TRADER', broker: 'ANGEL ONE' });
+                            playInitSound();
+                        }}
+                        onGuestLogin={handleGuestLogin}
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* Emergency Kill Switch Modal */}
+            < AnimatePresence >
+                {showEmergencyConfirm && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => { setShowEmergencyConfirm(false); setEmergencyResult(null); }}
+                            className="absolute inset-0 bg-red-950/40 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                            className="relative w-full max-w-sm glass-panel p-8 rounded-[40px] shadow-2xl border-red-500/30 bg-black/80"
+                        >
+                            <div className="text-center space-y-4 mb-8">
+                                <div className={`w-20 h-20 mx-auto mb-4 rounded-3xl flex items-center justify-center border shadow-2xl transition-all duration-500 ${emergencyResult?.success ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-500/10' :
+                                    emergencyResult?.success === false ? 'bg-red-500/10 text-red-500 border-red-500/20 shadow-red-500/10' :
+                                        'bg-red-500/10 text-red-500 border-red-500/20 shadow-red-500/20'
+                                    } ${isLiquidating ? 'animate-spin' : ''}`}>
+                                    {isLiquidating ? <RefreshCw className="w-10 h-10" /> :
+                                        emergencyResult?.success ? <CheckCircle className="w-10 h-10" /> :
+                                            <AlertTriangle className="w-10 h-10" />}
+                                </div>
+                                <h3 className={`text-3xl font-black tracking-tighter ${emergencyResult?.success ? 'text-emerald-400' : 'text-red-500'}`}>
+                                    {isLiquidating ? 'EXECUTING...' :
+                                        emergencyResult?.success ? 'PROTOCOL SUCCESS' :
+                                            emergencyResult?.success === false ? 'PROTOCOL FAILED' :
+                                                'SYSTEM KILL SWITCH'}
+                                </h3>
+                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed">
+                                    {isLiquidating
+                                        ? 'Liquidating all market positions. Please wait.'
+                                        : emergencyResult?.message
+                                            ? emergencyResult.message
+                                            : <>Are you sure you want to <span className="text-red-400">LIQUIDATE ALL POSITIONS</span> and <span className="text-red-400">STOP AUTOMATION</span> immediately?</>}
+                                </p>
+                            </div>
+
+                            <div className="space-y-3">
+                                {emergencyResult?.success ? (
+                                    <button
+                                        onClick={() => window.location.reload()}
+                                        className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] transition-all shadow-xl shadow-emerald-900/40 active:scale-[0.95]"
+                                    >
+                                        RELOAD SYSTEM
+                                    </button>
+                                ) : (
+                                    <>
+                                        <button
+                                            onClick={executeEmergencyProtocol}
+                                            disabled={isLiquidating}
+                                            className={`w-full py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] transition-all shadow-xl active:scale-[0.95] ${isLiquidating
+                                                ? 'bg-red-900/50 text-red-400/50 cursor-not-allowed'
+                                                : 'bg-red-600 hover:bg-red-500 text-white shadow-red-900/40'
+                                                }`}
+                                        >
+                                            {isLiquidating ? 'PROCESSING...' : emergencyResult?.success === false ? 'RETRY PROTOCOL' : 'EXECUTE PROTOCOL'}
+                                        </button>
+                                        {!isLiquidating && (
+                                            <button
+                                                onClick={() => { setShowEmergencyConfirm(false); setEmergencyResult(null); }}
+                                                className="w-full bg-white/5 hover:bg-white/10 text-slate-400 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border border-white/5"
+                                            >
+                                                {emergencyResult?.success === false ? 'CLOSE' : 'ABORT MISSION'}
+                                            </button>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+
+                            <p className="text-center text-[8px] text-red-500/40 font-black uppercase tracking-[0.3em] pt-6">
+                                CRITICAL SYSTEM OVERRIDE
+                            </p>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence >
+
+            {/* Auto Pilot Confirmation Modal */}
+            <AnimatePresence>
+                {showModeConfirm && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowModeConfirm(false)}
+                            className="absolute inset-0 bg-indigo-950/40 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                            className="relative w-full max-w-sm glass-panel p-8 rounded-[40px] shadow-2xl border-indigo-500/30 bg-black/80"
+                        >
+                            <div className="text-center space-y-4 mb-8">
+                                <div className="w-20 h-20 mx-auto mb-4 bg-indigo-500/10 text-indigo-400 rounded-3xl flex items-center justify-center border border-indigo-500/20 shadow-indigo-500/10">
+                                    <Brain className="w-10 h-10 animate-pulse" />
+                                </div>
+                                <h3 className="text-3xl font-black tracking-tighter text-indigo-400 uppercase">
+                                    Engage Pilot
+                                </h3>
+                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed">
+                                    Warning: System will assume <span className="text-indigo-400">FULL CONTROL</span> of execution protocols. Ensure risk guardrails are configured.
+                                </p>
+                            </div>
+
+                            <div className="space-y-3">
+                                <button
+                                    onClick={() => executeModeSwitch('AUTO')}
+                                    className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] transition-all shadow-xl shadow-indigo-900/40 active:scale-[0.95]"
+                                >
+                                    CONFIRM ENGAGEMENT
+                                </button>
+                                <button
+                                    onClick={() => setShowModeConfirm(false)}
+                                    className="w-full bg-white/5 hover:bg-white/10 text-slate-400 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border border-white/5"
+                                >
+                                    ABORT MISSION
+                                </button>
+                            </div>
+
+                            <p className="text-center text-[8px] text-indigo-500/40 font-black uppercase tracking-[0.3em] pt-6">
+                                AUTONOMOUS EXECUTION PROTOCOL
+                            </p>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Disconnect Confirmation Modal */}
+            <AnimatePresence>
+                {showDisconnectConfirm && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setShowDisconnectConfirm(false)}
+                            className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                            className="relative w-full max-w-sm glass-panel p-8 rounded-[40px] border-white/10 bg-black/90 shadow-2xl"
+                        >
+                            <div className="text-center space-y-4 mb-8">
+                                <div className="w-16 h-16 mx-auto mb-4 rounded-3xl flex items-center justify-center bg-red-500/10 text-red-400 border border-red-500/20">
+                                    <LogOut className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-2xl font-black tracking-tight text-white">DISCONNECT BROKER?</h3>
+                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-relaxed">
+                                    This will <span className="text-red-400">CLEAR ALL CREDENTIALS</span> and revert the system to MOCK mode.
+                                </p>
+                            </div>
+                            <div className="space-y-3">
+                                <button
+                                    onClick={handleAngelDisconnect}
+                                    className="w-full bg-red-500 hover:bg-red-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95"
+                                >
+                                    CONFIRM DISCONNECT
+                                </button>
+                                <button
+                                    onClick={() => setShowDisconnectConfirm(false)}
+                                    className="w-full bg-white/5 hover:bg-white/10 text-slate-400 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+                                >
+                                    ABORT
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Toast Notification */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, x: '-50%' }}
+                        exit={{ opacity: 0, y: 20, x: '-50%' }}
+                        className="fixed bottom-10 left-1/2 z-[300] px-6 py-4 rounded-2xl border backdrop-blur-xl shadow-2xl flex items-center gap-4 min-w-[300px]"
+                        style={{
+                            backgroundColor: toast.type === 'error' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                            borderColor: toast.type === 'error' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)'
+                        }}
+                    >
+                        <div className={`p-2 rounded-lg ${toast.type === 'error' ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                            {toast.type === 'error' ? <AlertTriangle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                        </div>
+                        <div className="space-y-0.5">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 leading-none">System Notification</p>
+                            <p className="text-xs font-bold text-white">{toast.message}</p>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Logout Confirmation Modal */}
+            <AnimatePresence>
+                {showLogoutConfirm && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setShowLogoutConfirm(false)}
+                            className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                            className="relative w-full max-w-sm glass-panel p-8 rounded-[40px] border-white/10 bg-black/90 shadow-2xl"
+                        >
+                            <div className="text-center space-y-4 mb-8">
+                                <div className="w-16 h-16 mx-auto mb-4 rounded-3xl flex items-center justify-center bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                                    <LogOut className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-2xl font-black tracking-tight text-white">SYSTEM LOGOUT?</h3>
+                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-relaxed">
+                                    End current session and return to secure login portal?
+                                </p>
+                            </div>
+                            <div className="space-y-3">
+                                <button
+                                    onClick={confirmLogout}
+                                    className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-indigo-500/20"
+                                >
+                                    CONFIRM LOGOUT
+                                </button>
+                                <button
+                                    onClick={() => setShowLogoutConfirm(false)}
+                                    className="w-full bg-white/5 hover:bg-white/10 text-slate-400 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+                                >
+                                    CANCEL
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+      `}</style>
+        </div >
+    );
+};
+
+// Simple Error Boundary to prevent blank pages
+class ErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+    static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+    }
+    componentDidCatch(error, errorInfo) {
+        console.error("Dashboard Crash Caught:", error, errorInfo);
+    }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#0c0d12] text-white p-10 font-mono">
+                    <h1 className="text-red-500 text-2xl font-black mb-4 uppercase tracking-tighter">System Critical Failure</h1>
+                    <div className="bg-red-500/10 border border-red-500/20 p-6 rounded-2xl max-w-2xl">
+                        <p className="text-red-400 mb-4 whitespace-pre-wrap">{this.state.error?.toString()}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="px-6 py-3 bg-red-500 text-white rounded-xl font-black uppercase tracking-widest hover:bg-red-600 transition-all"
+                        >
+                            Emergency Reboot
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
+
+// Main Export remains Dashboard but wrapped for stability
+const Dashboard = () => {
+    return (
+        <ErrorBoundary>
+            <DashboardWithLogic />
+        </ErrorBoundary>
+    );
+};
+
+export default Dashboard;
