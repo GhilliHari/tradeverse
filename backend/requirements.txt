@@ -28,3 +28,5 @@ stable-baselines3>=2.1.0
 statsmodels>=0.14.0
 yfinance>=0.2.35
 shimmy>=1.3.0
+typing-extensions>=4.5.0
+python-multipart>=0.0.6
