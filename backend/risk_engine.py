@@ -1,4 +1,5 @@
 from typing import Dict, Optional
+from notifier import notifier
 
 class RiskEngine:
     """
@@ -34,13 +35,16 @@ class RiskEngine:
         self.current_daily_loss += -realized_pnl if realized_pnl < 0 else 0
         if self.current_daily_loss >= self.daily_loss_limit:
             self.circuit_breaker_active = True
+            notifier.notify_sync(f"🚫 *RISK BREACH*: Daily Loss Limit Reached (₹{self.current_daily_loss:.2f}). Trading Halted.")
 
     def trigger_circuit_breaker(self, active: bool = True, reason: str = "Manual/System Trigger"):
         """
         Manually or automatically triggers/resets the circuit breaker.
         """
         self.circuit_breaker_active = active
-        return {"status": "HALTED" if active else "ACTIVE", "reason": reason}
+        status = "HALTED" if active else "ACTIVE"
+        notifier.notify_sync(f"⚡ *CIRCUIT BREAKER*: {status}\nReason: {reason}")
+        return {"status": status, "reason": reason}
 
     def get_risk_status(self) -> Dict:
         """

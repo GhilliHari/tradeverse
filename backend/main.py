@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Body, Depends
+from fastapi import FastAPI, HTTPException, Body, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict, Optional
 import importlib.metadata
@@ -14,6 +14,7 @@ from broker_factory import get_broker_client
 from news_scraper import NewsScraper
 from config import config
 from auth_middleware import get_current_user
+from notifier import notifier
 import os
 import uvicorn
 import logging
@@ -24,8 +25,19 @@ import json
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("TradeverseBackend")
 
-# Initialize Redis
-redis_client = redis.from_url(config.REDIS_URL, decode_responses=True)
+# Initialize Redis with Fallback
+try:
+    redis_client = redis.from_url(config.REDIS_URL, decode_responses=True)
+    # Ping to verify connection
+    redis_client.ping()
+except Exception as e:
+    logger.warning(f"⚠️ Redis Connection Failed: {e}. Falling back to In-Memory storage.")
+    class RedisMock:
+        def __init__(self): self.data = {}
+        def get(self, key): return self.data.get(key)
+        def set(self, key, val, ex=None): self.data[key] = val; return True
+        def delete(self, key): self.data.pop(key, None)
+    redis_client = RedisMock()
 
 app = FastAPI(title="Tradeverse Agentic Platform")
 
@@ -54,6 +66,7 @@ async def initialize_systems():
         intelligence = IntelligenceLayer(config.GEMINI_API_KEY)
         initialization_status["ready"] = True
         logger.info("✅ Systems Initialized & Ready.")
+        notifier.notify_sync("🚀 *Tradeverse Online*: Systems initialized and ready for execution.")
     except Exception as e:
         logger.error(f"❌ Initialization Failed: {e}")
         initialization_status["error"] = str(e)
@@ -154,8 +167,17 @@ async def place_order(order_data: Dict = Body(...)):
             order_type=order_data.get("order_type", "MARKET"),
             price=order_data.get("price")
         )
+        msg = (f"🎯 *Order Placed*\n"
+               f"Symbol: `{order_data.get('tradingsymbol')}`\n"
+               f"Side: *{order_data.get('transaction_type')}*\n"
+               f"Qty: `{order_data.get('quantity')}`\n"
+               f"Type: `{order_data.get('order_type', 'MARKET')}`\n"
+               f"ID: `{order_id}`")
+        notifier.notify_sync(msg)
         return {"status": "COMPLETE", "order_id": order_id, "symbol": order_data.get("tradingsymbol")}
     except Exception as e:
+        error_msg = f"❌ *Order Failed*\nSymbol: `{order_data.get('tradingsymbol')}`\nError: `{str(e)}`"
+        notifier.notify_sync(error_msg)
         raise HTTPException(status_code=500, detail=f"Broker Error: {str(e)}")
 
 @app.post("/api/risk/circuit-breaker")

@@ -14,25 +14,28 @@ security = HTTPBearer()
 
 # Initialize Firebase Admin
 try:
-    # Check if we have credentials file or env vars
-    cred_path = os.getenv("FIREBASE_CREDENTIALS")
+    cred_path = config.FIREBASE_CREDENTIALS
     if cred_path and os.path.exists(cred_path):
         cred = credentials.Certificate(cred_path)
         firebase_admin.initialize_app(cred)
-        logger.info("Firebase Admin Initialized with Credentials File")
+        logger.info(f"Firebase Admin Initialized with Credentials File: {cred_path}")
+    elif cred_path and cred_path.startswith('{'):
+        # JSON String Support (for Render/Vercel)
+        import json
+        cred_dict = json.loads(cred_path)
+        cred = credentials.Certificate(cred_dict)
+        firebase_admin.initialize_app(cred)
+        logger.info("Firebase Admin Initialized with JSON String")
     else:
-        # Attempt minimal init for development or environment-based auth (e.g. Google Cloud Run)
-        # Note: In a real production apps, you'd stricter checks here
         try:
              firebase_admin.get_app()
         except ValueError:
-             # App not initialized
-             if config.ENV == "LIVE" and not os.getenv("MockAuth"):
-                 logger.warning("Firebase Credentials missing in LIVE mode. Auth may fail.")
-                 # Initialize with default for cloud run / workload identity
+             if config.ENV == "LIVE":
+                 logger.warning("⚠️ CRITICAL: Firebase Credentials missing in LIVE mode. Access will be RESTRICTED.")
+                 # Attempt default for cloud environments
                  firebase_admin.initialize_app()
              else:
-                 logger.info("Firebase Admin NOT initialized (Dev Mode)")
+                 logger.info("Firebase Admin NOT initialized (Development/Mock Mode)")
 
 except Exception as e:
     logger.error(f"Firebase Admin Init Error: {e}")

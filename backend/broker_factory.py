@@ -7,8 +7,16 @@ from mock_kite import MockKiteConnect
 from user_context import get_user_context
 import redis
 
-# Redis Connection (Reuse global or create new)
-redis_client = redis.from_url(config.REDIS_URL, decode_responses=True)
+# Redis Connection (Reuse global or create new) with Fallback
+try:
+    redis_client = redis.from_url(config.REDIS_URL, decode_responses=True)
+    redis_client.ping()
+except Exception as e:
+    class RedisMock:
+        def __init__(self): self.data = {}
+        def get(self, key): return self.data.get(key)
+        def set(self, key, val, ex=None): self.data[key] = val; return True
+    redis_client = RedisMock()
 
 logger = logging.getLogger("BrokerFactory")
 

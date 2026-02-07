@@ -13,6 +13,7 @@ class Config:
     # API Keys
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "MOCK_KEY")
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS", "")
     
     # Angel Broking Keys
     ANGEL_CLIENT_ID = os.getenv("ANGEL_CLIENT_ID", "")
@@ -26,6 +27,10 @@ class Config:
     # Risk Settings
     DAILY_LOSS_LIMIT = float(os.getenv("DAILY_LOSS_LIMIT", 10000.0))
     MAX_POSITION_SIZE = float(os.getenv("MAX_POSITION_SIZE", 200000.0))
+    
+    # WhatsApp Notifications (CallMeBot)
+    WHATSAPP_PHONE = os.getenv("WHATSAPP_PHONE", "")
+    WHATSAPP_API_KEY = os.getenv("WHATSAPP_API_KEY", "")
     
     # Trading Mode: MANUAL or AUTO
     TRADING_MODE = os.getenv("TRADING_MODE", "MANUAL").upper()

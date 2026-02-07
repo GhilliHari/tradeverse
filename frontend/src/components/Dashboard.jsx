@@ -713,7 +713,7 @@ const DashboardWithLogic = () => {
         } catch (e) { console.error("Orders Fetch Failed", e); }
     };
 
-    const testOrder = async () => {
+    const placeTestOrder = async () => {
         if (!window.confirm("Place a TEST LIMIT BUY order for SBIN at ₹10? This checks connection.")) return;
         try {
             const res = await fetch('/api/order/place', {
@@ -1370,143 +1370,6 @@ const DashboardWithLogic = () => {
                             </div>
 
                         </div>
-                    ) : activeTab.toLowerCase() === 'analytics' ? (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-700">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="glass-panel p-8 rounded-[40px] border-indigo-500/20 col-span-2">
-                                    <div className="flex justify-between items-start mb-10">
-                                        <div>
-                                            <h3 className="text-3xl font-black tracking-tighter mb-1">Intelligence Pipeline</h3>
-                                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">12-Year Historical Ingestion Engine</p>
-                                        </div>
-                                        <button
-                                            onClick={handleTriggerPipeline}
-                                            disabled={isProcessing}
-                                            className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-800 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-3"
-                                        >
-                                            {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Activity className="w-4 h-4" />}
-                                            {isProcessing ? 'PROCESSING...' : 'TRIGGER INGESTION'}
-                                        </button>
-                                    </div>
-
-                                    {pipelineStats ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                            <div className="space-y-6">
-                                                <HUDCard title="TRAINING SET" neonColor="indigo" className="p-6">
-                                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Training Horizon (10Y)</span>
-                                                    <p className="text-2xl font-black text-indigo-400 mt-2"><ScrambleText text={pipelineStats.train_size} /> Rows</p>
-                                                    <div className="flex items-center gap-2 mt-2 text-[10px] font-bold text-slate-400">
-                                                        <span>{pipelineStats.train_start}</span>
-                                                        <ChevronRight className="w-3 h-3 text-indigo-500" />
-                                                        <span>{pipelineStats.train_end}</span>
-                                                    </div>
-                                                </HUDCard>
-                                                <HUDCard title="TESTING SET" neonColor="emerald" className="p-6">
-                                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Testing Horizon (2Y)</span>
-                                                    <p className="text-2xl font-black text-emerald-400 mt-2"><ScrambleText text={pipelineStats.test_size} /> Rows</p>
-                                                    <div className="flex items-center gap-2 mt-2 text-[10px] font-bold text-slate-400">
-                                                        <span>{pipelineStats.test_start}</span>
-                                                        <ChevronRight className="w-3 h-3 text-emerald-500" />
-                                                        <span>{pipelineStats.test_end}</span>
-                                                    </div>
-                                                </HUDCard>
-                                            </div>
-
-                                            <HUDCard title="DATA INTEGRITY" neonColor="indigo" className="p-6 flex flex-col items-center justify-center text-center space-y-4">
-                                                <div className="w-24 h-24 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 flex items-center justify-center relative shadow-[0_0_30px_rgba(99,102,241,0.2)]">
-                                                    <span className="text-3xl font-black text-white"><ScrambleText text={pipelineStats.quality?.quality_percentage || 0} />%</span>
-                                                    <div className="absolute -inset-2 rounded-full border border-indigo-500/10 animate-spin-slow"></div>
-                                                </div>
-                                                <div>
-                                                    <p className="font-black text-xs uppercase tracking-widest text-indigo-400 neon-text-indigo">Data Integrity</p>
-                                                    <div className="flex flex-col gap-2 mt-4 w-full">
-                                                        <div className="flex items-center justify-between gap-8 text-[9px] font-black text-slate-500 uppercase border-b border-white/5 pb-1">
-                                                            <span>Completeness</span>
-                                                            <span className="text-white">{pipelineStats.quality?.completeness}%</span>
-                                                        </div>
-                                                        <div className="flex items-center justify-between gap-8 text-[9px] font-black text-slate-500 uppercase border-b border-white/5 pb-1">
-                                                            <span>Logic Check</span>
-                                                            <span className="text-white">{pipelineStats.quality?.logical_integrity}%</span>
-                                                        </div>
-                                                        <div className="flex items-center justify-between gap-8 text-[9px] font-black text-slate-500 uppercase border-b border-white/5 pb-1">
-                                                            <span>Continuity</span>
-                                                            <span className="text-white">{pipelineStats.quality?.continuity_score}%</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </HUDCard>
-                                        </div>
-                                    ) : (
-                                        <div className="h-60 flex flex-col items-center justify-center text-slate-700 bg-white/5 rounded-[32px] border border-dashed border-white/5">
-                                            <Activity className="w-12 h-12 opacity-10 mb-4" />
-                                            <p className="text-xs font-black tracking-widest opacity-20 uppercase">No Pipeline Data Fetched</p>
-                                        </div>
-                                    )}
-
-                                    <div className="mt-10 pt-10 border-t border-white/5">
-                                        <div className="flex justify-between items-center mb-8">
-                                            <div>
-                                                <h4 className="text-xl font-black tracking-tighter">AI Training Engine</h4>
-                                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">XGBoost Optimized Classifier</p>
-                                            </div>
-                                            <button
-                                                onClick={handleTrainModel}
-                                                disabled={isTraining || !pipelineStats}
-                                                className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-800 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-emerald-500/20 active:scale-95 flex items-center gap-3"
-                                            >
-                                                {isTraining ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
-                                                {isTraining ? 'TRAINING MODEL...' : 'START TRAINING'}
-                                            </button>
-                                        </div>
-
-                                        {modelMetrics ? (
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                {[
-                                                    { label: "Accuracy", value: modelMetrics.accuracy * 100, color: "text-indigo-400" },
-                                                    { label: "Precision", value: modelMetrics.precision * 100, color: "text-emerald-400" },
-                                                    { label: "Recall", value: modelMetrics.recall * 100, color: "text-amber-400" },
-                                                    { label: "F1 Score", value: modelMetrics.f1 * 100, color: "text-purple-400" },
-                                                ].map((metric, i) => (
-                                                    <HUDCard key={i} title={metric.label} neonColor="indigo" className="p-4">
-                                                        <p className={`text-xl font-black mt-1 ${metric.color}`}>
-                                                            <ScrambleText text={metric.value.toFixed(1)} />%
-                                                        </p>
-                                                    </HUDCard>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="p-8 bg-white/5 rounded-[32px] border border-dashed border-white/5 text-center">
-                                                <p className="text-[10px] font-black uppercase text-slate-700 tracking-widest italic">Awaiting Model Training for Results</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <HUDCard title="SAFEGUARD PROTOCOLS" neonColor="emerald" className="p-8 space-y-6">
-                                    <div className="p-4 bg-emerald-500/10 text-emerald-400 rounded-2xl w-fit shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                                        <Shield className="w-6 h-6" />
-                                    </div>
-                                    <div className="space-y-4">
-                                        {[
-                                            "Zero-Leakage Split",
-                                            "Outlier Hard-Clipping",
-                                            "Forward-Fill Continuity",
-                                            "ADX Strength Verifier"
-                                        ].map((item, i) => (
-                                            <div key={i} className="flex items-center gap-3">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                                <span className="text-[10px] font-black uppercase text-slate-400">{item}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="pt-6 border-t border-white/5">
-                                        <p className="text-[11px] text-slate-500 italic leading-relaxed">
-                                            The data pipeline enforces strict sequence protection during the 10-year training phase to ensure testing on the final 2 years remains blind and unbiased.
-                                        </p>
-                                    </div>
-                                </HUDCard>
-                            </div>
-                        </div>
                     ) : activeTab.toLowerCase() === 'settings' ? (
                         <div className="h-full flex gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             {/* Left Column: Sidebar & Environment */}
@@ -1676,95 +1539,16 @@ const DashboardWithLogic = () => {
                             </div>
                         </div>
                     ) : activeTab.toLowerCase() === 'orders' ? (
-                        <Orders />
-                    ) : activeTab.toLowerCase() === 'settings' ? (
-                        <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-6">
-                            <div className="flex justify-between items-center">
-                                <HUDCard title="ORDER BOOK" neonColor="indigo" className="w-full">
-                                    <div className="p-6 flex justify-between items-center border-b border-white/5">
-                                        <div>
-                                            <h3 className="text-xl font-black text-white tracking-tight">Active Orders</h3>
-                                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">{settings.active_broker} Execution Engine</p>
-                                        </div>
-                                        <div className="flex gap-4">
-                                            <button
-                                                onClick={fetchOrders}
-                                                className="p-3 bg-white/5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-all"
-                                            >
-                                                <RefreshCw className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={placeTestOrder}
-                                                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 flex items-center gap-2"
-                                            >
-                                                <Zap className="w-4 h-4" /> Place Test Order
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex justify-end mb-4 px-1" style={{ border: '1px solid yellow' }}>
-                                        <button
-                                            onClick={placeTestOrder}
-                                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20"
-                                        >
-                                            <Zap className="w-3 h-3" /> Place Test Order (DEBUG)
-                                        </button>
-                                    </div>
-                                    <div className="overflow-x-auto" style={{ border: '2px solid red', minHeight: '100px' }}>
-                                        <div className="p-2 text-red-500 font-bold">
-                                            DEBUG: Orders Count = {orders ? orders.length : 'NULL'}
-                                        </div>
-                                        <table className="w-full text-left">
-                                            <thead>
-                                                <tr className="bg-black/20 text-[10px] font-black uppercase text-slate-500 tracking-widest">
-                                                    <th className="px-6 py-4">Time</th>
-                                                    <th className="px-6 py-4">Output Log</th>
-                                                    <th className="px-6 py-4">Symbol</th>
-                                                    <th className="px-6 py-4">Side</th>
-                                                    <th className="px-6 py-4 text-right">Qty</th>
-                                                    <th className="px-6 py-4 text-right">Price</th>
-                                                    <th className="px-6 py-4 text-right">Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="text-xs font-bold font-mono">
-                                                {orders.length === 0 ? (
-                                                    <tr>
-                                                        <td colSpan="7" className="px-6 py-12 text-center text-slate-600">
-                                                            <div className="flex flex-col items-center justify-center gap-4">
-                                                                <p className="uppercase tracking-widest italic">No Active Orders in Registry</p>
-                                                                <button
-                                                                    onClick={placeTestOrder}
-                                                                    className="px-6 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 rounded-lg border border-indigo-500/30 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
-                                                                >
-                                                                    <Zap className="w-3 h-3" /> Place First Test Order
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ) : (
-                                                    orders.map((o, i) => (
-                                                        <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                                            <td className="px-6 py-4 text-slate-400">{o.order_timestamp}</td>
-                                                            <td className="px-6 py-4 text-slate-500">{o.order_id}</td>
-                                                            <td className="px-6 py-4 text-white">{o.tradingsymbol}</td>
-                                                            <td className={`px-6 py-4 ${o.transaction_type === 'BUY' ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                                {o.transaction_type}
-                                                            </td>
-                                                            <td className="px-6 py-4 text-right text-slate-300">{o.filled_quantity}/{o.quantity}</td>
-                                                            <td className="px-6 py-4 text-right text-indigo-300">₹{o.average_price || o.price}</td>
-                                                            <td className="px-6 py-4 text-right">
-                                                                <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${o.status === 'complete' ? 'bg-emerald-500/10 text-emerald-400' : o.status === 'rejected' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}`}>
-                                                                    {o.status}
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                    ))
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </HUDCard>
+                        <div className="space-y-6">
+                            <div className="flex justify-end pr-2">
+                                <button
+                                    onClick={placeTestOrder}
+                                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 flex items-center gap-2 active:scale-95 transition-all"
+                                >
+                                    <Zap className="w-4 h-4" /> Place Test Order
+                                </button>
                             </div>
+                            <Orders />
                         </div>
                     ) : activeTab.toLowerCase() === 'strategies' ? (
                         <Strategies />

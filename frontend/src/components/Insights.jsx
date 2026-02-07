@@ -21,15 +21,15 @@ const Insights = () => {
         const fetchData = async () => {
             try {
                 const [mmiRes, predictRes] = await Promise.all([
-                    fetch('http://localhost:8000/api/market/mmi'),
-                    fetch('http://localhost:8000/api/ai/predict_hybrid?symbol=NSE:BANKNIFTY')
+                    fetch('/api/market/mmi'),
+                    fetch('/api/ai/predict_hybrid?symbol=NSE:BANKNIFTY')
                 ]);
 
                 const mmi = await mmiRes.json();
                 const predict = await predictRes.json();
 
                 // Fetch News separately to not block critical data
-                fetch('http://localhost:8000/api/news')
+                fetch('/api/news')
                     .then(res => res.json())
                     .then(data => setNewsData(data))
                     .catch(err => console.error("News fetch error", err));

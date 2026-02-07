@@ -105,11 +105,6 @@ class MockKiteConnect:
             "user_name": "Pro Trader",
             "email": "trader@tradeverse.ai"
         }
-    def orders(self):
-        """
-        Returns a mock order book.
-        """
-        return []
     def liquidate_all_positions(self):
         """
         Simulates emergency liquidation.
