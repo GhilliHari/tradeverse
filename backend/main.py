@@ -38,12 +38,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Broker (Live or Mock based on Config)
-kite = get_broker_client()
-risk_engine = RiskEngine(daily_loss_limit=config.DAILY_LOSS_LIMIT, max_position_size=config.MAX_POSITION_SIZE)
+# Global Objects (Initialized lazily during startup)
+kite = None
+risk_engine = None
+intelligence = None
+initialization_status = {"ready": False, "error": None}
 
-# Initialize Intelligence Layer
-intelligence = IntelligenceLayer(config.GEMINI_API_KEY)
+async def initialize_systems():
+    global kite, risk_engine, intelligence, initialization_status
+    try:
+        logger.info("⚙️ Starting Background System Initialization...")
+        # broker_factory handles credentials from Redis/Config
+        kite = get_broker_client()
+        risk_engine = RiskEngine(daily_loss_limit=config.DAILY_LOSS_LIMIT, max_position_size=config.MAX_POSITION_SIZE)
+        intelligence = IntelligenceLayer(config.GEMINI_API_KEY)
+        initialization_status["ready"] = True
+        logger.info("✅ Systems Initialized & Ready.")
+    except Exception as e:
+        logger.error(f"❌ Initialization Failed: {e}")
+        initialization_status["error"] = str(e)
 
 # Caches for data pipeline and model training
 pipeline_cache = {}
@@ -63,6 +76,9 @@ from monitoring import monitor
 
 @app.on_event("startup")
 async def startup_event():
+    # Start systems initialization in background so we don't block port bind
+    asyncio.create_task(initialize_systems())
+    # Start watchdog
     asyncio.create_task(run_watchdog())
 
 async def run_watchdog():
@@ -75,7 +91,20 @@ async def run_watchdog():
 
 @app.get("/")
 async def root():
-    return {"message": "Tradeverse API is active", "broker": "MOCK_KITE", "status": "NOMINAL"}
+    return {
+        "message": "Tradeverse API is active", 
+        "initialization": initialization_status,
+        "mode": config.ENV,
+        "status": "NOMINAL" if initialization_status["ready"] else "INITIALIZING"
+    }
+
+@app.get("/api/health")
+async def health_check():
+    if not initialization_status["ready"]:
+        if initialization_status["error"]:
+             raise HTTPException(status_code=500, detail=f"Init Error: {initialization_status['error']}")
+        return {"status": "INITIALIZING"}
+    return {"status": "READY"}
 
 @app.post("/api/monitoring/heartbeat")
 async def heartbeat(user: dict = Depends(get_current_user)):
