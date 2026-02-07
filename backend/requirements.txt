@@ -21,3 +21,4 @@ pytorch-lightning>=2.0.0
 firebase-admin>=6.2.0
 python-jose[cryptography]>=3.3.0
 redis>=5.0.0
+logzero>=1.7.0
