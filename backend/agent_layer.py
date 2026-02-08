@@ -14,8 +14,7 @@ from news_scraper import NewsScraper
 from broker_factory import get_broker_client
 from risk_engine import RiskEngine
 from model_engine import ModelEngine
-from tft_engine import TFTEngine
-from rl_trading_agent import RLTradingAgent
+# TFTEngine and RLTradingAgent are imported lazily inside __init__
 from data_pipeline import DataPipeline
 import logging
 
@@ -54,6 +53,11 @@ class IntelligenceLayer:
         self.kite = get_broker_client()
         self.risk_engine = RiskEngine()
         self.model_engine = ModelEngine()
+        
+        # Lazy Load Heavy Engines to prevent startup timeout
+        from tft_engine import TFTEngine
+        from rl_trading_agent import RLTradingAgent
+        
         self.tft_engine = TFTEngine(self.model_engine.features)
         self.tft_engine.load_model()
         self.rl_agent = RLTradingAgent(None, self.model_engine.features) # Env not needed for inference
