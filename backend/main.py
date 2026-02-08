@@ -5,13 +5,12 @@ import importlib.metadata
 # Polyfill for Python 3.9 compatibility with some google-auth/api-core versions
 if not hasattr(importlib.metadata, 'packages_distributions'):
     importlib.metadata.packages_distributions = lambda: {}
+
 from mock_kite import MockKiteConnect
 from risk_engine import RiskEngine
-from agent_layer import IntelligenceLayer
-from data_pipeline import DataPipeline
-from model_engine import ModelEngine
+# Heavy modules (AgentLayer, DataPipeline, ModelEngine) are now lazy-loaded
 from broker_factory import get_broker_client
-from news_scraper import NewsScraper
+# NewsScraper -> Lazy load
 from config import config
 from auth_middleware import get_current_user
 from notifier import notifier
@@ -20,6 +19,8 @@ import os
 import uvicorn
 import logging
 import json
+import asyncio
+
 
 
 # Configure Logging
@@ -58,6 +59,7 @@ async def initialize_systems():
         risk_engine = RiskEngine(daily_loss_limit=config.DAILY_LOSS_LIMIT, max_position_size=config.MAX_POSITION_SIZE)
         
         # IntelligenceLayer init involves model loading and broker connection (heavy)
+        from agent_layer import IntelligenceLayer
         intelligence = await asyncio.to_thread(IntelligenceLayer, config.GEMINI_API_KEY)
         
         initialization_status["ready"] = True
@@ -217,6 +219,7 @@ async def get_orders():
 
 @app.get("/api/data/pipeline/trigger")
 async def trigger_pipeline(symbol: str = "NSE:BANKNIFTY"):
+    from data_pipeline import DataPipeline
     norm_symbol = normalize_symbol(symbol)
     pipeline = DataPipeline(norm_symbol)
     stats = pipeline.run_full_pipeline()
@@ -244,6 +247,7 @@ async def get_market_news():
     Fetches live financial news using NewsScraper.
     """
     try:
+        from news_scraper import NewsScraper
         scraper = NewsScraper()
         # Run in executor to avoid blocking async loop since requests is sync
         # For this prototype, calling directly is acceptable but async wrapper is better.
@@ -254,13 +258,23 @@ async def get_market_news():
         logger.error(f"News fetch failed: {e}")
         return []
 
-# Initializes Engines
-engine_daily = ModelEngine(model_type="daily")
-engine_intraday = ModelEngine(model_type="intraday")
+# Global Engines (Lazy Initialized)
+engine_daily = None
+engine_intraday = None
 
-# Load artifacts on startup (if available)
-engine_daily.load_artifacts()
-engine_intraday.load_artifacts()
+def get_engine(type="daily"):
+    global engine_daily, engine_intraday
+    from model_engine import ModelEngine
+    if type == "daily":
+        if not engine_daily:
+            engine_daily = ModelEngine(model_type="daily")
+            engine_daily.load_artifacts()
+        return engine_daily
+    else:
+        if not engine_intraday:
+            engine_intraday = ModelEngine(model_type="intraday")
+            engine_intraday.load_artifacts()
+        return engine_intraday
 
 @app.get("/api/ai/predict_hybrid")
 async def predict_hybrid(symbol: str = "NSE:BANKNIFTY"):
@@ -280,11 +294,12 @@ async def predict_hybrid(symbol: str = "NSE:BANKNIFTY"):
 
     # 1. Run Daily Pipeline
     try:
+        from data_pipeline import DataPipeline
         dp_daily = DataPipeline(norm_symbol, interval="1d")
         if dp_daily.run_full_pipeline(): # Fetches latest data
              # Get last row
              latest_daily = dp_daily.cleaned_data.iloc[[-1]]
-             pred_daily = engine_daily.predict(latest_daily)
+             pred_daily = get_engine("daily").predict(latest_daily)
 
              if pred_daily:
                  response["daily"] = {
@@ -312,10 +327,11 @@ async def predict_hybrid(symbol: str = "NSE:BANKNIFTY"):
 
     # 2. Run Intraday Pipeline
     try:
+        from data_pipeline import DataPipeline
         dp_intra = DataPipeline(norm_symbol, interval="1m")
         if dp_intra.run_full_pipeline():
              latest_intra = dp_intra.cleaned_data.iloc[[-1]]
-             pred_intra = engine_intraday.predict(latest_intra)
+             pred_intra = get_engine("intraday").predict(latest_intra)
              if pred_intra:
                  response["intraday"] = {
                      "status": "BUY" if pred_intra["prediction"] == 1 else "WAIT",
@@ -355,6 +371,7 @@ async def train_model(symbol: str = "NSE:BANKNIFTY"):
     if normalized_symbol not in pipeline_cache:
         # Auto-trigger pipeline if missing
         logger.info(f"Pipeline cache miss for {normalized_symbol}. Triggering ingestion...")
+        from data_pipeline import DataPipeline
         pipeline = DataPipeline(symbol=normalized_symbol, interval="1d")
         stats = pipeline.run_full_pipeline()
         if not stats:
@@ -369,7 +386,7 @@ async def train_model(symbol: str = "NSE:BANKNIFTY"):
          
     try:
         logger.info(f"Starting Model Training for {normalized_symbol}...")
-        metrics = engine_daily.train(pipeline.train_data, pipeline.test_data)
+        metrics = get_engine("daily").train(pipeline.train_data, pipeline.test_data)
         
         # 3. Cache Intraday Model (Sniper) - Placeholder/Mock for now as Intraday needs 1m data
         # In a full flow, we'd have a separate pipeline for 1m data here.
@@ -406,6 +423,7 @@ async def get_market_mood_index():
             # Assuming 'pipeline' is an accessible instance or can be created
             # For this example, let's create a new DataPipeline instance
             # In a real app, you might have a global pipeline or pass it around
+            from data_pipeline import DataPipeline
             local_pipeline = DataPipeline(symbol=normalize_symbol(symbol))
             df = local_pipeline.fetch_data(symbol, timeframe="1d", lookback_days=5)
             if df is None or len(df) == 0:
@@ -511,9 +529,10 @@ async def get_market_mood_index():
 
 @app.get("/api/ai/status")
 async def get_ai_status():
+    global engine_daily, engine_intraday
     return {
-        "daily_loaded": engine_daily.model is not None,
-        "intraday_loaded": engine_intraday.model is not None
+        "daily_loaded": engine_daily is not None and engine_daily.model is not None,
+        "intraday_loaded": engine_intraday is not None and engine_intraday.model is not None
     }
 
 @app.get("/api/settings")
