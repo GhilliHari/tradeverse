@@ -52,12 +52,20 @@ async def initialize_systems():
     try:
         logger.info("⚙️ Starting Background System Initialization...")
         # broker_factory handles credentials from Redis/Config
-        kite = get_broker_client()
+        # Offload blocking network/disk I/O to threads to prevent event loop freeze
+        kite = await asyncio.to_thread(get_broker_client)
+        
         risk_engine = RiskEngine(daily_loss_limit=config.DAILY_LOSS_LIMIT, max_position_size=config.MAX_POSITION_SIZE)
-        intelligence = IntelligenceLayer(config.GEMINI_API_KEY)
+        
+        # IntelligenceLayer init involves model loading and broker connection (heavy)
+        intelligence = await asyncio.to_thread(IntelligenceLayer, config.GEMINI_API_KEY)
+        
         initialization_status["ready"] = True
         logger.info("✅ Systems Initialized & Ready.")
-        notifier.notify_sync("🚀 *Tradeverse Online*: Systems initialized and ready for execution.")
+        
+        # Notify via sync wrapper since we are in async context but notifier might be sync
+        await asyncio.to_thread(notifier.notify_sync, "🚀 *Tradeverse Online*: Systems initialized and ready for execution.")
+
     except Exception as e:
         logger.error(f"❌ Initialization Failed: {e}")
         initialization_status["error"] = str(e)
