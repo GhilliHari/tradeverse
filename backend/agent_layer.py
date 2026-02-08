@@ -54,14 +54,24 @@ class IntelligenceLayer:
         self.risk_engine = RiskEngine()
         self.model_engine = ModelEngine()
         
-        # Lazy Load Heavy Engines to prevent startup timeout
-        from tft_engine import TFTEngine
-        from rl_trading_agent import RLTradingAgent
+        # Lazy Load Heavy Engines with Graceful Fallback
+        self.tft_engine = None
+        self.rl_agent = None
         
-        self.tft_engine = TFTEngine(self.model_engine.features)
-        self.tft_engine.load_model()
-        self.rl_agent = RLTradingAgent(None, self.model_engine.features) # Env not needed for inference
-        self.rl_agent.load_model()
+        try:
+            from tft_engine import TFTEngine
+            from rl_trading_agent import RLTradingAgent
+            
+            self.tft_engine = TFTEngine(self.model_engine.features)
+            self.tft_engine.load_model()
+            self.rl_agent = RLTradingAgent(None, self.model_engine.features)
+            self.rl_agent.load_model()
+            logger.info("✅ Heavy ML Engines Loaded (TFT + RL)")
+        except ImportError as e:
+            logger.warning(f"⚠️ Heavy ML Engines skipped (Lite Mode): {e}")
+        except Exception as e:
+            logger.error(f"❌ ML Engine Init Failed: {e}")
+
         self.workflow = self._create_workflow()
         self.token_manager = TokenManager() # Initialize Token Manager
 
@@ -175,7 +185,7 @@ class IntelligenceLayer:
         pipeline.run_full_pipeline()
         
         tft_pred = "NEUTRAL"
-        if pipeline.cleaned_data is not None and len(pipeline.cleaned_data) >= 30:
+        if self.tft_engine and pipeline.cleaned_data is not None and len(pipeline.cleaned_data) >= 30:
             recent = pipeline.cleaned_data.tail(30)
             prob = self.tft_engine.predict(recent)
             tft_pred = "UP" if prob > 0.55 else "DOWN" if prob < 0.45 else "NEUTRAL"
@@ -191,7 +201,7 @@ class IntelligenceLayer:
         pipeline.run_full_pipeline()
         
         rl_action = 0
-        if pipeline.cleaned_data is not None and not pipeline.cleaned_data.empty:
+        if self.rl_agent and pipeline.cleaned_data is not None and not pipeline.cleaned_data.empty:
             latest_row = pipeline.cleaned_data.tail(1)
             # Reconstruct the observation exactly as the environment does
             obs = latest_row[self.model_engine.features].values[0]
