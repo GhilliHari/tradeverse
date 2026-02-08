@@ -16,7 +16,6 @@ kiteconnect>=3.9.0
 pyotp>=2.9.0
 websockets>=11.0
 # AI / Deep Learning (CPU versions for lighter container)
-torch>=2.0.0
 pytorch-forecasting>=1.0.0
 pytorch-lightning>=2.0.0
 firebase-admin>=6.2.0

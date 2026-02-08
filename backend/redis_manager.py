@@ -47,13 +47,19 @@ class RedisMock:
         return key in self.data
 
 def get_redis_client():
+    if not config.REDIS_URL:
+         logger.warning("⚠️ No REDIS_URL found. Using RedisMock.")
+         return RedisMock()
+         
     try:
-        client = redis.from_url(config.REDIS_URL, decode_responses=True)
-        client.ping()
-        logger.info(f"Connected to Redis at {config.REDIS_URL}")
+        # redis-py is lazy, so simply creating the client is non-blocking.
+        # We skip the blocking ping() here to ensure fast startup.
+        # Connection errors will be handled by the application logic (or global error handler).
+        client = redis.from_url(config.REDIS_URL, decode_responses=True, socket_connect_timeout=2)
+        logger.info(f"Redis Client configured for {config.REDIS_URL.split('@')[-1]}") # Log safe URL
         return client
     except Exception as e:
-        logger.warning(f"⚠️ Redis Connection Failed: {e}. Falling back to RedisMock.")
+        logger.warning(f"⚠️ Redis Config Failed: {e}. Falling back to RedisMock.")
         return RedisMock()
 
 redis_client = get_redis_client()
