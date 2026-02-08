@@ -11,11 +11,12 @@ from langgraph.graph import StateGraph, END
 import google.generativeai as genai
 import os
 from news_scraper import NewsScraper
-from broker_factory import get_broker_client
-from risk_engine import RiskEngine
-from model_engine import ModelEngine
+# Imports moved inside class for lazy loading
+# from broker_factory import get_broker_client
+# from risk_engine import RiskEngine
+# from model_engine import ModelEngine
 # TFTEngine and RLTradingAgent are imported lazily inside __init__
-from data_pipeline import DataPipeline
+# from data_pipeline import DataPipeline
 import logging
 
 logger = logging.getLogger(__name__)
@@ -42,7 +43,6 @@ class AgentState(TypedDict):
 
 from token_manager import TokenManager
 
-class IntelligenceLayer:
     """
     LangGraph-based Committee of Agents logic for Tradeverse.
     """
@@ -50,23 +50,45 @@ class IntelligenceLayer:
         genai.configure(api_key=gemini_api_key)
         self.model = genai.GenerativeModel('gemini-1.5-flash')
         self.scraper = NewsScraper()
-        self.kite = get_broker_client()
-        self.risk_engine = RiskEngine()
-        self.model_engine = ModelEngine()
         
-        # Lazy Load Heavy Engines with Graceful Fallback
+        # Lazy Import Helper Modules
+        try:
+             from broker_factory import get_broker_client
+             self.kite = get_broker_client()
+        except: self.kite = None
+
+        try:
+             from risk_engine import RiskEngine
+             self.risk_engine = RiskEngine()
+        except: self.risk_engine = None
+
+        # Critical: Lazy load ModelEngine (Sklearn) and ML Agents
+        self.model_engine = None
         self.tft_engine = None
         self.rl_agent = None
+        self.features = []
         
+        try:
+             from model_engine import ModelEngine
+             self.model_engine = ModelEngine()
+             self.features = self.model_engine.features
+             logger.info("✅ Classic AI Engine (Sklearn) Loaded")
+        except ImportError:
+             logger.warning("⚠️ Classic AI Engine (Sklearn) skipped (Lite Mode)")
+        except Exception as e:
+             logger.error(f"❌ Model Engine Init Failed: {e}")
+
+        # Lazy Load Deep Learning Engines
         try:
             from tft_engine import TFTEngine
             from rl_trading_agent import RLTradingAgent
             
-            self.tft_engine = TFTEngine(self.model_engine.features)
-            self.tft_engine.load_model()
-            self.rl_agent = RLTradingAgent(None, self.model_engine.features)
-            self.rl_agent.load_model()
-            logger.info("✅ Heavy ML Engines Loaded (TFT + RL)")
+            if self.features:
+                self.tft_engine = TFTEngine(self.features)
+                self.tft_engine.load_model()
+                self.rl_agent = RLTradingAgent(None, self.features)
+                self.rl_agent.load_model()
+                logger.info("✅ Heavy ML Engines Loaded (TFT + RL)")
         except ImportError as e:
             logger.warning(f"⚠️ Heavy ML Engines skipped (Lite Mode): {e}")
         except Exception as e:
@@ -138,31 +160,47 @@ class IntelligenceLayer:
         prob = 0.5
         is_ood = False
         
-        pipeline = DataPipeline(symbol)
+        prediction_str = "UNKNOWN"
+        conviction = "LOW"
+        prob = 0.5
+        is_ood = False
+        regime = "NOMINAL"
         
-        # Priority: Use Broker data if LIVE, fallback to yfinance
-        from config import config
-        success = False
-        if config.ENV == "LIVE" and self.kite and hasattr(self.kite, 'is_connected') and self.kite.is_connected():
-            logger.info("Intelligence Layer fetching live data via Broker...")
-            # For live inference, we need enough buffer for 200-period indicators
-            end_date = datetime.now()
-            start_date = end_date - timedelta(days=7) 
-            success = pipeline.fetch_live_data_broker(self.kite, start_date, end_date)
-        
-        if not success:
-            logger.info("Intelligence Layer falling back to yfinance data...")
-            # run_full_pipeline already handles the logic internally
-            success = pipeline.run_full_pipeline()
+        try:
+            from data_pipeline import DataPipeline
+            pipeline = DataPipeline(symbol)
+            
+            # Priority: Use Broker data if LIVE, fallback to yfinance
+            from config import config
+            success = False
+            if config.ENV == "LIVE" and self.kite and hasattr(self.kite, 'is_connected') and self.kite.is_connected():
+                logger.info("Intelligence Layer fetching live data via Broker...")
+                # For live inference, we need enough buffer for 200-period indicators
+                end_date = datetime.now()
+                start_date = end_date - timedelta(days=7) 
+                success = pipeline.fetch_live_data_broker(self.kite, start_date, end_date)
+            
+            if not success:
+                logger.info("Intelligence Layer falling back to yfinance data...")
+                # run_full_pipeline already handles the logic internally
+                success = pipeline.run_full_pipeline()
 
-        if success:
-            recent_features = pipeline.cleaned_data.tail(1)
-            pred_data = self.model_engine.predict(recent_features)
-            if pred_data:
-                prediction_str = "UP" if pred_data['prediction'] == 1 else "DOWN"
-                conviction = pred_data.get('conviction', 'LOW')
-                prob = pred_data.get('probability', 0.5)
-                is_ood = pred_data.get('is_ood', False)
+            if success:
+                # Use Model Engine if available
+                if self.model_engine:
+                    recent_features = pipeline.cleaned_data.tail(1)
+                    pred_data = self.model_engine.predict(recent_features)
+                    if pred_data:
+                        prediction_str = "UP" if pred_data['prediction'] == 1 else "DOWN"
+                        conviction = pred_data.get('conviction', 'LOW')
+                        prob = pred_data.get('probability', 0.5)
+                        is_ood = pred_data.get('is_ood', False)
+                        regime = pred_data.get('regime', 'NOMINAL')
+                else:
+                    regime = "LITE_MODE"
+                    
+        except Exception as e:
+            logger.error(f"Technical Agent Error: {e}")
         
         # Get current LTP
         price_data = self.kite.ltp(state['symbol'])
@@ -181,8 +219,11 @@ class IntelligenceLayer:
         """Deep Temporal Context Analysis using TFT."""
         # For simplicity in this demo, we assume the pipeline in state or re-fetch
         # In production, we'd pass the normalized sequence through
-        pipeline = DataPipeline(state['symbol'])
-        pipeline.run_full_pipeline()
+        try:
+            from data_pipeline import DataPipeline
+            pipeline = DataPipeline(state['symbol'])
+            pipeline.run_full_pipeline()
+        except: return {"tft_prediction": "NEUTRAL"}
         
         tft_pred = "NEUTRAL"
         if self.tft_engine and pipeline.cleaned_data is not None and len(pipeline.cleaned_data) >= 30:
@@ -197,11 +238,14 @@ class IntelligenceLayer:
         # RL expects the full feature vector as observation
         # We simulate the latest observation state
         # In a real loop, this would be the actual live feed data
-        pipeline = DataPipeline(state['symbol'])
-        pipeline.run_full_pipeline()
+        try:
+             from data_pipeline import DataPipeline
+             pipeline = DataPipeline(state['symbol'])
+             pipeline.run_full_pipeline()
+        except: return {"rl_action": 0}
         
         rl_action = 0
-        if self.rl_agent and pipeline.cleaned_data is not None and not pipeline.cleaned_data.empty:
+        if self.rl_agent and self.model_engine and pipeline.cleaned_data is not None and not pipeline.cleaned_data.empty:
             latest_row = pipeline.cleaned_data.tail(1)
             # Reconstruct the observation exactly as the environment does
             obs = latest_row[self.model_engine.features].values[0]
