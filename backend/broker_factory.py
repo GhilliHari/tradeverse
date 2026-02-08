@@ -5,18 +5,7 @@ from kite_client import get_kite_client
 from angel_client import AngelClient
 from mock_kite import MockKiteConnect
 from user_context import get_user_context
-import redis
-
-# Redis Connection (Reuse global or create new) with Fallback
-try:
-    redis_client = redis.from_url(config.REDIS_URL, decode_responses=True)
-    redis_client.ping()
-except Exception as e:
-    class RedisMock:
-        def __init__(self): self.data = {}
-        def get(self, key): return self.data.get(key)
-        def set(self, key, val, ex=None): self.data[key] = val; return True
-    redis_client = RedisMock()
+from redis_manager import redis_client
 
 logger = logging.getLogger("BrokerFactory")
 

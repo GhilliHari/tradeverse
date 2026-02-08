@@ -2,14 +2,13 @@
 import time
 import logging
 import json
-import redis
-from config import config
+from redis_manager import redis_client
 
 logger = logging.getLogger("HeartbeatMonitor")
 
 class HeartbeatMonitor:
     def __init__(self):
-        self.redis = redis.from_url(config.REDIS_URL, decode_responses=True)
+        self.redis = redis_client
         self.TIMEOUT_SECONDS = 30
     
     def record_heartbeat(self, user_id: str):

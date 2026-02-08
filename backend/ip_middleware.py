@@ -3,14 +3,13 @@ import ipaddress
 import logging
 from fastapi import HTTPException, Request
 from typing import Optional
-import redis
-from config import config
+from redis_manager import redis_client
 
 logger = logging.getLogger("IPMiddleware")
 
 class IPValidator:
     def __init__(self):
-        self.redis = redis.from_url(config.REDIS_URL, decode_responses=True)
+        self.redis = redis_client
     
     def check_trusted_ip(self, user_id: str, client_ip: str) -> bool:
         """

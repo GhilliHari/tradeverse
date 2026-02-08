@@ -282,29 +282,38 @@ class AngelClient:
             
             import requests, json
             
-            # ATTEMPT 1: SDK Request (Primary - should work now with deep-injected headers)
+            # ATTEMPT 1: SDK Request (Primary)
             try:
                 res = self.smart_api.ltpData(exchange, tradingsymbol, token)
                 if res.get('status'):
                     data_node = res['data']
                     ltp_val = data_node.get('ltp', data_node.get('last_price', 0))
                     return {instrument_token: {"instrument_token": token, "last_price": ltp_val}}
+                elif res.get('errorCode') == 'AG8001':
+                    logger.warning("Session Expired (AG8001) in SDK LTP. Refreshing...")
+                    self._login() # Refresh session
+                    # Retry once with new session
+                    res = self.smart_api.ltpData(exchange, tradingsymbol, token)
+                    if res.get('status'):
+                        data_node = res['data']
+                        ltp_val = data_node.get('ltp', data_node.get('last_price', 0))
+                        return {instrument_token: {"instrument_token": token, "last_price": ltp_val}}
+
             except Exception as e:
                 logger.warning(f"SDK LTP failed: {e}. Trying manual fallback...")
 
             # ATTEMPT 2: Manual Request (Bearer)
             h1 = headers_base.copy()
-            h1["Authorization"] = f"Bearer {jwt}"
+            h1["Authorization"] = f"Bearer {self.smart_api.jwtToken}"
             r1 = requests.post(url, headers=h1, data=json.dumps(payload))
             res = r1.json()
             
             if not res.get('status') and res.get('errorCode') == 'AG8001':
-                # ATTEMPT 3: Manual Request (No Bearer)
-                logger.warning(f"LTP Bearer failed (AG8001). Trying without Bearer prefix...")
-                h2 = headers_base.copy()
-                h2["Authorization"] = jwt
-                r2 = requests.post(url, headers=h2, data=json.dumps(payload))
-                res = r2.json()
+                logger.warning("Session Expired (AG8001) in Manual LTP. Refreshing...")
+                self._login()
+                h1["Authorization"] = f"Bearer {self.smart_api.jwtToken}"
+                r1 = requests.post(url, headers=h1, data=json.dumps(payload))
+                res = r1.json()
 
             if res.get('status'):
                 data_node = res['data']
@@ -365,20 +374,19 @@ class AngelClient:
             
         try:
             # Map parameters to Angel format
-            # Kite: TRANSACTION_TYPE_BUY -> Angel: "BUY"
-            # Kite: ORDER_TYPE_MARKET -> Angel: "MARKET"
-            # Kite: PRODUCT_MIS -> Angel: "INTRADAY" ? No, "INTRADAY" or "DELIVERY"
-            
             angel_product = "INTRADAY" if product == "MIS" else "DELIVERY" 
             if product == "CNC": angel_product = "DELIVERY"
             if product == "NRML": angel_product = "CARRYFORWARD"
             
+            # RESOLVE SYMBOL AND TOKEN (Crucial Fix for AB1019)
+            res_exchange, res_symbol, res_token = self._get_token_and_exchange(f"{exchange}:{tradingsymbol}")
+            
             orderparams = {
-                "variety": "NORMAL", # variety is usually "NORMAL" or "STOPLOSS" etc.
-                "tradingsymbol": tradingsymbol,
-                "symboltoken": self._get_token_and_exchange(f"{exchange}:{tradingsymbol}")[2],
+                "variety": "NORMAL", 
+                "tradingsymbol": res_symbol, # Use resolved symbol (e.g. SBIN-EQ)
+                "symboltoken": res_token,
                 "transactiontype": transaction_type,
-                "exchange": exchange,
+                "exchange": res_exchange,
                 "ordertype": order_type,
                 "producttype": angel_product,
                 "duration": validity,
@@ -390,6 +398,13 @@ class AngelClient:
                  raise Exception(f"Could not resolve token for {tradingsymbol}")
             
             order_id = self.smart_api.placeOrder(orderparams)
+            
+            # Handle Session Expire
+            if isinstance(order_id, dict) and order_id.get('errorCode') == 'AG8001':
+                 logger.warning("Session Expired (AG8001) in place_order. Retrying...")
+                 self._login()
+                 order_id = self.smart_api.placeOrder(orderparams)
+
             logger.info(f"Order placed via Angel. ID: {order_id}")
             return order_id
             
