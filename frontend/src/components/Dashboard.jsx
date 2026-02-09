@@ -27,6 +27,9 @@ import SystemHealth from './SystemHealth';
 import Orders from './Orders';
 import MarketMoodIndex from './MarketMoodIndex';
 
+// BASE API URL
+const API_URL = import.meta.env.VITE_API_URL || "";
+
 const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
     <button
         onClick={onClick}
@@ -78,7 +81,7 @@ const DashboardWithLogic = () => {
     const [optionChain, setOptionChain] = useState([]);
     const [orders, setOrders] = useState([]);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [token, setToken] = useState(null); // Auth Token
+    const [token, setToken] = useState(null);
     const [showLogin, setShowLogin] = useState(true);
     const [showEmergencyConfirm, setShowEmergencyConfirm] = useState(false);
     const [showModeConfirm, setShowModeConfirm] = useState(false);
@@ -114,6 +117,20 @@ const DashboardWithLogic = () => {
         setTimeout(() => setToast(null), 4000);
     };
 
+    const playInitSound = () => {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.3);
+    };
+
     const getAgentStatus = (agent) => {
         if (!analysis) return 'IDLE';
         const signal = data.signal;
@@ -128,9 +145,8 @@ const DashboardWithLogic = () => {
     const handleUpdateCredentials = async () => {
         setIsConnecting(true);
         try {
-            // Focus ONLY on Angel One
             const payload = { ...credentials, active_broker: 'ANGEL' };
-            const res = await fetch('/api/settings/update', {
+            const res = await fetch(`${API_URL}/api/settings/update`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -159,7 +175,7 @@ const DashboardWithLogic = () => {
         setShowDisconnectConfirm(false);
         setIsConnecting(true);
         try {
-            const res = await fetch('/api/settings/disconnect', {
+            const res = await fetch(`${API_URL}/api/settings/disconnect`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -176,7 +192,6 @@ const DashboardWithLogic = () => {
                     angel_connected: false,
                     angel_credentials: null
                 }));
-                // Credentials retained for easy reconnect
             }
         } catch (e) {
             showToast("Server Error during disconnect.", "error");
@@ -194,7 +209,7 @@ const DashboardWithLogic = () => {
         setEmergencyResult(null);
         console.log("Dashboard: Executing Emergency Protocol...");
         try {
-            const res = await fetch("/api/broker/emergency", {
+            const res = await fetch(`${API_URL}/api/broker/emergency`, {
                 method: "POST",
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -202,7 +217,6 @@ const DashboardWithLogic = () => {
             if (data.status === 'success') {
                 console.log("Dashboard: Emergency Protocol Success");
                 setEmergencyResult({ success: true, message: data.message });
-                // Fix: Sync mode state immediately
                 setIsAutoMode(false);
             } else {
                 console.error("Dashboard: Emergency Protocol Failed", data);
@@ -218,14 +232,13 @@ const DashboardWithLogic = () => {
                 message: "CRITICAL CONNECTION ERROR during Emergency Stop"
             });
         } finally {
-            // Fix: Ensure spinner stops regardless of outcome
             setIsLiquidating(false);
         }
     };
 
     const fetchSettings = async () => {
         try {
-            const res = await fetch('/api/settings');
+            const res = await fetch(`${API_URL}/api/settings`);
             const data = await res.json();
             setSettings(prev => ({
                 ...prev,
@@ -236,7 +249,6 @@ const DashboardWithLogic = () => {
             }));
             setIsAutoMode(data.mode === 'AUTO');
 
-            // Pre-fill credentials if available
             if (data.angel_credentials) {
                 setCredentials(prev => ({
                     ...prev,
@@ -248,7 +260,7 @@ const DashboardWithLogic = () => {
 
     const fetchTrustedIPs = async () => {
         try {
-            const res = await fetch('/api/settings/trusted-ips', {
+            const res = await fetch(`${API_URL}/api/settings/trusted-ips`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -261,7 +273,7 @@ const DashboardWithLogic = () => {
     const handleAddTrustedIP = async () => {
         if (!newIP.trim()) return;
         try {
-            const res = await fetch('/api/settings/trusted-ips/add', {
+            const res = await fetch(`${API_URL}/api/settings/trusted-ips/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -284,7 +296,7 @@ const DashboardWithLogic = () => {
 
     const handleRemoveTrustedIP = async (ip) => {
         try {
-            const res = await fetch('/api/settings/trusted-ips/remove', {
+            const res = await fetch(`${API_URL}/api/settings/trusted-ips/remove`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -304,7 +316,7 @@ const DashboardWithLogic = () => {
 
     const handleBrokerSwitch = async (broker) => {
         try {
-            const res = await fetch('/api/settings/update', {
+            const res = await fetch(`${API_URL}/api/settings/update`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -320,8 +332,6 @@ const DashboardWithLogic = () => {
                     broker_connected: data.broker_connected,
                     env: data.env
                 }));
-                // Also update the view to match the newly active broker
-                setViewBroker(data.active_broker);
             }
         } catch (e) {
             console.error("Broker Switch Failed", e);
@@ -330,7 +340,7 @@ const DashboardWithLogic = () => {
 
     const handleEnvSwitch = async (env) => {
         try {
-            const res = await fetch('/api/settings/update', {
+            const res = await fetch(`${API_URL}/api/settings/update`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ env: env })
@@ -356,7 +366,6 @@ const DashboardWithLogic = () => {
             return;
         }
 
-        // If switching to MANUAL, do it immediately
         await executeModeSwitch('MANUAL');
     }, [isAutoMode]);
 
@@ -368,7 +377,7 @@ const DashboardWithLogic = () => {
         setShowModeConfirm(false);
 
         try {
-            const res = await fetch('/api/settings/mode', {
+            const res = await fetch(`${API_URL}/api/settings/mode`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -404,8 +413,6 @@ const DashboardWithLogic = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [showResults, setShowResults] = useState(false);
 
-    // --- Heartbeat Effect ---
-    // Sends a pulse to backend every 5s if in Auto Mode
     useEffect(() => {
         let intervalId;
 
@@ -418,13 +425,11 @@ const DashboardWithLogic = () => {
                     });
                 } catch (e) {
                     console.error("Heartbeat Failed:", e);
-                    // Optional: If heartbeat fails consecutively, show warning
                 }
             };
 
-            // Send immediately then interval
             sendHeartbeat();
-            intervalId = setInterval(sendHeartbeat, 5000); // 5 seconds
+            intervalId = setInterval(sendHeartbeat, 5000);
         }
 
         return () => clearInterval(intervalId);
@@ -434,7 +439,7 @@ const DashboardWithLogic = () => {
         const timer = setTimeout(async () => {
             if (searchInput.length >= 3) {
                 try {
-                    const res = await fetch(`/api/market/search?query=${searchInput}`);
+                    const res = await fetch(`${API_URL}/api/market/search?query=${searchInput}`);
                     const data = await res.json();
                     if (Array.isArray(data)) {
                         setSearchResults(data);
@@ -546,7 +551,7 @@ const DashboardWithLogic = () => {
 
     const fetchStatus = async () => {
         try {
-            const res = await fetch('/api/risk/status');
+            const res = await fetch(`${API_URL}/api/risk/status`);
             if (res.ok) {
                 const risk = await res.json();
                 if (risk) setRiskStatus(risk);
@@ -613,7 +618,7 @@ const DashboardWithLogic = () => {
         setIsAnalyzing(true);
         console.log("AUTO-PILOT: Initiating Analysis & Execution Cycle...");
         try {
-            const res = await fetch('/api/trading/autopilot', {
+            const res = await fetch(`${API_URL}/api/trading/autopilot`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ symbol: symbol, quantity: 1 })
@@ -658,7 +663,7 @@ const DashboardWithLogic = () => {
         setShowLogoutConfirm(false);
         try {
             console.log("Dashboard: Calling logout API...");
-            await fetch('/api/auth/logout', { method: 'POST' });
+            await fetch(`${API_URL}/api/auth/logout`, { method: 'POST' });
         } catch (e) {
             console.error("Dashboard: Logout API failed", e);
         }
@@ -705,7 +710,7 @@ const DashboardWithLogic = () => {
 
     const fetchOrders = async () => {
         try {
-            const res = await fetch('/api/orders');
+            const res = await fetch(`${API_URL}/api/orders`);
             const data = await res.json();
             if (Array.isArray(data)) {
                 setOrders(data);
@@ -716,7 +721,7 @@ const DashboardWithLogic = () => {
     const placeTestOrder = async () => {
         if (!window.confirm("Place a TEST LIMIT BUY order for SBIN at ₹10? This checks connection.")) return;
         try {
-            const res = await fetch('/api/order/place', {
+            const res = await fetch(`${API_URL}/api/order/place`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

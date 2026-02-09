@@ -13,6 +13,19 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+// Initialize Firebase gracefully
+let app;
+let auth;
+
+try {
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "") {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+    } else {
+        console.warn("Firebase Config Missing: defaulting to mock mode (auth will fail)");
+    }
+} catch (error) {
+    console.error("Firebase Initialization Failed:", error);
+}
+
+export { auth };
