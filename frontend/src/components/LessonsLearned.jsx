@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, AlertTriangle, CheckCircle2, ShieldAlert, Database, Key } from 'lucide-react';
+import { BookOpen, AlertTriangle, CheckCircle2, ShieldAlert, Database, Key, Globe } from 'lucide-react';
 
 const LessonCard = ({ title, type, date, mistake, solution, icon: Icon, color }) => (
     <div className="bg-black/40 border border-white/5 rounded-3xl p-8 hover:border-white/10 transition-all group overflow-hidden relative">
@@ -46,6 +46,15 @@ const LessonCard = ({ title, type, date, mistake, solution, icon: Icon, color })
 
 const LessonsLearned = () => {
     const lessons = [
+        {
+            title: "Deployment Domain Desync",
+            type: "DevOps",
+            date: "Feb 14, 2026",
+            mistake: "The production URL was serving a legacy React build even after the code was migrated to Vite and pushed to GitHub, causing a major UI discrepancy.",
+            solution: "Discovered that Vercel generated a new deployment alias due to the repository's structural changes. Switched to the verified 'lilac' deployment and pinned the frontend subdirectory as the build root.",
+            icon: Globe,
+            color: "cyan"
+        },
         {
             title: "Strict Credential Validation",
             type: "Security",
