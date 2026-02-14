@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import HUDCard from './ui/HUDCard';
 import ScrambleText from './ui/ScrambleText';
+import BrainVisualizer from './BrainVisualizer';
 
 // --- BANK NIFTY INTRADAY F&O INTELLIGENCE ---
 
@@ -50,10 +51,10 @@ const Insights = () => {
 
     // Map Backend MMI to Radar Chart
     const radarData = [
-        { subject: 'IV Rank', A: mmiData?.components?.vix_score ?? 75, fullMark: 100 },
+        { subject: 'COR Confidence', A: predictData?.confidence ?? 0, fullMark: 100 },
+        { subject: 'Causal Strength', A: (predictData?.causal_strength ?? 0.5) * 100, fullMark: 100 },
+        { subject: 'Component Lead', A: ((predictData?.structural?.component_score ?? 0) + 1) * 50, fullMark: 100 },
         { subject: 'PCR Skew', A: mmiData?.components?.pcr_score ?? 30, fullMark: 100 },
-        { subject: 'Gamma Risk', A: predictData?.regime === 'VOLATILE' ? 85 : 40, fullMark: 100 },
-        { subject: 'Theta Decay', A: 60, fullMark: 100 },
         { subject: 'OI Support', A: mmiData?.components?.volume_score ?? 90, fullMark: 100 },
         { subject: 'BN Momentum', A: mmiData?.components?.momentum_score ?? 45, fullMark: 100 },
     ];
@@ -61,35 +62,27 @@ const Insights = () => {
     const thoughts = [
         {
             id: 1,
-            time: '1:45 PM',
-            category: 'DECISION',
-            text: 'Initiating Short Straddle @ 48,200.',
-            details: 'IV Crush detected post-event. Combined Premium: ₹450. Targeting 30% decay by 3:00 PM.',
+            time: 'LIVE',
+            category: 'STRUCTURAL',
+            text: `Component Alpha: ${predictData?.structural?.component_status ?? "NEUTRAL"}`,
+            details: `HDFC + ICICI + KOTAK Leadership Score: ${predictData?.structural?.component_score?.toFixed(2) ?? "0.00"}. Significant weightage aligned with Index.`,
             impact: 'HIGH'
         },
         {
             id: 2,
-            time: '1:30 PM',
-            category: 'ANALYSIS',
-            text: 'HDFC Bank VWAP Bullish Crossover.',
-            details: 'HDFC Bank (Heavyweight) crossing VWAP with Volume. Expecting BN to test 48,350 resistance.',
-            impact: 'MEDIUM'
-        },
-        {
-            id: 3,
-            time: '12:15 PM',
-            category: 'RISK',
-            text: 'Gamma Spike Warning (0DTE).',
-            details: 'Approaching Expiry. 48,000 CE Delta shifted from 0.45 to 0.65 rapidly. Tightening Stop Loss.',
+            time: 'GEX',
+            category: 'DECISION',
+            text: `Liquidity Walls: ${predictData?.structural?.gex?.put_wall ?? "---"} | ${predictData?.structural?.gex?.call_wall ?? "---"}`,
+            details: `Institutional Support @ ${predictData?.structural?.gex?.put_wall} and Resistance @ ${predictData?.structural?.gex?.call_wall}. Max Pain: ${predictData?.structural?.gex?.max_pain}.`,
             impact: 'HIGH'
         },
         {
-            id: 4,
-            time: '11:00 AM',
-            category: 'SCAN',
-            text: 'OI Build-up detected at 47,500 PE.',
-            details: 'Institutional Put writing observed (1.2M qty). Support floor effectively established.',
-            impact: 'LOW'
+            id: 3,
+            time: 'COR',
+            category: 'ANALYSIS',
+            text: `Regime: ${predictData?.regime ?? "SCANNING"}`,
+            details: `Market operating in ${predictData?.regime} mode. Causal strength is ${(predictData?.causal_strength ?? 0.5).toFixed(2)}.`,
+            impact: 'MEDIUM'
         }
     ];
 
@@ -121,7 +114,7 @@ const Insights = () => {
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
 
             {/* Top Row: System Status & Regime */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[300px]">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
                 {/* 1. Regime Radar */}
                 <HUDCard title="F&O REGIME SCANNER" neonColor="purple" className="h-full">
@@ -153,8 +146,24 @@ const Insights = () => {
                             </ResponsiveContainer>
                         </div>
 
+                        {/* Row 1.5: Confidence Progress Bar */}
+                        <div className="px-1 mt-1">
+                            <div className="flex justify-between items-center mb-0.5">
+                                <span className="text-[7px] text-slate-500 font-black uppercase">Intelligence Confidence</span>
+                                <span className={`text-[8px] font-mono font-bold ${predictData?.confidence >= 70 ? 'text-cyan-400' : 'text-slate-400'}`}>
+                                    {predictData?.confidence?.toFixed(1) ?? "0.0"}%
+                                </span>
+                            </div>
+                            <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                <div
+                                    className={`h-full transition-all duration-1000 ${predictData?.confidence >= 70 ? 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)]' : 'bg-slate-600'}`}
+                                    style={{ width: `${predictData?.confidence ?? 0}%` }}
+                                />
+                            </div>
+                        </div>
+
                         {/* Row 2: Tactical Readout (Bottom Area) */}
-                        <div className="flex flex-col justify-between h-[50%] pb-1 pt-2">
+                        <div className="flex flex-col justify-between flex-1 pb-1 pt-2">
                             {/* Combined Info Row */}
                             <div className="flex items-end justify-between border-b border-white/5 pb-2">
                                 <div>
@@ -163,13 +172,18 @@ const Insights = () => {
                                         <ScrambleText text={predictData?.regime ?? "SCANNING..."} />
                                     </div>
                                 </div>
-                                <div className="flex gap-1.5 pb-0.5">
-                                    <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border ${predictData?.daily?.status === 'BULLISH' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' : 'border-red-500/30 text-red-400 bg-red-500/10'}`}>
-                                        Daily: {predictData?.daily?.status ?? "WAIT"}
-                                    </span>
-                                    <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border ${predictData?.intraday?.status === 'BUY' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' : 'border-slate-500/30 text-slate-400 bg-slate-500/10'}`}>
-                                        Intra: {predictData?.intraday?.status ?? "WAIT"}
-                                    </span>
+                                <div className="flex flex-col items-end gap-1">
+                                    <div className="flex gap-1.5">
+                                        <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border ${predictData?.daily?.status === 'POSITIVE' || predictData?.daily?.status === 'BULLISH' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' : 'border-red-500/30 text-red-400 bg-red-500/10'}`}>
+                                            Sentiment: {predictData?.daily?.status ?? "WAIT"}
+                                        </span>
+                                        <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border ${predictData?.intraday?.status === 'BUY' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' : 'border-slate-500/30 text-slate-400 bg-slate-500/10'}`}>
+                                            Signal: {predictData?.intraday?.status ?? "WAIT"}
+                                        </span>
+                                    </div>
+                                    <div className="text-[7px] font-mono text-slate-500 uppercase">
+                                        Causal: {(predictData?.causal_strength ?? 0.5).toFixed(2)}
+                                    </div>
                                 </div>
                             </div>
 
@@ -198,50 +212,11 @@ const Insights = () => {
                     </div>
                 </HUDCard>
 
-                {/* 2. Global Sentiment Pulse */}
-                <HUDCard title="MARKET SENTIMENT FEED" neonColor="pink" className="col-span-2 h-full">
-                    <div className="p-4 h-full flex flex-col gap-2">
-                        <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                            <div className="flex gap-4">
-                                <div className="text-center">
-                                    <div className="text-3xl font-black text-amber-400">
-                                        {mmiData?.components?.vix_score ? (10 + (100 - mmiData.components.vix_score) / 5).toFixed(1) : "14.2"}
-                                    </div>
-                                    <div className="text-[10px] text-slate-500 font-bold uppercase">India VIX</div>
-                                </div>
-                                <div className="w-[1px] h-full bg-white/10 mx-2"></div>
-                                <div className="text-center">
-                                    <div className="text-3xl font-black text-white">
-                                        {mmiData?.components?.pcr_score ? (mmiData.components.pcr_score / 100 + 0.5).toFixed(2) : "0.82"}
-                                    </div>
-                                    <div className="text-[10px] text-slate-500 font-bold uppercase">PCR (Bullish)</div>
-                                </div>
-                            </div>
-                            <Globe className="w-12 h-12 text-slate-700 opacity-20" />
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                            {(newsData.length > 0 ? newsData : newsFeed).map((news, i) => (
-                                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
-                                    <div className={`mt-1 w-2 h-2 rounded-full ${news.sentiment === 'BEARISH' ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]'}`} />
-                                    <div className="flex-1">
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="text-[10px] font-bold text-pink-400 uppercase tracking-wider">{news.source || 'Market Feed'}</span>
-                                            <span className="text-[10px] text-slate-500">{news.time || 'Just now'}</span>
-                                        </div>
-                                        <h4 className="text-sm font-medium text-slate-200 group-hover:text-white transition-colors">{news.title}</h4>
-                                        {news.snippet && <p className="text-xs text-slate-500 mt-1 line-clamp-2">{news.snippet}</p>}
-                                    </div>
-                                    {news.score && (
-                                        <div className={`px-2 py-1 rounded text-[10px] font-black ${news.score.startsWith('+') ? 'bg-emerald-500/20 text-emerald-400' : news.score.startsWith('-') ? 'bg-red-500/20 text-red-400' : 'bg-slate-500/20 text-slate-400'}`}>
-                                            {news.score}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </HUDCard>
+                {/* 2. Neural Brain Visualizer (NEW) */}
+                <BrainVisualizer
+                    scores={predictData?.model_scores || {}}
+                    className="col-span-2 h-full"
+                />
             </div>
 
             {/* Bottom Row: Neural Thought Process */}

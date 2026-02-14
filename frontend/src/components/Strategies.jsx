@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
     Zap, Activity, TrendingUp, TrendingDown,
     Shield, Globe, Key, Clock,
@@ -12,8 +13,8 @@ const StrategyCard = ({ strategy, onToggle }) => {
 
     return (
         <div className={`relative group p-6 rounded-3xl border transition-all duration-500 overflow-hidden ${isActive
-                ? 'bg-indigo-500/10 border-indigo-500/30 shadow-[0_0_30px_rgba(99,102,241,0.1)]'
-                : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
+            ? 'bg-indigo-500/10 border-indigo-500/30 shadow-[0_0_30px_rgba(99,102,241,0.1)]'
+            : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
             }`}>
             {/* Background Glow */}
             {isActive && (
@@ -25,8 +26,8 @@ const StrategyCard = ({ strategy, onToggle }) => {
                 <div className="flex justify-between items-start mb-6">
                     <div className="flex items-center gap-4">
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all ${isActive
-                                ? 'bg-indigo-500 text-white border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.3)]'
-                                : 'bg-white/5 text-slate-500 border-white/10'
+                            ? 'bg-indigo-500 text-white border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.3)]'
+                            : 'bg-white/5 text-slate-500 border-white/10'
                             }`}>
                             {strategy.icon}
                         </div>
@@ -36,8 +37,8 @@ const StrategyCard = ({ strategy, onToggle }) => {
                             </h3>
                             <div className="flex items-center gap-2 mt-1">
                                 <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${strategy.type === 'AI HYBRID' ? 'border-purple-500/30 text-purple-400 bg-purple-500/10' :
-                                        strategy.type === 'MOMENTUM' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' :
-                                            'border-amber-500/30 text-amber-400 bg-amber-500/10'
+                                    strategy.type === 'MOMENTUM' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' :
+                                        'border-amber-500/30 text-amber-400 bg-amber-500/10'
                                     }`}>
                                     {strategy.type}
                                 </span>
@@ -83,6 +84,74 @@ const StrategyCard = ({ strategy, onToggle }) => {
                     </div>
                 </div>
 
+
+                {/* ADVANCED STRATEGY HUD (Only if Active) */}
+                {isActive && (
+                    <div className="mb-6 space-y-3 opacity-100 transition-all duration-700">
+                        <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 shadow-inner">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className={`text-[9px] font-black uppercase tracking-widest ${strategy.convergence > 0.6 ? 'text-indigo-400' : 'text-slate-400'}`}>
+                                    CONVERGENCE SCORE
+                                </span>
+                                <span className="text-xs font-mono font-bold text-white">
+                                    {strategy.convergence || '0.82'}
+                                </span>
+                            </div>
+                            <div className="h-1.5 w-full bg-black/20 rounded-full overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${(strategy.convergence || 0.82) * 100}%` }}
+                                    className="h-full bg-gradient-to-r from-indigo-600 to-indigo-400 shadow-[0_0_10px_#818cf8]"
+                                />
+                            </div>
+                        </div>
+
+                        {/* COR VERIFICATION BLOCK (Week 9 Integration) */}
+                        <div className="p-3 rounded-2xl bg-cyan-500/5 border border-cyan-500/20 shadow-inner">
+                            <div className="flex justify-between items-center mb-1.5">
+                                <span className="text-[8px] font-black text-cyan-400 uppercase tracking-widest">COR Verification Pipeline</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                                    <span className="text-[7px] font-mono text-cyan-500 uppercase">Augmented</span>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                                <div className="text-center p-1.5 rounded-lg bg-black/40 border border-white/5">
+                                    <div className="text-[7px] text-slate-500 uppercase font-black mb-0.5">Confidence</div>
+                                    <div className="text-[10px] font-mono font-bold text-white">{(strategy.confidence || 85.0).toFixed(1)}%</div>
+                                </div>
+                                <div className="text-center p-1.5 rounded-lg bg-black/40 border border-white/5">
+                                    <div className="text-[7px] text-slate-500 uppercase font-black mb-0.5">Regime</div>
+                                    <div className={`text-[10px] font-mono font-bold ${strategy.regime === 'NOMINAL' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                        {strategy.regime || 'NOMINAL'}
+                                    </div>
+                                </div>
+                                <div className="text-center p-1.5 rounded-lg bg-black/40 border border-white/5">
+                                    <div className="text-[7px] text-slate-500 uppercase font-black mb-0.5">Causal Flux</div>
+                                    <div className="text-[10px] font-mono font-bold text-cyan-400">
+                                        {(strategy.causal_strength || 0.72).toFixed(2)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="p-3 rounded-xl bg-orange-500/5 border border-orange-500/10">
+                                <div className="text-[8px] font-black uppercase text-orange-500/50 mb-1">Active TSL</div>
+                                <div className="text-[10px] font-mono font-bold text-orange-400">
+                                    ₹{strategy.tsl || '48,120'}
+                                </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+                                <div className="text-[8px] font-black uppercase text-emerald-500/50 mb-1">Target R1</div>
+                                <div className="text-[10px] font-mono font-bold text-emerald-400">
+                                    ₹{strategy.target || '48,650'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-4 border-t border-white/5">
                     <div className="flex items-center gap-2">
@@ -112,7 +181,10 @@ const Strategies = () => {
             winRate: 78.5,
             pnl: 145020,
             trades: 42,
-            sharpe: 2.8
+            sharpe: 2.8,
+            convergence: 0.82,
+            tsl: 48120,
+            target: 48650
         },
         {
             id: 'momentum_xi',

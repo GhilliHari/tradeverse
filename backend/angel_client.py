@@ -368,6 +368,29 @@ class AngelClient:
             logger.error(f"Angel Historical Data Error: {e}")
             return []
 
+    def _resolve_future(self, symbol):
+        """
+        Heuristic to find the front-month future for Nifty/BankNifty.
+        """
+        try:
+            exchange = "NFO"
+            # Search for symbol + "FUT"
+            query = f"{symbol} FUT"
+            logger.info(f"Searching for tradable future: {query}")
+            res = self.smart_api.searchScrip(exchange, query)
+            if res and res.get('status') and res.get('data'):
+                # Heuristic: Pick the one that starts with the symbol and contains "FUT"
+                # Usually the first one is the front month if sorted or most relevant.
+                for scrip in res['data']:
+                    tsym = scrip['tradingsymbol']
+                    if tsym.startswith(symbol) and "FUT" in tsym:
+                        logger.info(f"Resolved tradable future: {tsym} (Token: {scrip['symboltoken']})")
+                        return exchange, tsym, scrip['symboltoken']
+            return None, None, None
+        except Exception as e:
+            logger.error(f"Future resolution failed: {e}")
+            return None, None, None
+
     def place_order(self, variety, exchange, tradingsymbol, transaction_type, quantity, product, order_type, price=None, validity="DAY", tag=None):
         if not self.smart_api:
             raise Exception("Broker not connected")
@@ -378,8 +401,20 @@ class AngelClient:
             if product == "CNC": angel_product = "DELIVERY"
             if product == "NRML": angel_product = "CARRYFORWARD"
             
-            # RESOLVE SYMBOL AND TOKEN (Crucial Fix for AB1019)
-            res_exchange, res_symbol, res_token = self._get_token_and_exchange(f"{exchange}:{tradingsymbol}")
+            # 1. TRADABLE RESOLUTION: If it's a non-tradable index, try to resolve to Future
+            if tradingsymbol.upper() in ["BANKNIFTY", "NIFTY", "FINNIFTY"]:
+                logger.info(f"Attempting to resolve {tradingsymbol} to a tradable instrument...")
+                f_exchange, f_symbol, f_token = self._resolve_future(tradingsymbol.upper())
+                if f_symbol:
+                    exchange = f_exchange
+                    tradingsymbol = f_symbol
+                    res_exchange, res_symbol, res_token = f_exchange, f_symbol, f_token
+                else:
+                    # Fallback to standard mapping (likely will fail on order placement)
+                    res_exchange, res_symbol, res_token = self._get_token_and_exchange(f"{exchange}:{tradingsymbol}")
+            else:
+                # RESOLVE SYMBOL AND TOKEN (Standard Fix)
+                res_exchange, res_symbol, res_token = self._get_token_and_exchange(f"{exchange}:{tradingsymbol}")
             
             orderparams = {
                 "variety": "NORMAL", 
@@ -397,6 +432,9 @@ class AngelClient:
             if not orderparams["symboltoken"]:
                  raise Exception(f"Could not resolve token for {tradingsymbol}")
             
+            # Log the final parameters being sent
+            logger.info(f"Placing Angel Order: {res_symbol} ({res_token}) Qty:{quantity} {transaction_type}")
+
             order_id = self.smart_api.placeOrder(orderparams)
             
             # Handle Session Expire
@@ -545,7 +583,7 @@ class AngelClient:
                         except: pass
 
             # 2. Square Off All Positions
-            positions = self.smart_api.getPosition()
+            positions = self.smart_api.position()
             if positions and isinstance(positions, dict) and positions.get('status'):
                 data = positions.get('data') or []
                 if not data:

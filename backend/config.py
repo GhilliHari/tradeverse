@@ -6,13 +6,16 @@ try:
 except ImportError:
     pass
 
+import logging
+logger = logging.getLogger("Config")
+
 class Config:
     # Environment: MOCK or LIVE
     ENV = os.getenv("TRADEVERSE_ENV", "MOCK").upper()
     
     # API Keys
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "MOCK_KEY")
-    REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyAMxry7kyw7svsZumX6_hu7aGELVHamkm0")
+    REDIS_URL = os.getenv("REDIS_URL", "")
     FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS", "")
     
     # Angel Broking Keys
@@ -32,6 +35,10 @@ class Config:
     WHATSAPP_PHONE = os.getenv("WHATSAPP_PHONE", "")
     WHATSAPP_API_KEY = os.getenv("WHATSAPP_API_KEY", "")
     
+    # Telegram Notifications (Bot API)
+    TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+    
     # Trading Mode: MANUAL or AUTO
     TRADING_MODE = os.getenv("TRADING_MODE", "MANUAL").upper()
 
@@ -44,7 +51,11 @@ class Config:
             "ANGEL_API_KEY": self.ANGEL_API_KEY,
             "ANGEL_TOTP_KEY": self.ANGEL_TOTP_KEY,
             "ACTIVE_BROKER": self.ACTIVE_BROKER,
-            "TRADING_MODE": self.TRADING_MODE
+            "TRADING_MODE": self.TRADING_MODE,
+            "WHATSAPP_PHONE": self.WHATSAPP_PHONE,
+            "WHATSAPP_API_KEY": self.WHATSAPP_API_KEY,
+            "TELEGRAM_BOT_TOKEN": self.TELEGRAM_BOT_TOKEN,
+            "TELEGRAM_CHAT_ID": self.TELEGRAM_CHAT_ID
         }
         with open("settings.json", "w") as f:
             json.dump(data, f)
@@ -56,9 +67,14 @@ class Config:
                 with open("settings.json", "r") as f:
                     data = json.load(f)
                     for k, v in data.items():
-                        setattr(self, k, v)
-            except:
-                pass
+                        # ONLY overwrite if not already set by Environment Variables
+                        # This ensures cloud-configured vars (Render/Heroku/Vercel) take precedence
+                        env_key = f"TRADEVERSE_{k}" if k == "ENV" else k
+                        if not os.getenv(env_key):
+                            setattr(self, k, v)
+                            logger.info(f"Loaded {k} from settings.json")
+            except Exception as e:
+                logger.debug(f"Could not load settings.json: {e}")
 
 config = Config()
 config.load()

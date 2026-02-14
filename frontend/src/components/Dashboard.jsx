@@ -3,9 +3,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     TrendingUp, TrendingDown, Shield, Brain, Activity,
     Settings, Zap, AlertTriangle, RefreshCw, CheckCircle, ChevronRight,
-    LayoutDashboard, ListOrdered, GraduationCap, BarChart3,
+    LayoutDashboard, ListOrdered, GraduationCap, BarChart3, Database,
     Lightbulb, Briefcase, HeartPulse, User, LogOut, Terminal,
-    Key, Eye, Cpu, Globe, Wifi, Bell, Search, Lock, Unlock
+    Key, Eye, Cpu, Globe, Wifi, Bell, Search, Lock, Unlock,
+    MessageCircle, Send
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -17,8 +18,8 @@ import ScrambleText from './ui/ScrambleText';
 import StatusBadge from './StatusBadge';
 import ConfidenceGauge from './ConfidenceGauge';
 import LoginModal from './LoginModal';
-import Strategies from './Strategies';
-import Analytics from './Analytics';
+import Backtest from './Backtest';
+
 import Insights from './Insights';
 import Smallcases from './Smallcases';
 import MarketPulse from './MarketPulse';
@@ -26,6 +27,14 @@ import Portfolio from './Portfolio';
 import SystemHealth from './SystemHealth';
 import Orders from './Orders';
 import MarketMoodIndex from './MarketMoodIndex';
+import Strategies from './Strategies';
+import Analytics from './Analytics';
+import PaperTrade from './PaperTrade';
+import Observatory from './Observatory';
+import LessonsLearned from './LessonsLearned';
+import { Telescope, ScrollText, BookOpen } from 'lucide-react';
+import MarketClock from './MarketClock';
+
 
 // BASE API URL
 const API_URL = import.meta.env.VITE_API_URL || "";
@@ -106,11 +115,14 @@ const DashboardWithLogic = () => {
     const [activeSettingsTab, setActiveSettingsTab] = useState('API Keys');
     const [credentials, setCredentials] = useState({
         angel_client_id: '', angel_password: '', angel_api_key: '', angel_totp_key: '',
-        kite_api_key: '', kite_access_token: ''
+        kite_api_key: '', kite_access_token: '',
+        whatsapp_phone: '', whatsapp_api_key: '',
+        telegram_bot_token: '', telegram_chat_id: ''
     });
     const [isConnecting, setIsConnecting] = useState(false);
     const [trustedIPs, setTrustedIPs] = useState([]);
     const [newIP, setNewIP] = useState('');
+    const [systemStatus, setSystemStatus] = useState({ backend: false, intelligence: false });
 
     const showToast = (message, type = 'info') => {
         setToast({ message, type });
@@ -148,18 +160,35 @@ const DashboardWithLogic = () => {
             const payload = { ...credentials, active_broker: 'ANGEL' };
             const res = await fetch(`${API_URL}/api/settings/update`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(payload)
             });
             const data = await res.json();
             if (data.status === 'success') {
                 if (data.broker_connected) {
                     showToast("Credentials Updated & Connected to Angel One!", "success");
+                    // Auto-switch to LIVE mode
                     setSettings(prev => ({
                         ...prev,
                         active_broker: 'ANGEL',
-                        angel_connected: true
+                        angel_connected: true,
+                        env: 'LIVE'
                     }));
+                    setUser({ name: 'Pro Trader', initials: 'PT', status: 'ONLINE', broker: 'ANGEL ONE' });
+
+                    // Trigger backend to update env to LIVE as well
+                    fetch(`${API_URL}/api/settings/update`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ env: 'LIVE' })
+                    }).catch(e => console.error("Auto-Live Switch Failed", e));
+
                 } else {
                     const eMsg = data.error || "Check logs";
                     showToast(`Connection Failed: ${eMsg}`, "error");
@@ -236,9 +265,14 @@ const DashboardWithLogic = () => {
         }
     };
 
-    const fetchSettings = async () => {
+    const fetchSettings = async (overrideToken = null) => {
         try {
-            const res = await fetch(`${API_URL}/api/settings`);
+            const headers = {};
+            const activeToken = overrideToken || token;
+            if (activeToken) {
+                headers['Authorization'] = `Bearer ${activeToken}`;
+            }
+            const res = await fetch(`${API_URL}/api/settings`, { headers });
             const data = await res.json();
             setSettings(prev => ({
                 ...prev,
@@ -252,7 +286,9 @@ const DashboardWithLogic = () => {
             if (data.angel_credentials) {
                 setCredentials(prev => ({
                     ...prev,
-                    ...data.angel_credentials
+                    ...data.angel_credentials,
+                    ...data.whatsapp_credentials,
+                    ...data.telegram_credentials
                 }));
             }
         } catch (e) { console.error("Settings Fetch Failed", e); }
@@ -268,6 +304,20 @@ const DashboardWithLogic = () => {
                 setTrustedIPs(data.trusted_ips);
             }
         } catch (e) { console.error("Trusted IPs Fetch Failed", e); }
+    };
+
+    const fetchSystemStatus = async () => {
+        try {
+            const res = await fetch(`${API_URL}/`);
+            const data = await res.json();
+            setSystemStatus({
+                backend: true,
+                intelligence: data.initialization?.ready || false
+            });
+        } catch (e) {
+            console.error("System Status Fetch Failed:", e);
+            setSystemStatus({ backend: false, intelligence: false });
+        }
     };
 
     const handleAddTrustedIP = async () => {
@@ -339,10 +389,38 @@ const DashboardWithLogic = () => {
     };
 
     const handleEnvSwitch = async (env) => {
+        console.log(`[HANDLE_ENV_SWITCH] Attempting to switch to: ${env}`);
+        console.log(`[HANDLE_ENV_SWITCH] Current Settings:`, settings);
+
+        // If switching to LIVE but not connected, prompt for login
+        if (env === 'LIVE') {
+            // Updated Logic: Check if User is Guest First
+            if (!isLoggedIn || user.status === 'GUEST') {
+                console.log("[HANDLE_ENV_SWITCH] Blocked: Guest User. prompting Login.");
+                setShowLogin(true);
+                return;
+            }
+
+            if (!settings.angel_connected) {
+                console.log("[HANDLE_ENV_SWITCH] Blocked: Not connected to Angel One.");
+                const shouldLogin = window.confirm("Live Trading requires an active Angel One connection.\n\nClick OK to go to Settings and login.");
+
+                if (shouldLogin) {
+                    console.log("[HANDLE_ENV_SWITCH] Redirecting to Settings > API Keys");
+                    setActiveTab('Settings');
+                    setActiveSettingsTab('API Keys');
+                }
+                return;
+            }
+        }
+
         try {
             const res = await fetch(`${API_URL}/api/settings/update`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ env: env })
             });
             const data = await res.json();
@@ -352,6 +430,13 @@ const DashboardWithLogic = () => {
                     env: data.env,
                     broker_connected: data.broker_connected
                 }));
+
+                // If switching to MOCK, automatically logout and go to guest mode
+                if (env === 'MOCK') {
+                    console.log("Switching to MOCK: Activating Guest Mode");
+                    await confirmLogout();
+                    handleGuestLogin();
+                }
             }
         } catch (e) {
             console.error("Env Update Failed", e);
@@ -368,6 +453,92 @@ const DashboardWithLogic = () => {
 
         await executeModeSwitch('MANUAL');
     }, [isAutoMode]);
+
+    const handleUpdateWhatsAppSettings = async () => {
+        setIsConnecting(true);
+        try {
+            const res = await fetch(`${API_URL}/api/settings/update`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    whatsapp_phone: credentials.whatsapp_phone,
+                    whatsapp_api_key: credentials.whatsapp_api_key
+                })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                showToast("WhatsApp Settings Saved!", "success");
+            }
+        } catch (e) {
+            showToast("Failed to save settings", "error");
+        }
+        setIsConnecting(false);
+    };
+
+    const handleUpdateTelegramSettings = async () => {
+        setIsConnecting(true);
+        try {
+            const res = await fetch(`${API_URL}/api/settings/update`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    telegram_bot_token: credentials.telegram_bot_token,
+                    telegram_chat_id: credentials.telegram_chat_id
+                })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                showToast("Telegram Settings Saved!", "success");
+            }
+        } catch (e) {
+            showToast("Failed to save settings", "error");
+        }
+        setIsConnecting(false);
+    };
+
+    const handleSendTestWhatsApp = async () => {
+        setIsConnecting(true);
+        try {
+            const res = await fetch(`${API_URL}/api/settings/whatsapp/test`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                showToast(data.message || "Test message sent!", "success");
+            } else {
+                showToast(data.message || "Failed to send test message.", "error");
+            }
+        } catch (e) {
+            showToast("Server Error", "error");
+        }
+        setIsConnecting(false);
+    };
+
+    const handleSendTestTelegram = async () => {
+        setIsConnecting(true);
+        try {
+            const res = await fetch(`${API_URL}/api/settings/telegram/test`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                showToast(data.message || "Test message sent!", "success");
+            } else {
+                showToast(data.message || "Failed to send test message.", "error");
+            }
+        } catch (e) {
+            showToast("Server Error", "error");
+        }
+        setIsConnecting(false);
+    };
 
     const executeModeSwitch = async (targetMode) => {
         const previousAuto = isAutoMode;
@@ -412,6 +583,26 @@ const DashboardWithLogic = () => {
 
     const [searchResults, setSearchResults] = useState([]);
     const [showResults, setShowResults] = useState(false);
+
+    // Restore token from localStorage on mount
+    useEffect(() => {
+        const savedToken = localStorage.getItem('authToken');
+        if (savedToken) {
+            setToken(savedToken);
+            setIsLoggedIn(true);
+            setShowLogin(false);
+            setUser({ name: 'Guest Trader', initials: 'G', status: 'GUEST' });
+        }
+    }, []);
+
+    // Sync User Profile with Environment Settings
+    useEffect(() => {
+        if (settings.env === 'MOCK') {
+            setUser({ name: 'Guest Trader', initials: 'G', status: 'GUEST' });
+        } else if (settings.env === 'LIVE' && settings.angel_connected) {
+            setUser({ name: 'Pro Trader', initials: 'PT', status: 'ONLINE', broker: 'ANGEL ONE' });
+        }
+    }, [settings.env, settings.angel_connected]);
 
     useEffect(() => {
         let intervalId;
@@ -465,13 +656,17 @@ const DashboardWithLogic = () => {
     const navItems = [
         { icon: Terminal, label: 'Live Terminal' },
         { icon: ListOrdered, label: 'Orders' },
+        { icon: ScrollText, label: 'Simulations' },
+        { icon: Telescope, label: 'Observatory' },
         { icon: GraduationCap, label: 'Strategies' },
+        { icon: Database, label: 'Backtest' },
         { icon: BarChart3, label: 'Analytics' },
         { icon: Lightbulb, label: 'INSIGHTS' },
         { icon: Briefcase, label: 'Smallcases' },
         { icon: Activity, label: 'Market Pulse' },
         { icon: LayoutDashboard, label: 'Portfolio' },
         { icon: HeartPulse, label: 'System Health' },
+        { icon: BookOpen, label: 'Lessons Learned' },
         { icon: Settings, label: 'Settings' },
     ];
 
@@ -551,12 +746,28 @@ const DashboardWithLogic = () => {
 
     const fetchStatus = async () => {
         try {
-            const res = await fetch(`${API_URL}/api/risk/status`);
-            if (res.ok) {
-                const risk = await res.json();
+            // Fetch Risk Status
+            const resRisk = await fetch(`${API_URL}/api/risk/status`);
+            if (resRisk.ok) {
+                const risk = await resRisk.json();
                 if (risk) setRiskStatus(risk);
             }
-        } catch (e) { /* Silent fail for polling */ }
+
+            // Fetch System Initialization Status (Intelligence & Backend)
+            const resInit = await fetch(`${API_URL}/`);
+            if (resInit.ok) {
+                const initData = await resInit.json();
+                setSystemStatus({
+                    backend: true,
+                    intelligence: initData.initialization?.ready || false
+                });
+            } else {
+                setSystemStatus({ backend: true, intelligence: false }); // Backend reachable but returned error
+            }
+        } catch (e) {
+            // If fetch fails completely, backend is likely down
+            setSystemStatus({ backend: false, intelligence: false });
+        }
     };
 
     const fetchPrice = async () => {
@@ -679,21 +890,54 @@ const DashboardWithLogic = () => {
     };
 
     const handleGuestLogin = () => {
+        const mockToken = 'mock-token-123';
         setIsLoggedIn(true);
         setShowLogin(false);
+        setToken(mockToken); // Set mock token for guest access
+        localStorage.setItem('authToken', mockToken); // Persist token in localStorage
         setUser({ name: 'Guest Trader', initials: 'G', status: 'GUEST' });
-    };
 
-    const handleTriggerPipeline = async () => {
-        setIsProcessing(true);
-        try {
-            const res = await fetch(`/api/data/pipeline/trigger?symbol=${symbol}`);
-            const result = await res.json();
-            if (result.status === 'success') {
-                setPipelineStats(result.data);
-            }
-        } catch (e) { console.error("Pipeline Trigger Failed", e); }
-        setIsProcessing(false);
+        const fetchSettings = async (overrideToken = null) => {
+            try {
+                const res = await fetch(`${API_URL}/api/settings`, {
+                    headers: { 'Authorization': `Bearer ${overrideToken || token}` }
+                });
+                const data = await res.json();
+
+                // Auto-Revert Logic: If backend says LIVE but no connection, force MOCK
+                let effectiveEnv = data.env;
+                if (data.env === 'LIVE' && !data.angel_connected) {
+                    console.warn("State Mismatch: ENV=LIVE but Angel Not Connected. Reverting to MOCK.");
+                    effectiveEnv = 'MOCK';
+
+                    // Sync backend asynchronously
+                    fetch(`${API_URL}/api/settings/update`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${overrideToken || token}`
+                        },
+                        body: JSON.stringify({ env: 'MOCK' })
+                    });
+                }
+
+                setSettings({
+                    angel_connected: data.angel_connected,
+                    active_broker: data.active_broker,
+                    env: effectiveEnv
+                });
+
+                // Update User Profile based on effective Env
+                if (effectiveEnv === 'MOCK') {
+                    setUser({ name: 'Guest Trader', initials: 'G', status: 'GUEST' });
+                } else if (effectiveEnv === 'LIVE' && data.angel_connected) {
+                    setUser({ name: 'Pro Trader', initials: 'PT', status: 'ONLINE', broker: 'ANGEL ONE' });
+                }
+
+            } catch (e) { console.error("Settings Fetch Failed", e); }
+        };
+
+        fetchSettings(mockToken);
     };
 
     const handleTrainModel = async () => {
@@ -719,19 +963,24 @@ const DashboardWithLogic = () => {
     };
 
     const placeTestOrder = async () => {
-        if (!window.confirm("Place a TEST LIMIT BUY order for SBIN at ₹10? This checks connection.")) return;
+        const symbol = prompt("Enter Symbol for TEST MARKET BUY (Intraday):", "BANKNIFTY");
+        if (!symbol) return;
+
+        const qty = symbol.toUpperCase() === "BANKNIFTY" ? 15 : 1;
+
+        if (!window.confirm(`Place a TEST MARKET BUY order for ${symbol} (Qty: ${qty})?`)) return;
+
         try {
             const res = await fetch(`${API_URL}/api/order/place`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    tradingsymbol: "SBIN",
+                    tradingsymbol: symbol.toUpperCase(),
                     transaction_type: "BUY",
-                    quantity: 1,
+                    quantity: qty,
                     exchange: "NSE",
                     product: "MIS",
-                    order_type: "LIMIT",
-                    price: 10.0
+                    order_type: "MARKET"
                 })
             });
             const data = await res.json();
@@ -755,8 +1004,19 @@ const DashboardWithLogic = () => {
         }
     }, [activeTab]);
 
+    const handleTabChange = (tabLabel) => {
+        const ALLOWED_MOCK_TABS = ['Live Terminal', 'Settings', 'Backtest', 'Strategies', 'Analytics', 'INSIGHTS', 'Simulations', 'Observatory'];
+
+        if (settings.env === 'MOCK' && !ALLOWED_MOCK_TABS.includes(tabLabel)) {
+            console.log(`[TAB_RESTRICTION] Blocked access to ${tabLabel} in MOCK mode.`);
+            setShowLogin(true);
+            return;
+        }
+        setActiveTab(tabLabel);
+    };
+
     return (
-        <div className="flex h-screen w-screen bg-[#0c0d12] overflow-hidden">
+        <div className="flex h-screen bg-[#0c0d12] text-white font-sans overflow-hidden selection:bg-indigo-500/30">
             {/* Sidebar Pane */}
             <aside className="w-72 glass-panel border-r border-white/10 flex flex-col p-6 hidden lg:flex shadow-[20px_0_50px_rgba(0,0,0,0.3)]">
                 <div className="mb-10">
@@ -785,8 +1045,10 @@ const DashboardWithLogic = () => {
                             <span className="text-xs font-medium text-slate-300">Backend</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
-                            <span className="text-[10px] font-bold text-emerald-500">ONLINE</span>
+                            <div className={`w-1.5 h-1.5 rounded-full ${systemStatus.backend ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]' : 'bg-red-500'}`} />
+                            <span className={`text-[10px] font-bold ${systemStatus.backend ? 'text-emerald-500' : 'text-red-500'}`}>
+                                {systemStatus.backend ? 'ONLINE' : 'OFFLINE'}
+                            </span>
                         </div>
                     </div>
 
@@ -797,22 +1059,24 @@ const DashboardWithLogic = () => {
                             <span className="text-xs font-medium text-slate-300">Broker</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                            <div className={`w-1.5 h-1.5 rounded-full ${settings.angel_connected ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-red-500 shadow-[0_0_8px_#ef4444]'}`} />
-                            <span className={`text-[10px] font-bold ${settings.angel_connected ? 'text-emerald-500' : 'text-red-500'}`}>
-                                {settings.angel_connected ? 'LIVE' : 'OFFLINE'}
+                            <div className={`w-1.5 h-1.5 rounded-full ${settings.angel_connected && settings.env === 'LIVE' ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-amber-500 shadow-[0_0_8px_#f59e0b]'}`} />
+                            <span className={`text-[10px] font-bold ${settings.angel_connected && settings.env === 'LIVE' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                {settings.angel_connected && settings.env === 'LIVE' ? 'LIVE' : 'MOCK'}
                             </span>
                         </div>
                     </div>
 
                     {/* AI / Intelligence Status */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between cursor-pointer group" onClick={() => handleTabChange('Live Terminal')}>
                         <div className="flex items-center gap-2">
-                            <Zap className="w-3 h-3 text-slate-400" />
-                            <span className="text-xs font-medium text-slate-300">Intelligence</span>
+                            <Zap className="w-3 h-3 text-slate-400 group-hover:text-indigo-400 transition-colors" />
+                            <span className="text-xs font-medium text-slate-300 group-hover:text-white transition-colors">Intelligence</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_#6366f1]" />
-                            <span className="text-[10px] font-bold text-indigo-500">ACTIVE</span>
+                            <div className={`w-1.5 h-1.5 rounded-full ${systemStatus.intelligence ? 'bg-indigo-500 shadow-[0_0_8px_#6366f1]' : 'bg-slate-500'}`} />
+                            <span className={`text-[10px] font-bold ${systemStatus.intelligence ? 'text-indigo-500' : 'text-slate-500'}`}>
+                                {systemStatus.intelligence ? 'ACTIVE' : 'OFFLINE'}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -824,7 +1088,7 @@ const DashboardWithLogic = () => {
                             icon={item.icon}
                             label={item.label}
                             active={activeTab === item.label}
-                            onClick={() => setActiveTab(item.label)}
+                            onClick={() => handleTabChange(item.label)}
                         />
                     ))}
 
@@ -933,6 +1197,11 @@ const DashboardWithLogic = () => {
                                 </button>
                             </div>
 
+                            {/* Market Clock & Status Integration */}
+                            <div className="mr-2">
+                                <MarketClock isOpen={marketStatus.isOpen} />
+                            </div>
+
                             {/* System Status Badges */}
                             <div className="flex gap-2">
                                 <StatusBadge
@@ -942,11 +1211,18 @@ const DashboardWithLogic = () => {
                                     pulse={riskStatus.circuit_breaker_status !== 'NOMINAL'}
                                 />
 
-                                <StatusBadge
-                                    label="MARKET"
-                                    status={marketStatus.isOpen ? 'OPEN' : 'CLOSED'}
-                                    color={marketStatus.isOpen ? 'indigo' : 'amber'}
-                                />
+
+                                {/* User Profile Badge */}
+                                <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/10 h-[38px]">
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center font-black text-[9px] border ${user.status === 'ONLINE' ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30' : 'bg-slate-700/50 text-slate-400 border-white/5'}`}>
+                                        {user.initials}
+                                    </div>
+                                    <div className="flex flex-col justify-center">
+                                        <span className={`text-[10px] font-black uppercase tracking-wider ${user.status === 'ONLINE' ? 'text-indigo-400' : 'text-slate-500'}`}>
+                                            {user.name}
+                                        </span>
+                                    </div>
+                                </div>
 
                                 {settings.angel_connected && (
                                     <StatusBadge
@@ -1419,9 +1695,15 @@ const DashboardWithLogic = () => {
                                         <div className={`absolute inset-y-1.5 w-1/2 bg-emerald-500/20 rounded-lg transition-all duration-300 border border-emerald-500/30 ${settings.env === 'LIVE' ? 'left-[4px]' : 'left-[50%]'}`} />
                                         <button
                                             onClick={() => handleEnvSwitch('LIVE')}
-                                            className={`relative flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10 ${settings.env === 'LIVE' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                                            className={`relative flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10 
+                                                ${settings.env === 'LIVE' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}
+                                                ${!settings.angel_connected ? 'opacity-80' : ''}
+                                            `}
                                         >
-                                            Live
+                                            <div className="flex items-center justify-center gap-1">
+                                                {!settings.angel_connected && <Lock className="w-3 h-3" />}
+                                                Live
+                                            </div>
                                         </button>
                                         <button
                                             onClick={() => handleEnvSwitch('MOCK')}
@@ -1535,10 +1817,116 @@ const DashboardWithLogic = () => {
                                             </div>
                                         </div>
                                     </div>
+                                ) : activeSettingsTab === 'Notifications' ? (
+                                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 overflow-y-auto max-h-[60vh] pr-4 custom-scrollbar">
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                            {/* WhatsApp Section */}
+                                            <div className="space-y-6">
+                                                <div className="flex items-start gap-4 mb-4">
+                                                    <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-400 border border-emerald-500/20">
+                                                        <MessageCircle className="w-6 h-6" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-lg font-black text-white tracking-tight">WhatsApp</h3>
+                                                        <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Via CallMeBot API</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-4 pt-2">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">Phone Number</label>
+                                                        <input
+                                                            type="text"
+                                                            value={credentials.whatsapp_phone}
+                                                            onChange={(e) => setCredentials({ ...credentials, whatsapp_phone: e.target.value })}
+                                                            placeholder="+9199********"
+                                                            className="w-full bg-black/20 border border-white/5 rounded-2xl px-6 py-4 text-sm font-mono text-slate-300 focus:outline-none focus:border-emerald-500/50 focus:bg-black/40 transition-all placeholder:text-slate-700"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">API Key</label>
+                                                        <input
+                                                            type="password"
+                                                            value={credentials.whatsapp_api_key}
+                                                            onChange={(e) => setCredentials({ ...credentials, whatsapp_api_key: e.target.value })}
+                                                            placeholder="CallMeBot API Key"
+                                                            className="w-full bg-black/20 border border-white/5 rounded-2xl px-6 py-4 text-sm font-mono text-slate-300 focus:outline-none focus:border-emerald-500/50 focus:bg-black/40 transition-all placeholder:text-slate-700"
+                                                        />
+                                                    </div>
+                                                    <div className="pt-4 flex gap-3">
+                                                        <button
+                                                            onClick={handleUpdateWhatsAppSettings}
+                                                            className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95"
+                                                        >
+                                                            Save
+                                                        </button>
+                                                        <button
+                                                            onClick={handleSendTestWhatsApp}
+                                                            disabled={!credentials.whatsapp_phone || !credentials.whatsapp_api_key}
+                                                            className="px-4 py-3 bg-white/5 hover:bg-white/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-30"
+                                                        >
+                                                            Test
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Telegram Section */}
+                                            <div className="space-y-6">
+                                                <div className="flex items-start gap-4 mb-4">
+                                                    <div className="p-3 bg-sky-500/10 rounded-2xl text-sky-400 border border-sky-500/20">
+                                                        <Send className="w-6 h-6" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-lg font-black text-white tracking-tight">Telegram</h3>
+                                                        <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Via Bot API</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-4 pt-2">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">Bot Token</label>
+                                                        <input
+                                                            type="password"
+                                                            value={credentials.telegram_bot_token}
+                                                            onChange={(e) => setCredentials({ ...credentials, telegram_bot_token: e.target.value })}
+                                                            placeholder="123456789:ABCDEF..."
+                                                            className="w-full bg-black/20 border border-white/5 rounded-2xl px-6 py-4 text-sm font-mono text-slate-300 focus:outline-none focus:border-sky-500/50 focus:bg-black/40 transition-all placeholder:text-slate-700"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">Chat ID</label>
+                                                        <input
+                                                            type="text"
+                                                            value={credentials.telegram_chat_id}
+                                                            onChange={(e) => setCredentials({ ...credentials, telegram_chat_id: e.target.value })}
+                                                            placeholder="e.g. 987654321"
+                                                            className="w-full bg-black/20 border border-white/5 rounded-2xl px-6 py-4 text-sm font-mono text-slate-300 focus:outline-none focus:border-sky-500/50 focus:bg-black/40 transition-all placeholder:text-slate-700"
+                                                        />
+                                                    </div>
+                                                    <div className="pt-4 flex gap-3">
+                                                        <button
+                                                            onClick={handleUpdateTelegramSettings}
+                                                            className="flex-1 py-3 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95"
+                                                        >
+                                                            Save
+                                                        </button>
+                                                        <button
+                                                            onClick={handleSendTestTelegram}
+                                                            disabled={!credentials.telegram_bot_token || !credentials.telegram_chat_id}
+                                                            className="px-4 py-3 bg-white/5 hover:bg-white/10 text-sky-400 border border-sky-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-30"
+                                                        >
+                                                            Test
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 ) : (
                                     <div className="h-full flex flex-col items-center justify-center opacity-30">
                                         <Settings className="w-16 h-16 mb-4 animate-spin-slow" />
-                                        <p className="text-xs font-black uppercase tracking-widest">Section Under Construction</p>
+                                        <p className="text-xs font-black uppercase tracking-widest">Section {activeSettingsTab} Under Construction</p>
                                     </div>
                                 )}
                             </div>
@@ -1555,8 +1943,16 @@ const DashboardWithLogic = () => {
                             </div>
                             <Orders />
                         </div>
+                    ) : activeTab.toLowerCase() === 'simulations' ? (
+                        <PaperTrade token={token} symbol={symbol} ltp={data.price || 0} />
+                    ) : activeTab.toLowerCase() === 'observatory' ? (
+                        <Observatory token={token} />
                     ) : activeTab.toLowerCase() === 'strategies' ? (
                         <Strategies />
+                    ) : activeTab.toLowerCase() === 'lessons learned' ? (
+                        <LessonsLearned />
+                    ) : activeTab.toLowerCase() === 'backtest' ? (
+                        <Backtest />
                     ) : activeTab.toLowerCase() === 'analytics' ? (
                         <Analytics />
                     ) : activeTab.toLowerCase() === 'insights' ? (
@@ -1590,7 +1986,7 @@ const DashboardWithLogic = () => {
                         onLogin={(authToken) => {
                             setIsLoggedIn(true);
                             setToken(authToken); // Store valid token
-                            setUser({ name: 'TEJU', initials: 'TJ', status: 'PRO TRADER', broker: 'ANGEL ONE' });
+                            setUser({ name: 'Pro Trader', initials: 'PT', status: 'ONLINE', broker: 'ANGEL ONE' });
                             playInitSound();
                         }}
                         onGuestLogin={handleGuestLogin}

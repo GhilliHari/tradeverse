@@ -9,7 +9,32 @@ from redis_manager import redis_client
 
 logger = logging.getLogger("BrokerFactory")
 
-# ... (MockAngelClient remains same)
+class MockAngelClient:
+    def __init__(self, user_id):
+        self.user_id = user_id
+    def is_connected(self): return True
+    def profile(self): return {"user_id": self.user_id, "user_name": "Mock User", "broker": "ANGEL", "status": "MOCK"}
+    def ltpData(self, exchange, tradingsymbol, symboltoken): return {"status": True, "data": {"last_price": 500.0}}
+    def ltp(self, symbol): 
+        if isinstance(symbol, list):
+            return {s: {"last_price": 500.0} for s in symbol}
+        return {symbol: {"last_price": 500.0}}
+    def place_order(self, *args, **kwargs): return "MOCK_ORDER_ID"
+    def get_option_chain(self, symbol, expiry=None): 
+        # Simulated Bank Nifty Chain
+        spot = 50000
+        strikes = []
+        for i in range(-5, 6):
+            strike = 50000 + (i * 100)
+            strikes.append({
+                "strike": strike,
+                "ce_premium": 100,
+                "pe_premium": 100,
+                "oi_ce": 50000 if strike == 50500 else 10000,
+                "oi_pe": 200000 if strike == 49500 else 20000
+            })
+        return strikes
+
 
 def get_broker_client(user_id: str = None):
     """

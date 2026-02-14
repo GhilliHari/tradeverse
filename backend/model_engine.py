@@ -195,6 +195,12 @@ class ModelEngine:
         # 4. Regime Detection
         regime = self.detect_regime(current_features_df)
         
+        # 5. Extract Volatility and Levels for Execution
+        atr = current_features_df['ATR_14'].iloc[0] if 'ATR_14' in current_features_df else 0
+        pivot = current_features_df['Pivot'].iloc[0] if 'Pivot' in current_features_df else 0
+        r1 = current_features_df['R1'].iloc[0] if 'R1' in current_features_df else 0
+        s1 = current_features_df['S1'].iloc[0] if 'S1' in current_features_df else 0
+        
         return {
             "prediction": prediction,
             "probability": float(probability),
@@ -202,8 +208,56 @@ class ModelEngine:
             "is_ood": bool(is_ood),
             "conviction": "HIGH" if prediction == 1 else "LOW",
             "regime": regime,
-            "ood_distance": float(min_dist)
+            "ood_distance": float(min_dist),
+            "atr": float(atr),
+            "levels": {"Pivot": float(pivot), "R1": float(r1), "S1": float(s1)}
         }
+
+    def predict_with_confidence(self, current_features_df, regime="NOMINAL", causal_strength=0.5):
+        """
+        Calculates a multi-factor confidence score by combining model probability,
+        regime characteristics, and causal support strength.
+        """
+        # 1. Get base prediction result
+        result = self.predict(current_features_df)
+        if result is None:
+            return None
+        
+        # 2. Base confidence from calibrated probability
+        base_confidence = result['probability'] * 100
+        
+        # 3. Regime-based adjustments (Boost or Penalty)
+        # TRENDING_INTRADAY and POWER_HOUR are higher conviction
+        # OPENING_VOLATILITY and LUNCH_LULL are lower conviction
+        regime_adj = 0
+        if regime == "TRENDING_INTRADAY":
+            regime_adj = 10
+        elif regime == "POWER_HOUR":
+            regime_adj = 5
+        elif regime == "OPENING_VOLATILITY":
+            regime_adj = -15
+        elif regime == "LUNCH_LULL":
+            regime_adj = -5
+            
+        # 4. Causal strength boost
+        # Stronger lead-lag relationship (e.g. Futures leading Spot) boosts confidence
+        causal_boost = causal_strength * 15
+        
+        # 5. Calculate final confidence
+        # Capped at 100%, Floored at 0%
+        final_confidence = min(100.0, max(0.0, base_confidence + regime_adj + causal_boost))
+        
+        # 6. Enrich result with confidence metrics
+        result.update({
+            "confidence": float(final_confidence),
+            "regime_provided": regime,
+            "regime_adjustment": float(regime_adj),
+            "causal_strength": float(causal_strength),
+            "causal_boost": float(causal_boost),
+            "causal_factors": ["futures_lead", "vix_inverse"] if causal_strength > 0.6 else []
+        })
+        
+        return result
 
 if __name__ == "__main__":
     from data_pipeline import DataPipeline

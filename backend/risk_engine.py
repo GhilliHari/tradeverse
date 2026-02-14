@@ -1,5 +1,6 @@
 from typing import Dict, Optional
 from notifier import notifier
+from kill_switch import KillSwitch
 
 class RiskEngine:
     """
@@ -11,6 +12,7 @@ class RiskEngine:
         self.max_position_size = max_position_size
         self.current_daily_loss = 0.0
         self.circuit_breaker_active = False
+        self.kill_switch = KillSwitch()
 
     def validate_order(self, order_details: Dict) -> Dict:
         """
@@ -18,6 +20,9 @@ class RiskEngine:
         """
         if self.circuit_breaker_active:
             return {"allowed": False, "reason": "Circuit breaker is ACTIVE. Trading halted."}
+            
+        if self.kill_switch.is_active():
+             return {"allowed": False, "reason": "KILL SWITCH ACTIVE. ALL TRADING STOPPED."}
 
         if self.current_daily_loss >= self.daily_loss_limit:
             return {"allowed": False, "reason": "Daily loss limit reached."}

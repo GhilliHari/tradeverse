@@ -1,15 +1,27 @@
 {
-    "total_tokens": 150,
-    "total_input_tokens": 100,
-    "total_output_tokens": 50,
-    "total_requests": 1,
+    "total_tokens": 5635,
+    "total_input_tokens": 3972,
+    "total_output_tokens": 1663,
+    "total_requests": 26,
     "models": {
         "gemini-1.5-flash-test": {
             "input_tokens": 100,
             "output_tokens": 50,
             "total_tokens": 150,
             "requests": 1
+        },
+        "gemini-1.5-flash": {
+            "input_tokens": 30,
+            "output_tokens": 60,
+            "total_tokens": 90,
+            "requests": 3
+        },
+        "gemini-2.5-flash": {
+            "input_tokens": 3842,
+            "output_tokens": 1553,
+            "total_tokens": 5395,
+            "requests": 22
         }
     },
-    "last_updated": "2026-02-03T07:30:30.875753"
+    "last_updated": "2026-02-14T05:20:06.750613"
 }

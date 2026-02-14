@@ -8,10 +8,17 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("DataPipeline")
 
 class DataPipeline:
-    def __init__(self, symbol="^NSEBANK", interval="1d"):
+    def __init__(self, symbol="^NSEBANK", interval="1d", lookback_days=None):
         self.symbol = symbol
         self.interval = interval
+        # Auto-configure lookback based on interval
+        if lookback_days is None:
+            self.lookback_days = 90 if interval in ["1m", "5m", "15m", "30m", "1h"] else 3650
+        else:
+            self.lookback_days = lookback_days
         self.raw_data = None
+        self.futures_data = None  # NEW: For futures data
+        self.vix_data = None  # NEW: For VIX data
         self.macro_raw = None
         self.cleaned_data = None
         self.train_data = None
@@ -84,6 +91,33 @@ class DataPipeline:
             
             self.raw_data = df
             self.macro_raw = macro_data
+            
+            # NEW: Fetch Bank Nifty Futures data (for causality analysis)
+            if "BANK" in self.symbol.upper():
+                try:
+                    futures_symbol = "BANKNIFTY-I"  # NSE Futures symbol
+                    logger.info(f"Fetching Bank Nifty Futures data...")
+                    futures_df = yf.download(futures_symbol, start=start_date, end=end_date, interval=self.interval)
+                    if not futures_df.empty:
+                        self.futures_data = futures_df
+                        logger.info(f"Successfully fetched {len(futures_df)} futures records.")
+                    else:
+                        logger.warning("Futures data is empty, skipping.")
+                except Exception as e:
+                    logger.warning(f"Could not fetch futures data: {e}")
+            
+            # NEW: Fetch India VIX data (for volatility causality)
+            try:
+                logger.info(f"Fetching India VIX data...")
+                vix_df = yf.download("^INDIAVIX", start=start_date, end=end_date, interval=self.interval)
+                if not vix_df.empty:
+                    self.vix_data = vix_df
+                    logger.info(f"Successfully fetched {len(vix_df)} VIX records.")
+                else:
+                    logger.warning("VIX data is empty, skipping.")
+            except Exception as e:
+                logger.warning(f"Could not fetch VIX data: {e}")
+            
             logger.info(f"Successfully fetched {len(df)} records ({self.interval}) and macro data.")
             return True
         except Exception as e:
@@ -100,13 +134,33 @@ class DataPipeline:
         logger.info(f"Starting data cleaning pipeline ({self.interval})...")
         df = self.raw_data.copy()
         
+        # --- NEW: Flatten MultiIndex Columns (yfinance v0.2.40+ quirk) ---
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = df.columns.get_level_values(0)
+        
+        for attr in ['macro_raw', 'vix_data', 'futures_data']:
+            obj = getattr(self, attr, None)
+            if obj is not None and isinstance(obj.columns, pd.MultiIndex):
+                obj.columns = obj.columns.get_level_values(0)
+        
         # Normalize Timezone (Remove TZ awareness to enable merging)
         if df.index.tz is not None:
             df.index = df.index.tz_localize(None)
             
         if self.macro_raw is not None and not self.macro_raw.empty:
+            # Check for multi-index macro data (rare but possible with yfinance)
+            if isinstance(self.macro_raw.columns, pd.MultiIndex):
+                self.macro_raw.columns = self.macro_raw.columns.get_level_values(0)
             if self.macro_raw.index.tz is not None:
                 self.macro_raw.index = self.macro_raw.index.tz_localize(None)
+
+        if self.vix_data is not None and not self.vix_data.empty:
+            if self.vix_data.index.tz is not None:
+                self.vix_data.index = self.vix_data.index.tz_localize(None)
+        
+        if self.futures_data is not None and not self.futures_data.empty:
+            if self.futures_data.index.tz is not None:
+                self.futures_data.index = self.futures_data.index.tz_localize(None)
 
         # 1. Handle missing values (Forward fill followed by backward fill)
         df = df.ffill().bfill()
@@ -282,10 +336,21 @@ class DataPipeline:
 
         # --- Macro & BN Correlation ---
         # Integrate USD/INR and Nifty 50
-        if hasattr(self, 'macro_raw'):
-            df['USDINR'] = self.macro_raw['USDINR=X'].reindex(df.index, method='ffill')
-            df['Nifty50'] = self.macro_raw['^NSEI'].reindex(df.index, method='ffill')
+        if self.macro_raw is not None and not self.macro_raw.empty:
+            if 'USDINR=X' in self.macro_raw.columns:
+                df['USDINR'] = self.macro_raw['USDINR=X'].reindex(df.index, method='ffill')
+            else: df['USDINR'] = 83.0
+            
+            if '^NSEI' in self.macro_raw.columns:
+                df['Nifty50'] = self.macro_raw['^NSEI'].reindex(df.index, method='ffill')
+            else: df['Nifty50'] = df['Close'] # Fallback to BN itself if Nifty missing
+            
             df['BN_Nifty_Ratio'] = df['Close'] / df['Nifty50']
+        else:
+            # Fallback values if macro data is missing
+            df['USDINR'] = 83.0
+            df['Nifty50'] = df['Close']
+            df['BN_Nifty_Ratio'] = 1.0
         
         # Inflation & Interest Rate Proxy (Step function for mock sensitivity)
         # In a real system, we'd fetch CPI/Repo Rate. Here we use a drift-based mock for BN response.
@@ -374,6 +439,58 @@ class DataPipeline:
         # We apply frac diff to the Close price with d=0.4 (optimal for price preservation)
         # This provides a "cleaner" trend feature than raw returns.
         df['Price_FracDiff'] = self.get_frac_diff(df['Close'], d=0.4)
+
+        # --- INTRADAY-SPECIFIC FEATURES (for 5m, 15m, 30m, 1h intervals) ---
+        if self.interval in ["1m", "5m", "15m", "30m", "1h"]:
+            logger.info("Adding intraday-specific features...")
+            
+            # 1. VWAP (Volume Weighted Average Price)
+            # Add epsilon to volume sum to avoid div by zero
+            vol_sum = df['Volume'].cumsum()
+            df['VWAP'] = (df['Close'] * df['Volume']).cumsum() / vol_sum.replace(0, 1)
+            # If VWAP is 0 (all volume 0), fallback to Close
+            df['VWAP'] = np.where(df['VWAP'] == 0, df['Close'], df['VWAP'])
+            
+            df['Price_vs_VWAP'] = (df['Close'] - df['VWAP']) / df['VWAP'].replace(0, 1) * 100  # Percentage deviation
+            df['VWAP_Slope'] = df['VWAP'].diff().fillna(0)
+            
+            # 2. Time-based features
+            df['Hour_of_Day'] = df.index.hour
+            df['Minutes_Since_Open'] = (df.index.hour - 9) * 60 + df.index.minute - 15  # Market opens at 9:15
+            df['Minutes_to_Close'] = (15 - df.index.hour) * 60 + (30 - df.index.minute)  # Market closes at 15:30
+            
+            # 3. Volume Profile
+            avg_vol = df['Volume'].rolling(window=12).mean().replace(0, 1)
+            df['Volume_vs_Avg_5m'] = df['Volume'] / avg_vol  # vs. 1-hour avg
+            df['Volume_Spike'] = (df['Volume'] > df['Volume'].rolling(window=12).mean() * 2).astype(int)
+            df['Cumulative_Volume'] = df['Volume'].cumsum()
+            
+            # 4. Futures-Spot relationship (if futures data available)
+            if self.futures_data is not None and not self.futures_data.empty:
+                # Align futures data with spot data
+                futures_close = self.futures_data['Close'].reindex(df.index, method='ffill')
+                df['Futures_Close'] = futures_close
+                df['Futures_Premium'] = (futures_close - df['Close']) / df['Close'] * 100  # Percentage premium
+                df['Basis_Change'] = df['Futures_Premium'].diff()
+            else:
+                df['Futures_Close'] = df['Close']  # Fallback
+                df['Futures_Premium'] = 0
+                df['Basis_Change'] = 0
+            
+            # 5. VIX integration (if VIX data available)
+            if self.vix_data is not None and not self.vix_data.empty:
+                vix_close = self.vix_data['Close'].reindex(df.index, method='ffill')
+                df['VIX'] = vix_close
+                df['VIX_Change'] = df['VIX'].diff()
+                df['VIX_Percentile'] = df['VIX'].rolling(window=60).apply(
+                    lambda x: pd.Series(x).rank(pct=True).iloc[-1] if len(x) > 0 else 0.5
+                )
+            else:
+                df['VIX'] = 15  # Default VIX value
+                df['VIX_Change'] = 0
+                df['VIX_Percentile'] = 0.5
+            
+            logger.info(f"Added {sum([1 for c in df.columns if c in ['VWAP', 'Futures_Premium', 'VIX']])} intraday features.")
 
         # --- Triple Barrier Labeling Strategy ---
         # Instead of simple next-candle direction, we use barriers for volatility-adjusted targets.

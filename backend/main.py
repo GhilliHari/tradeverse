@@ -99,6 +99,12 @@ async def startup_event():
     # Start watchdog
     asyncio.create_task(run_watchdog())
 
+    # Force Default to MOCK on Startup for Safety
+    logger.info("🔒 Enforcing Default MOCK Mode on Startup")
+    config.ENV = "MOCK"
+    config.ACTIVE_BROKER = "MOCK_KITE"
+    config.save()
+
 async def run_watchdog():
     while True:
         try:
@@ -124,11 +130,37 @@ async def health_check():
         return {"status": "INITIALIZING"}
     return {"status": "READY"}
 
-@app.post("/api/monitoring/heartbeat")
-async def heartbeat(user: dict = Depends(get_current_user)):
-    """Receives pulse from frontend to keep Auto-Mode alive."""
     monitor.record_heartbeat(user.get('uid'))
     return {"status": "pulse_received"}
+
+@app.post("/api/settings/whatsapp/test")
+async def test_whatsapp(user: dict = Depends(get_current_user)):
+    """Triggers a test transparency notification to the configured phone."""
+    try:
+        from notifier import notifier
+        if not notifier.enabled:
+            return {"status": "error", "message": "WhatsApp Notifier is NOT enabled. Please save your Phone and API Key first."}
+            
+        msg = "🔔 *Tradeverse Alert*: WhatsApp Integration Verified! You are now receiving system transparency alerts."
+        # Notifier uses async send_message
+        await notifier.send_message(msg)
+        return {"status": "success", "message": "Test message dispatched. Check your WhatsApp!"}
+    except Exception as e:
+        logger.error(f"WhatsApp Test Failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+@app.post("/api/settings/telegram/test")
+async def test_telegram(user: dict = Depends(get_current_user)):
+    try:
+        from notifier import notifier
+        if not notifier.telegram.enabled:
+            return {"status": "error", "message": "Telegram Notifier is NOT enabled. Please save your Bot Token and Chat ID first."}
+            
+        msg = "🔔 *Tradeverse Alert*: Telegram Integration Verified! You are now receiving system transparency alerts."
+        await notifier.telegram.send_message(msg)
+        return {"status": "success", "message": "Test message dispatched. Check your Telegram!"}
+    except Exception as e:
+        logger.error(f"Telegram Test Failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/market/ltp/{symbol}")
 async def get_ltp(symbol: str):
@@ -136,6 +168,8 @@ async def get_ltp(symbol: str):
     Fetches the Last Traded Price for a symbol.
     """
     try:
+        if not kite:
+            return {"symbol": symbol, "last_price": 0, "status": "initializing"}
         price_data = kite.ltp(symbol)
         if symbol not in price_data:
             raise HTTPException(status_code=404, detail="Symbol not found")
@@ -148,22 +182,27 @@ async def get_risk_status():
     """
     Returns the current risk engine status.
     """
+    if not risk_engine:
+        return {"ready": False, "status": "Initializing Risk Engine..."}
     return risk_engine.get_risk_status()
 
 @app.post("/api/order/place")
-async def place_order(order_data: Dict = Body(...)):
+async def place_order(order_data: Dict = Body(...), user: dict = Depends(get_current_user)):
     """
-    Validates and places an order via the broker.
+    Validates and places an order via the broker for the current user.
     """
+    user_id = user.get("uid")
     # 1. Pre-order risk validation
     validation = risk_engine.validate_order(order_data)
     if not validation["allowed"]:
         return {"status": "REJECTED", "reason": validation["reason"]}
 
-    # 2. Place order via broker (MockKite)
+    # 2. Get user-specific broker client
     try:
-        order_id = kite.place_order(
-            variety="regular",
+        broker = get_broker_client(user_id)
+        
+        order_id = broker.place_order(
+            variety="NORMAL", # Standard variety for Angel
             exchange=order_data.get("exchange", "NSE"),
             tradingsymbol=order_data.get("tradingsymbol"),
             transaction_type=order_data.get("transaction_type"),
@@ -172,7 +211,7 @@ async def place_order(order_data: Dict = Body(...)):
             order_type=order_data.get("order_type", "MARKET"),
             price=order_data.get("price")
         )
-        msg = (f"🎯 *Order Placed*\n"
+        msg = (f"🎯 *Order Placed ({user_id})*\n"
                f"Symbol: `{order_data.get('tradingsymbol')}`\n"
                f"Side: *{order_data.get('transaction_type')}*\n"
                f"Qty: `{order_data.get('quantity')}`\n"
@@ -181,7 +220,7 @@ async def place_order(order_data: Dict = Body(...)):
         notifier.notify_sync(msg)
         return {"status": "COMPLETE", "order_id": order_id, "symbol": order_data.get("tradingsymbol")}
     except Exception as e:
-        error_msg = f"❌ *Order Failed*\nSymbol: `{order_data.get('tradingsymbol')}`\nError: `{str(e)}`"
+        error_msg = f"❌ *Order Failed ({user_id})*\nSymbol: `{order_data.get('tradingsymbol')}`\nError: `{str(e)}`"
         notifier.notify_sync(error_msg)
         raise HTTPException(status_code=500, detail=f"Broker Error: {str(e)}")
 
@@ -193,21 +232,22 @@ async def toggle_circuit_breaker(active: bool = Body(...), reason: str = Body("M
     status = risk_engine.trigger_circuit_breaker(active, reason)
     return status
 
-@app.get("/api/intelligence/analyze/{symbol}")
-async def analyze_market(symbol: str):
+@app.post("/api/intelligence/analyze/{symbol}")
+async def analyze_market(symbol: str, positions: List[Dict] = Body(default=[])):
     """
-    Runs the full agentic committee analysis for a symbol.
+    Runs the full agentic committee analysis, including exit monitoring for positions.
     """
     try:
-        result = intelligence.run_analysis(symbol)
-        # result is a dict from LangGraph. We can inject regime here if needed, 
-        # but the aggregator already has access to technical_context which we'll update.
+        # Inject positions into the analysis state
+        result = intelligence.run_analysis(symbol, positions=positions)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Intelligence Layer Error: {str(e)}")
 
 @app.get("/api/market/options/{symbol}")
 async def get_options(symbol: str):
+    if not kite:
+        return {"status": "error", "detail": "Broker not initialized"}
     return kite.get_option_chain(symbol)
 
 @app.get("/api/orders")
@@ -283,86 +323,78 @@ def get_engine(type="daily"):
 @app.get("/api/ai/predict_hybrid")
 async def predict_hybrid(symbol: str = "NSE:BANKNIFTY"):
     """
-    Returns Hybrid Strategic Analysis:
-    - Daily Stratgist: Broad Trend (Bullish/Bearish)
-    - Intraday Sniper: Immediate Entry Signal (Buy/Wait)
+    Returns Hybrid Strategic Analysis using the Agentic Intelligence Layer (COR Augmented).
     """
-    norm_symbol = normalize_symbol(symbol)
-    response = {
-        "symbol": norm_symbol,
-        "daily": {"status": "NEUTRAL", "prob": 0.0},
-        "intraday": {"status": "WAIT", "prob": 0.0},
-        "final_action": "WAIT",
-        "regime": "NOMINAL"
-    }
-
-    # 1. Run Daily Pipeline
-    try:
-        from data_pipeline import DataPipeline
-        dp_daily = DataPipeline(norm_symbol, interval="1d")
-        if dp_daily.run_full_pipeline(): # Fetches latest data
-             # Get last row
-             latest_daily = dp_daily.cleaned_data.iloc[[-1]]
-             pred_daily = get_engine("daily").predict(latest_daily)
-
-             if pred_daily:
-                 response["daily"] = {
-                     "status": "BULLISH" if pred_daily["prediction"] == 1 else "BEARISH",
-                     "prob": pred_daily["probability"],
-                     "conviction": pred_daily["conviction"]
-                 }
-                 response["regime"] = pred_daily.get("regime", "NOMINAL")
-                 
-             # Extract Tactical Metrics (Key Levels & Greeks Proxy) - Always populate if data exists
-             try:
-                 response["tactical"] = {
-                     "pivot": round(latest_daily["Pivot"].values[0], 2) if "Pivot" in latest_daily else 0,
-                     "r1": round(latest_daily["R1"].values[0], 2) if "R1" in latest_daily else 0,
-                     "s1": round(latest_daily["S1"].values[0], 2) if "S1" in latest_daily else 0,
-                     "rsi": round(latest_daily["RSI"].values[0], 2) if "RSI" in latest_daily else 50,
-                     "atr": round(latest_daily["ATR_14"].values[0], 2) if "ATR_14" in latest_daily else 0,
-                     "trend_state": int(latest_daily["Trend_State"].values[0]) if "Trend_State" in latest_daily else 0
-                 }
-             except Exception as e:
-                 logger.warning(f"Could not extract tactical metrics: {e}")
-                 response["tactical"] = {}
-    except Exception as e:
-        logger.error(f"Daily Model Error: {e}")
-
-    # 2. Run Intraday Pipeline
-    try:
-        from data_pipeline import DataPipeline
-        dp_intra = DataPipeline(norm_symbol, interval="1m")
-        if dp_intra.run_full_pipeline():
-             latest_intra = dp_intra.cleaned_data.iloc[[-1]]
-             pred_intra = get_engine("intraday").predict(latest_intra)
-             if pred_intra:
-                 response["intraday"] = {
-                     "status": "BUY" if pred_intra["prediction"] == 1 else "WAIT",
-                     "prob": pred_intra["probability"],
-                     "conviction": pred_intra["conviction"], # HIGH only if OOD check passes
-                     "is_good_setup": pred_intra["prediction"] == 1
-                 }
-                 # If intraday detects a crash/volatile regime, it can override daily regime
-                 if pred_intra.get("regime") in ["CRASH", "VOLATILE"]:
-                     response["regime"] = pred_intra["regime"]
-    except Exception as e:
-        logger.error(f"Intraday Model Error: {e}")
-
-    # 3. Synthesis
-    daily_bias = response["daily"]["status"]
-    intra_signal = response["intraday"]["status"]
+    if not intelligence or not initialization_status["ready"]:
+        return {"status": "error", "message": "Intelligence Layer not initialized"}
     
-    if daily_bias == "BULLISH" and intra_signal == "BUY":
-        response["final_action"] = "STRONG_BUY"
-    elif intra_signal == "BUY": # Sniper takes entries even if Daily is weak? Maybe reckless.
-        response["final_action"] = "SCALP_BUY (Counter-Trend)"
-    elif daily_bias == "BULLISH":
-        response["final_action"] = "WAIT_FOR_DIP"
-    else:
-        response["final_action"] = "AVOID"
+    norm_symbol = normalize_symbol(symbol)
+    try:
+        # Run full Agentic analysis (Weeks 6-8 integration)
+        # We offload to thread because LangGraph/Gemini calls are blocking
+        result = await asyncio.to_thread(intelligence.run_analysis, norm_symbol)
+        
+        tech_ctx = result.get('technical_context', {})
+        
+        # Format response for frontend consumption (Mapping COR state to UI-friendly structure)
+        response = {
+            "symbol": norm_symbol,
+            "daily": {
+                "status": result.get("sentiment_label", "NEUTRAL"),
+                "prob": result.get("sentiment_score", 0.5)
+            },
+            "intraday": {
+                "status": result.get("final_signal", "WAIT"),
+                "prob": result.get("confidence", 0.0) / 100,
+                "conviction": tech_ctx.get('conviction', 'LOW')
+            },
+            "regime": result.get("regime", "NOMINAL"),
+            "confidence": result.get("confidence", 0.0),
+            "causal_strength": tech_ctx.get('causal_strength', 0.5),
+            "tactical": {
+                "pivot": tech_ctx.get('levels', {}).get('Pivot', 0),
+                "r1": tech_ctx.get('levels', {}).get('R1', 0),
+                "s1": tech_ctx.get('levels', {}).get('S1', 0),
+                "rsi": tech_ctx.get('rsi', 50),
+                "atr": tech_ctx.get('atr', 0)
+            },
+            "final_action": result.get("final_signal", "HOLD"),
+            "reasoning": result.get("trade_recommendation", {}).get("reasoning", ""),
+            "structural": {
+                "component_score": tech_ctx.get('component_alpha', {}).get('score', 0),
+                "component_status": tech_ctx.get('component_alpha', {}).get('status', 'NEUTRAL'),
+                "gex": result.get('gex_data', {})
+            },
+            "model_scores": result.get("model_scores", {})
+        }
+        return response
+    except Exception as e:
+        logger.error(f"Predict Hybrid Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-    return response
+@app.get("/api/intelligence/brain")
+async def get_brain_status(symbol: str = "NSE:BANKNIFTY"):
+    """
+    Returns real-time component scores (the 'Brain' status) for a symbol.
+    """
+    if not intelligence or not initialization_status["ready"]:
+        return {"status": "error", "message": "Intelligence Layer not initialized"}
+    
+    norm_symbol = normalize_symbol(symbol)
+    try:
+        # Offload to thread for parallel safety and blocking I/O
+        result = await asyncio.to_thread(intelligence.run_analysis, norm_symbol)
+        
+        return {
+            "symbol": norm_symbol,
+            "confidence": result.get("confidence", 0.0),
+            "model_scores": result.get("model_scores", {}),
+            "regime": result.get("regime", "NOMINAL"),
+            "final_signal": result.get("final_signal", "HOLD")
+        }
+    except Exception as e:
+        logger.error(f"Brain Status Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/ai/train")
 async def train_model(symbol: str = "NSE:BANKNIFTY"):
@@ -554,11 +586,13 @@ async def get_settings(user: dict = Depends(get_current_user)):
     
     # Real-time check
     is_live_connected = False
-    if hasattr(user_broker, 'is_connected'):
+    
+    # Check if it's a real AngelClient and is connected
+    from broker_factory import MockAngelClient
+    if not isinstance(user_broker, MockAngelClient) and hasattr(user_broker, 'is_connected'):
         is_live_connected = user_broker.is_connected()
     else:
-        # Fallback logic
-        is_live_connected = bool(settings.get("ANGEL_API_KEY")) or settings.get("ENV") == "MOCK"
+        is_live_connected = False
 
     return {
         "env": settings.get("ENV", "MOCK"),
@@ -567,10 +601,18 @@ async def get_settings(user: dict = Depends(get_current_user)):
         "angel_connected": is_live_connected,
         "broker_status": profile.get("status", "UNKNOWN"),
         "angel_credentials": {
-            "angel_client_id": settings.get("ANGEL_CLIENT_ID", ""),
-            "angel_api_key": settings.get("ANGEL_API_KEY", ""),
-            "angel_totp_key": settings.get("ANGEL_TOTP_KEY", ""),
-            "angel_password": settings.get("ANGEL_PASSWORD", "")
+            "angel_client_id": settings.get("ANGEL_CLIENT_ID", config.ANGEL_CLIENT_ID),
+            "angel_api_key": settings.get("ANGEL_API_KEY", config.ANGEL_API_KEY),
+            "angel_totp_key": settings.get("ANGEL_TOTP_KEY", config.ANGEL_TOTP_KEY),
+            "angel_password": settings.get("ANGEL_PASSWORD", config.ANGEL_PASSWORD)
+        },
+        "whatsapp_credentials": {
+            "whatsapp_phone": settings.get("WHATSAPP_PHONE", config.WHATSAPP_PHONE),
+            "whatsapp_api_key": settings.get("WHATSAPP_API_KEY", config.WHATSAPP_API_KEY)
+        },
+        "telegram_credentials": {
+            "telegram_bot_token": settings.get("TELEGRAM_BOT_TOKEN", config.TELEGRAM_BOT_TOKEN),
+            "telegram_chat_id": settings.get("TELEGRAM_CHAT_ID", config.TELEGRAM_CHAT_ID)
         },
         "mode": config.TRADING_MODE # App-wide mode (or could be user-specific)
     }
@@ -588,14 +630,81 @@ async def update_settings(payload: Dict = Body(...), user: dict = Depends(get_cu
     current_settings = redis_client.get(user_key)
     settings = json.loads(current_settings) if current_settings else {}
     
-    # Update fields
+    # Validating BEFORE Saving
+    if "env" in payload and payload["env"] == "LIVE":
+        logger.info(f"User {user_id} attempting switch to LIVE. Verifying Credentials...")
+        
+        # Get effective credentials (payload or existing)
+        api_key = payload.get("angel_api_key") or settings.get("ANGEL_API_KEY")
+        client_id = payload.get("angel_client_id") or settings.get("ANGEL_CLIENT_ID")
+        password = payload.get("angel_password") or settings.get("ANGEL_PASSWORD")
+        totp = payload.get("angel_totp_key") or settings.get("ANGEL_TOTP_KEY")
+        
+        if not (api_key and client_id and password and totp):
+             raise HTTPException(status_code=400, detail="Missing Angel One Credentials for LIVE mode.")
+             
+        try:
+             # Test Connection Explicitly
+             from angel_client import AngelClient
+             # Run blocking AngelClient init in a thread
+             test_client = await asyncio.to_thread(AngelClient, api_key, client_id, password, totp)
+             
+             if not test_client.is_connected():
+                  raise Exception("Broker Login Failed")
+             logger.info("Credentials Verified. Allowing switch to LIVE.")
+        except Exception as e:
+             logger.error(f"LIVE Switch Blocked: {e}")
+             raise HTTPException(status_code=400, detail=f"LIVE Mode Denied: Invalid Credentials. {str(e)}")
+
+    # Update fields only after validation pass
     if "active_broker" in payload: settings["ACTIVE_BROKER"] = payload["active_broker"]
-    if "env" in payload: settings["ENV"] = payload["env"]
-    if "angel_client_id" in payload: settings["ANGEL_CLIENT_ID"] = payload["angel_client_id"]
-    if "angel_password" in payload: settings["ANGEL_PASSWORD"] = payload["angel_password"]
-    if "angel_api_key" in payload: settings["ANGEL_API_KEY"] = payload["angel_api_key"]
-    if "angel_totp_key" in payload: settings["ANGEL_TOTP_KEY"] = payload["angel_totp_key"]
     
+    # SAVE Angel Credentials if provided
+    if "angel_api_key" in payload: 
+        settings["ANGEL_API_KEY"] = payload["angel_api_key"]
+        config.ANGEL_API_KEY = payload["angel_api_key"]
+    if "angel_client_id" in payload: 
+        settings["ANGEL_CLIENT_ID"] = payload["angel_client_id"]
+        config.ANGEL_CLIENT_ID = payload["angel_client_id"]
+    if "angel_password" in payload: 
+        settings["ANGEL_PASSWORD"] = payload["angel_password"]
+        config.ANGEL_PASSWORD = payload["angel_password"]
+    if "angel_totp_key" in payload: 
+        settings["ANGEL_TOTP_KEY"] = payload["angel_totp_key"]
+        config.ANGEL_TOTP_KEY = payload["angel_totp_key"]
+
+    if "whatsapp_phone" in payload:
+        settings["WHATSAPP_PHONE"] = payload["whatsapp_phone"]
+        config.WHATSAPP_PHONE = payload["whatsapp_phone"]
+        
+    if "whatsapp_api_key" in payload:
+        settings["WHATSAPP_API_KEY"] = payload["whatsapp_api_key"]
+        config.WHATSAPP_API_KEY = payload["whatsapp_api_key"]
+
+    if "telegram_bot_token" in payload:
+        settings["TELEGRAM_BOT_TOKEN"] = payload["telegram_bot_token"]
+        config.TELEGRAM_BOT_TOKEN = payload["telegram_bot_token"]
+        
+    if "telegram_chat_id" in payload:
+        settings["TELEGRAM_CHAT_ID"] = payload["telegram_chat_id"]
+        config.TELEGRAM_CHAT_ID = payload["telegram_chat_id"]
+
+    if "env" in payload: 
+        settings["ENV"] = payload["env"]
+        # Also update global config for persistence
+        if payload["env"] in ["MOCK", "LIVE"]:
+            config.ENV = payload["env"]
+            
+        if payload["env"] == "MOCK":
+            settings["ACTIVE_BROKER"] = "NONE" # Deactivate real broker
+            config.ACTIVE_BROKER = "MOCK_KITE"
+        elif payload["env"] == "LIVE":
+            settings["ACTIVE_BROKER"] = "ANGEL" # Auto-activate Angel One
+            config.ACTIVE_BROKER = "ANGEL"
+            
+    # Persist to disk (so it survives backend restart even if Redis is Mock)
+    config.save()
+            
     # Save back to Redis
     redis_client.set(user_key, json.dumps(settings))
     logger.info(f"Updated settings for User: {user_id}")
@@ -611,21 +720,27 @@ async def update_settings(payload: Dict = Body(...), user: dict = Depends(get_cu
         # verifying connection with new settings
         # We need to temporarily force the factory to check these new settings
         # accessible via the redis key we just wrote
-        test_client = get_broker_client(user_id)
+        # Run blocking factory in a thread
+        test_client = await asyncio.to_thread(get_broker_client, user_id)
         
-        # Basic connectivity check
-        if hasattr(test_client, 'ltp'):
-            try:
-                ping = test_client.ltp("NSE:NIFTY 50")
-                if ping:
-                    broker_connected = True
-            except:
-                pass
-        
-        if hasattr(test_client, 'profile'):
-             # fallback check
-             if test_client.profile():
-                 broker_connected = True
+        # Strict Connectivity Check
+        # We rely on is_connected() which verifies the session token
+        if hasattr(test_client, 'is_connected') and test_client.is_connected():
+             broker_connected = True
+             # Update global client if connection is successful
+             global kite
+             kite = test_client
+             logger.info(f"Global Broker Client updated for {user_id}")
+        else:
+             # Double check profile status just in case
+             if hasattr(test_client, 'profile'):
+                 p = test_client.profile()
+                 if p.get('status') == 'LIVE':
+                     broker_connected = True
+                 else:
+                     error_msg = getattr(test_client, 'login_error', "Broker Login Failed")
+             else:
+                 error_msg = "Broker Client Invalid"
 
     except Exception as e:
         error_msg = str(e)
@@ -773,14 +888,77 @@ async def logout_user():
     """
     return {"status": "success", "message": "Logged out"}
 
+@app.post("/api/paper/trade")
+async def place_paper_trade(trade: Dict = Body(...), user: dict = Depends(get_current_user)):
+    """
+    Logs a manual or simulated paper trade.
+    """
+    from paper_manager import paper_manager
+    user_id = user.get('uid')
+    
+    # Optional: Check risk limits for paper trades too? (Maybe later)
+    
+    entry = paper_manager.place_trade(
+        symbol=trade.get("symbol"),
+        side=trade.get("side"),
+        quantity=trade.get("quantity"),
+        price=trade.get("price"),
+        type=trade.get("type", "MARKET"),
+        reasoning=trade.get("reasoning", ""),
+        mode=trade.get("mode", "MANUAL")
+    )
+    
+    if entry:
+        return {"status": "success", "trade": entry}
+    raise HTTPException(status_code=500, detail="Failed to log paper trade")
+
+@app.post("/api/paper/close")
+async def close_paper_trade(close_data: Dict = Body(...), user: dict = Depends(get_current_user)):
+    """
+    Closes an existing paper trade.
+    """
+    from paper_manager import paper_manager
+    
+    entry = paper_manager.close_trade(
+        trade_id=close_data.get("trade_id"),
+        exit_price=close_data.get("exit_price"),
+        reasoning=close_data.get("reasoning", "")
+    )
+    
+    if entry:
+        return {"status": "success", "trade": entry}
+    raise HTTPException(status_code=404, detail="Trade ID not found or failed to close")
+
+@app.get("/api/paper/history")
+async def get_paper_history(user: dict = Depends(get_current_user)):
+    """
+    Returns full paper trading history (Observatory Data).
+    """
+    from paper_manager import paper_manager
+    return paper_manager.get_history()
+
+@app.get("/api/paper/positions")
+async def get_paper_positions(user: dict = Depends(get_current_user)):
+    """
+    Returns currently open paper positions.
+    """
+    from paper_manager import paper_manager
+    return paper_manager.get_open_positions()
+
 @app.post("/api/trading/autopilot")
-async def execute_autopilot(symbol: str = Body(...), quantity: int = Body(1)):
+async def execute_autopilot(
+    symbol: str = Body(...), 
+    quantity: int = Body(1),
+    mode: str = Body("LIVE", embed=True),
+    greedy: bool = Body(False, embed=True)
+):
     """
     Expert-level execution: Only triggers an order if Sentiment + AI Technical signals match.
+    Supports 'LIVE' (Broker) and 'PAPER' (Simulation) modes.
     """
     # 1. Run Intelligence Analysis
     try:
-        analysis = intelligence.run_analysis(symbol)
+        analysis = await asyncio.to_thread(intelligence.run_analysis, symbol, greedy=greedy)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Intelligence Layer Failure: {str(e)}")
     
@@ -795,7 +973,39 @@ async def execute_autopilot(symbol: str = Body(...), quantity: int = Body(1)):
     # 2. Map Signal to Transaction Type
     tx_type = "BUY" if signal == "BUY" else "SELL"
     
-    # 3. Risk Engine Validation
+    # 3. Execution based on Mode
+    if mode == "PAPER":
+        try:
+            from paper_manager import paper_manager
+            # Fetch current price for paper execution
+            ltp = 0
+            try:
+                ltp = kite.ltp(symbol).get(symbol, {}).get('last_price', 0)
+            except:
+                pass # Fallback or use mock price
+                
+            entry = paper_manager.place_trade(
+                symbol=symbol,
+                side=tx_type,
+                quantity=quantity,
+                price=ltp,
+                type="MARKET",
+                reasoning=f"AUTO-PILOT: {analysis.get('trade_recommendation', {}).get('reasoning', 'AI Signal')}",
+                mode="AUTO"
+            )
+            return {
+                "status": "EXECUTED",
+                "trade": entry,
+                "signal": signal,
+                "analysis": analysis,
+                "mode": "PAPER"
+            }
+        except Exception as e:
+            return {"status": "ERROR", "reason": str(e), "analysis": analysis}
+
+    # LIVE / MOCK BROKER EXECUTION
+    
+    # 3b. Risk Engine Validation (Only for Broker trades)
     order_data = {
         "tradingsymbol": symbol,
         "transaction_type": tx_type,
@@ -826,7 +1036,8 @@ async def execute_autopilot(symbol: str = Body(...), quantity: int = Body(1)):
             "status": "EXECUTED",
             "order_id": order_id,
             "signal": signal,
-            "analysis": analysis
+            "analysis": analysis,
+            "mode": "BROKER"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Broker Execution Error: {str(e)}")

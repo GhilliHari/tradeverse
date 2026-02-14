@@ -63,3 +63,38 @@ def get_redis_client():
         return RedisMock()
 
 redis_client = get_redis_client()
+
+class SignalCache:
+    """
+    Wrapper for Redis caching of expensive analysis signals.
+    """
+    def __init__(self, client=None):
+        self.client = client if client else redis_client
+        self.ttl = 60 # 1 minute default cache (since we use 1m candles)
+
+    def cache_signal(self, symbol: str, signal_data: dict, ttl=None):
+        """
+        Caches the full signal dictionary.
+        """
+        if not self.client: return False
+        try:
+            key = f"signal:{symbol}"
+            self.client.set(key, json.dumps(signal_data), ex=ttl if ttl else self.ttl)
+            return True
+        except Exception as e:
+            logger.warning(f"Failed to cache signal: {e}")
+            return False
+
+    def get_signal(self, symbol: str):
+        """
+        Retrieves cached signal if available.
+        """
+        if not self.client: return None
+        try:
+            key = f"signal:{symbol}"
+            data = self.client.get(key)
+            if data:
+                return json.loads(data)
+        except Exception as e:
+            logger.warning(f"Failed to retrieve cached signal: {e}")
+        return None

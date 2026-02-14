@@ -49,6 +49,12 @@ class TestOrderMapping:
         }
         mock_api.getProfile.return_value = {'status': True, 'data': {}}
         mock_api.placeOrder.return_value = "ORDER123"
+        
+        # Mock SearchScrip for Future resolution
+        mock_api.searchScrip.return_value = {
+            'status': True,
+            'data': [{'tradingsymbol': 'BANKNIFTY24FEB20FUT', 'symboltoken': '123456'}]
+        }
 
         client = AngelClient("api_key", "client_id", "password", "totp")
         
@@ -66,9 +72,11 @@ class TestOrderMapping:
         args, _ = mock_api.placeOrder.call_args
         order_params = args[0]
         
-        assert order_params['tradingsymbol'] == "Nifty Bank"
-        assert order_params['symboltoken'] == "99926009"
-        print("SUCCESS: BANKNIFTY correctly mapped to Nifty Bank/99926009")
+        # New behavior: Resolves to searchScrip result for "BANKNIFTY FUT"
+        assert order_params['tradingsymbol'] == "BANKNIFTY24FEB20FUT"
+        assert order_params['symboltoken'] == "123456"
+        assert order_params['exchange'] == "NFO"
+        print("SUCCESS: BANKNIFTY correctly resolved to tradable Future BANKNIFTY24FEB20FUT/123456")
 
 if __name__ == "__main__":
     # If run directly, run the tests without manual patch pass

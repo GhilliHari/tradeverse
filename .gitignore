@@ -75,3 +75,7 @@ firebase-debug.log
 .pytest_cache/
 .coverage
 htmlcov/
+settings.json
+backend/settings.json
+token_usage.json
+backend/token_usage.json
