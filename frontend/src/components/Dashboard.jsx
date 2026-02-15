@@ -1005,9 +1005,9 @@ const DashboardWithLogic = () => {
     }, [activeTab]);
 
     const handleTabChange = (tabLabel) => {
-        const ALLOWED_MOCK_TABS = ['Live Terminal', 'Settings', 'Backtest', 'Strategies', 'Analytics', 'INSIGHTS', 'Simulations', 'Observatory', 'LESSONS LEARNED'];
+        const ALLOWED_MOCK_TABS = ['Live Terminal', 'Settings', 'Backtest', 'Strategies', 'Analytics', 'INSIGHTS', 'Simulations', 'Observatory', 'Lessons Learned'];
 
-        if (settings.env === 'MOCK' && !ALLOWED_MOCK_TABS.includes(tabLabel)) {
+        if (settings.env === 'MOCK' && !ALLOWED_MOCK_TABS.some(t => t.toUpperCase() === tabLabel.toUpperCase())) {
             console.log(`[TAB_RESTRICTION] Blocked access to ${tabLabel} in MOCK mode.`);
             setShowLogin(true);
             return;
