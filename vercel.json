@@ -6,8 +6,8 @@
     "framework": null,
     "rewrites": [
         {
-            "source": "/api/(.*)",
-            "destination": "https://tradeverse-1-aosu.onrender.com/api/$1"
+            "source": "/api/:path*",
+            "destination": "https://tradeverse-1-aosu.onrender.com/api/:path*"
         },
         {
             "source": "/(.*)",
