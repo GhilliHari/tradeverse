@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scan, Lock, Fingerprint, CheckCircle, User, Mail, ShieldAlert, Key, ChevronLeft } from 'lucide-react';
+import { Scan, Lock, Fingerprint, CheckCircle, User, Mail, ShieldAlert, Key, ChevronLeft, Smartphone } from 'lucide-react';
 import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
+    OAuthProvider,
+    signInWithPopup
 } from 'firebase/auth';
 import { auth } from '../firebase';
 import ScrambleText from './ui/ScrambleText';
@@ -105,6 +107,25 @@ const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
         } catch (err) {
             console.error("Reset Error:", err);
             setStep('forgot');
+            setError(err.message);
+        }
+    };
+
+    const handleAppleAuth = async () => {
+        setError(null);
+        setStep('verifying');
+        const provider = new OAuthProvider('apple.com');
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            const token = await user.getIdToken();
+            console.log("Apple Login Success:", user.uid);
+            onLogin(token);
+            setStep('success');
+            setTimeout(onClose, 800);
+        } catch (err) {
+            console.error("Apple Auth Error:", err);
+            setStep('input');
             setError(err.message);
         }
     };
@@ -271,6 +292,15 @@ const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
                                         step === 'signup' ? 'INITIALIZE OPERATOR' :
                                             step === 'forgot' ? 'REQUEST RESET' :
                                                 'INITIALIZE SESSION'}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={handleAppleAuth}
+                                    className="w-full bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest border border-white/10 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                >
+                                    <Smartphone className="w-4 h-4" />
+                                    Sign In with Apple ID
                                 </button>
 
                                 <div className="pt-2 flex flex-col gap-3">
