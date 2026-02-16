@@ -41,8 +41,10 @@ const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
         setStep('verifying');
 
         try {
-            if (!auth || auth?.config?.apiKey?.includes("DummyKey")) {
-                console.warn("Using Mock Auth Bypass (Firebase not configured)");
+            // Check for "Mock Mode" bypass if config is dummy, auth is missing, or key is malformed
+            const isDummyKey = auth?.config?.apiKey?.includes("DummyKey") || auth?.config?.apiKey?.length < 20;
+            if (!auth || isDummyKey) {
+                console.warn("Using Mock Auth Bypass (Firebase not configured or invalid key)");
                 setTimeout(() => {
                     onLogin("mock-token-123-local-bypass");
                     setStep('success');
