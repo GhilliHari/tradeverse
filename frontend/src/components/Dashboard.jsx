@@ -37,7 +37,7 @@ import MarketClock from './MarketClock';
 
 
 // BASE API URL
-const API_URL = import.meta.env.VITE_API_URL || "https://tradeverse-1-aosu.onrender.com";
+const API_URL = "https://tradeverse-1-aosu.onrender.com"; // Forced for production reliability
 
 const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
     <button
@@ -772,7 +772,7 @@ const DashboardWithLogic = () => {
 
     const fetchPrice = async () => {
         try {
-            const res = await fetch(`/api/market/ltp/${symbol}`);
+            const res = await fetch(`${API_URL}/api/market/ltp/${symbol}`);
             if (!res.ok) return; // Skip if backend fails
             const info = await res.json();
 
@@ -794,7 +794,7 @@ const DashboardWithLogic = () => {
 
     const fetchOptionChain = async () => {
         try {
-            const res = await fetch(`/api/market/options/${symbol}`);
+            const res = await fetch(`${API_URL}/api/market/options/${symbol}`);
             if (!res.ok) return;
             const info = await res.json();
             // Ensure info is an array
@@ -810,7 +810,7 @@ const DashboardWithLogic = () => {
         if (!isLoggedIn) return;
         setIsAnalyzing(true);
         try {
-            const res = await fetch(`/api/intelligence/analyze/${symbol}`);
+            const res = await fetch(`${API_URL}/api/intelligence/analyze/${symbol}`);
             const result = await res.json();
             setAnalysis(result);
             setData(prev => ({
@@ -943,7 +943,7 @@ const DashboardWithLogic = () => {
     const handleTrainModel = async () => {
         setIsTraining(true);
         try {
-            const res = await fetch(`/api/ai/train?symbol=${symbol}`);
+            const res = await fetch(`${API_URL}/api/ai/train?symbol=${symbol}`);
             const result = await res.json();
             if (result.status === 'success') {
                 setModelMetrics(result.metrics);
