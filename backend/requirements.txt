@@ -1,13 +1,13 @@
---extra-index-url https://download.pytorch.org/whl/cpu
+# --extra-index-url https://download.pytorch.org/whl/cpu
 # torch>=2.0.0
 uvicorn>=0.23.0
 gunicorn>=21.2.0
 python-dotenv>=1.0.0
 requests>=2.31.0
 pandas>=2.0.0
-numpy>=1.24.0
-scikit-learn>=1.3.0
-joblib>=1.3.0
+# numpy implicit dependency via pandas
+# scikit-learn>=1.3.0
+# joblib>=1.3.0
 beautifulsoup4>=4.12.0
 google-generativeai>=0.3.0
 langgraph>=0.0.10
@@ -16,7 +16,7 @@ smartapi-python>=1.3.4
 kiteconnect>=3.9.0
 pyotp>=2.9.0
 websockets>=11.0
-# AI / Deep Learning (CPU versions for lighter container)
+# Heavy ML deps commented out for Render stability
 # pytorch-forecasting>=1.0.0
 # pytorch-lightning>=2.0.0
 firebase-admin>=6.2.0
@@ -26,7 +26,7 @@ logzero>=1.7.0
 websocket-client>=1.6.0
 # gymnasium>=0.28.1
 # stable-baselines3>=2.1.0
-statsmodels>=0.14.0
+# statsmodels>=0.14.0
 yfinance>=0.2.35
 # shimmy>=1.3.0
 typing-extensions>=4.5.0
