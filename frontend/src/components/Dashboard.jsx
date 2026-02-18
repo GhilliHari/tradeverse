@@ -57,7 +57,7 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
 const ControlToggle = ({ label, active, onClick, color = 'emerald' }) => (
     <button
         onClick={onClick}
-        className={`relative px-4 py-2 rounded-xl border transition-all duration-500 flex items-center gap-3 overflow-hidden group hover:scale-105 active:scale-95 cursor-pointer z-50 ${active
+        className={`relative px-4 py-2 h-[38px] rounded-xl border transition-all duration-500 flex items-center gap-3 overflow-hidden group hover:scale-105 active:scale-95 cursor-pointer z-50 ${active
             ? `bg-${color}-500/10 border-${color}-500/30 shadow-[0_0_20px_rgba(16,185,129,0.2)]`
             : 'bg-white/5 border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/5'
             }`}
@@ -1011,13 +1011,22 @@ const DashboardWithLogic = () => {
     };
 
     const pollTrainingStatus = async () => {
+        let errorCount = 0;
+        let attempts = 0;
+        const maxAttempts = 450; // ~15 minutes at 2s interval
+
         const interval = setInterval(async () => {
+            attempts++;
             try {
                 const res = await fetch(`${API_URL}/api/ai/train/status`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+
+                if (!res.ok) throw new Error("Status check failed");
+
                 const status = await res.json();
                 setTrainingStatus(status);
+                errorCount = 0; // Reset on success
 
                 if (!status.is_training) {
                     clearInterval(interval);
@@ -1027,11 +1036,25 @@ const DashboardWithLogic = () => {
                         showToast("✅ AI Swarm Rebuild Complete!", "success");
                         setModelMetrics(status.metrics);
                     } else if (status.stage === 'ERROR') {
-                        showToast("❌ Training Failed", "error");
+                        showToast("❌ Training Failed: " + (status.message || "Unknown Error"), "error");
                     }
                 }
             } catch (e) {
                 console.error("Status Poll Failed", e);
+                errorCount++;
+                if (errorCount >= 5) {
+                    clearInterval(interval);
+                    setIsTraining(false);
+                    setTrainingStatus(prev => ({ ...prev, stage: 'ERROR', message: 'Connection lost during training' }));
+                    showToast("❌ Training Status Connection Lost", "error");
+                }
+            }
+
+            if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                setIsTraining(false);
+                setTrainingStatus(prev => ({ ...prev, stage: 'ERROR', message: 'Training timed out' }));
+                showToast("❌ Training Timed Out", "error");
             }
         }, 2000); // Poll every 2 seconds
     };
@@ -1257,7 +1280,7 @@ const DashboardWithLogic = () => {
                     </div>
                 </div>
 
-                <nav className="flex-1 space-y-1 overflow-y-auto custom-scrollbar pr-2">
+                <nav className="flex-1 space-y-1 overflow-y-auto custom-scrollbar pr-2 pb-20">
                     {navItems.map((item) => (
                         <SidebarItem
                             key={item.label}
@@ -1365,7 +1388,7 @@ const DashboardWithLogic = () => {
                                 {/* Emergency Kill Switch */}
                                 <button
                                     onClick={handleEmergencyStop}
-                                    className="flex-shrink-0 px-3 lg:px-4 py-2 rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 hover:border-red-500/40 transition-all flex items-center gap-2 lg:gap-3 hover:scale-105 active:scale-95 cursor-pointer z-50 group"
+                                    className="flex-shrink-0 px-3 lg:px-4 py-2 h-[38px] rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 hover:border-red-500/40 transition-all flex items-center gap-2 lg:gap-3 hover:scale-105 active:scale-95 cursor-pointer z-50 group"
                                     title="CRITICAL EMERGENCY STOP"
                                 >
                                     <AlertTriangle className="w-3 h-3 lg:w-4 lg:h-4 text-red-500/60 group-hover:text-red-500" />

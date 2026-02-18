@@ -14,7 +14,7 @@ const StatusBadge = ({ label, status, pulse = false, color = 'emerald' }) => {
     const activeColor = colorMap[color] || colorMap.slate;
 
     return (
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm">
+        <div className="flex items-center gap-2 px-3 py-1.5 h-[38px] rounded-full bg-white/5 border border-white/5 backdrop-blur-sm">
             <div className="relative flex items-center justify-center">
                 <div className={`w-2 h-2 rounded-full ${activeColor.bg} ${pulse ? 'animate-pulse' : ''} ${activeColor.shadow}`} />
                 {pulse && (
