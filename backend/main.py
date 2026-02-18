@@ -432,9 +432,10 @@ async def get_brain_status(symbol: str = "NSE:BANKNIFTY"):
         logger.error(f"Brain Status Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-async def train_swarm_background():
+def train_swarm_background():
     """
     Background task to retrain the entire AI Swarm.
+    Runs in a threadpool (sync def) to avoid blocking the async event loop.
     """
     global training_status
     from datetime import datetime
@@ -448,12 +449,39 @@ async def train_swarm_background():
             "started_at": datetime.now().isoformat()
         })
         
-        # Import heavy modules
-        from data_pipeline import DataPipeline
-        from model_engine import ModelEngine
-        from tft_engine import TFTEngine
-        from rl_trading_agent import RLTradingAgent
-        from regime_engine import IntradayRegimeEngine
+        # Import heavy modules with Lite Mode Fallback
+        try:
+            from data_pipeline import DataPipeline
+            from model_engine import ModelEngine
+        except ImportError:
+            logger.warning("Lite Mode: ML Engines (sklearn) not available.")
+            training_status.update({
+                "is_training": False,
+                "progress": 100,
+                "stage": "COMPLETE",
+                "message": "Lite Mode Active. Training Skipped (ML deps missing).",
+                "completed_at": datetime.now().isoformat(),
+                "metrics": {"daily": {"accuracy": 0.0}, "intraday": {"accuracy": 0.0}}
+            })
+            return
+
+        # Optional Deep Learning Modules
+        TFTEngine = None
+        RLTradingAgent = None
+        IntradayRegimeEngine = None
+        
+        try:
+            from tft_engine import TFTEngine
+        except ImportError: logger.warning("Lite Mode: TFTEngine skipped")
+        
+        try:
+            from rl_trading_agent import RLTradingAgent
+        except ImportError: logger.warning("Lite Mode: RLTradingAgent skipped")
+        
+        try:
+            from regime_engine import IntradayRegimeEngine
+        except ImportError: logger.warning("Lite Mode: RegimeEngine skipped")
+
         
         # Stage 1: Daily Strategist
         training_status.update({"progress": 15, "stage": "DAILY_STRATEGIST", "message": "Training Daily Ensemble..."})
@@ -472,32 +500,41 @@ async def train_swarm_background():
         intraday_metrics = intraday_engine.train(dp_intraday.train_data, dp_intraday.test_data)
         
         # Stage 3: TFT Transformer
-        training_status.update({"progress": 55, "stage": "TFT_TRANSFORMER", "message": "Training Deep Transformer..."})
-        logger.info("[TRAIN_SWARM] Stage 3: TFT Transformer")
-        tft = TFTEngine(daily_engine.features)
-        tft.train(dp_daily.train_data, epochs=10)
-        tft.save_model()
+        if TFTEngine:
+            training_status.update({"progress": 55, "stage": "TFT_TRANSFORMER", "message": "Training Deep Transformer..."})
+            logger.info("[TRAIN_SWARM] Stage 3: TFT Transformer")
+            tft = TFTEngine(daily_engine.features)
+            tft.train(dp_daily.train_data, epochs=10)
+            tft.save_model()
+        else:
+            logger.info("[TRAIN_SWARM] Skipping Stage 3 (Lite Mode)")
         
         # Stage 4: RL Sniper
-        training_status.update({"progress": 75, "stage": "RL_OPTIMIZER", "message": "Training RL Sniper..."})
-        logger.info("[TRAIN_SWARM] Stage 4: RL Sniper")
-        rl_agent = RLTradingAgent(dp_intraday.train_data, daily_engine.features)
-        rl_agent.train(total_timesteps=10000)
-        rl_agent.save_model()
+        if RLTradingAgent:
+            training_status.update({"progress": 75, "stage": "RL_OPTIMIZER", "message": "Training RL Sniper..."})
+            logger.info("[TRAIN_SWARM] Stage 4: RL Sniper")
+            rl_agent = RLTradingAgent(dp_intraday.train_data, daily_engine.features)
+            rl_agent.train(total_timesteps=5000) # Reduced for robustness
+            rl_agent.save_model()
+        else:
+            logger.info("[TRAIN_SWARM] Skipping Stage 4 (Lite Mode)")
         
         # Stage 5: Regime HMM
-        training_status.update({"progress": 90, "stage": "REGIME_ENGINE", "message": "Training Regime Classifier..."})
-        logger.info("[TRAIN_SWARM] Stage 5: Regime HMM")
-        regime_engine = IntradayRegimeEngine()
-        regime_engine.fit(dp_intraday.cleaned_data)
-        regime_engine.save_model()
+        if IntradayRegimeEngine:
+            training_status.update({"progress": 90, "stage": "REGIME_ENGINE", "message": "Training Regime Classifier..."})
+            logger.info("[TRAIN_SWARM] Stage 5: Regime HMM")
+            regime_engine = IntradayRegimeEngine()
+            regime_engine.fit(dp_intraday.cleaned_data)
+            regime_engine.save_model()
+        else:
+            logger.info("[TRAIN_SWARM] Skipping Stage 5 (Lite Mode)")
         
         # Complete
         training_status.update({
             "is_training": False,
             "progress": 100,
             "stage": "COMPLETE",
-            "message": "All models retrained successfully!",
+            "message": "All available models retrained successfully!",
             "completed_at": datetime.now().isoformat(),
             "metrics": {
                 "daily": daily_metrics,

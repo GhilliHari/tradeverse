@@ -705,7 +705,7 @@ const DashboardWithLogic = () => {
         { icon: LayoutDashboard, label: 'Portfolio' },
         { icon: HeartPulse, label: 'System Health' },
         { icon: BookOpen, label: 'Lessons Learned' },
-        ...(isOwner ? [{ icon: Settings, label: 'Settings' }] : []),
+        { icon: Settings, label: 'Settings' },
     ];
 
     useEffect(() => {
@@ -1093,8 +1093,7 @@ const DashboardWithLogic = () => {
     const handleTabChange = (tabLabel) => {
         // IP Protection: Backup Tab Restriction
         if (tabLabel === 'Settings' && !isOwner) {
-            showToast("Access Denied: Settings restricted to system owner.", "error");
-            return;
+            // Allow access to settings for everyone for login/broker setup
         }
 
         const ALLOWED_MOCK_TABS = ['Live Terminal', 'Settings', 'Backtest', 'Strategies', 'Analytics', 'INSIGHTS', 'Simulations', 'Observatory', 'Lessons Learned'];
@@ -1354,7 +1353,7 @@ const DashboardWithLogic = () => {
 
                         <div className="flex items-center gap-3">
                             {/* Controls Group */}
-                            <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto custom-scrollbar pb-2 md:pb-0">
+                            <div className="flex items-center gap-2 md:w-auto">
                                 {/* Auto Pilot Switch */}
                                 <ControlToggle
                                     label={isAutoMode ? "AUTO" : "MANUAL"}
