@@ -58,19 +58,23 @@ def get_broker_client(user_id: str = None):
              logger.error(f"Failed to parse settings for {user_id}")
 
     # Determine Environment and Broker for this user
-    # Default to system config if not set for user (Backwards compatibility)
-    active_broker = user_settings.get("ACTIVE_BROKER", config.ACTIVE_BROKER)
+    # Default to system config ONLY IF user is OWNER. 
+    # Otherwise, require specific keys or fall back to Mock.
+    is_owner = user_id == config.OWNER_EMAIL or redis_client.get(f"user:{user_id}:email") == config.OWNER_EMAIL # Backup check
+    
+    active_broker = user_settings.get("ACTIVE_BROKER", config.ACTIVE_BROKER if is_owner else "MOCK")
     
     if active_broker == "ANGEL":
-        api_key = user_settings.get("ANGEL_API_KEY", config.ANGEL_API_KEY)
-        client_id = user_settings.get("ANGEL_CLIENT_ID", config.ANGEL_CLIENT_ID)
-        password = user_settings.get("ANGEL_PASSWORD", config.ANGEL_PASSWORD)
-        totp_key = user_settings.get("ANGEL_TOTP_KEY", config.ANGEL_TOTP_KEY)
+        # Only use global config defaults if the user is the owner
+        api_key = user_settings.get("ANGEL_API_KEY", config.ANGEL_API_KEY if is_owner else None)
+        client_id = user_settings.get("ANGEL_CLIENT_ID", config.ANGEL_CLIENT_ID if is_owner else None)
+        password = user_settings.get("ANGEL_PASSWORD", config.ANGEL_PASSWORD if is_owner else None)
+        totp_key = user_settings.get("ANGEL_TOTP_KEY", config.ANGEL_TOTP_KEY if is_owner else None)
         
         if api_key and client_id:
              return AngelClient(api_key, client_id, password, totp_key)
         else:
-             logger.warning(f"Angel keys missing for {user_id}. Falling back to Mock.")
+             logger.warning(f"Angel keys missing for unauthorized user {user_id}. Falling back to Mock.")
              return MockAngelClient(f"MOCK_{user_id}")
 
     # Default / Fallback

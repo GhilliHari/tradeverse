@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Body, Depends, Request
+from fastapi import FastAPI, HTTPException, Body, Depends, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict, Optional
 import importlib.metadata
@@ -12,7 +12,7 @@ from risk_engine import RiskEngine
 from broker_factory import get_broker_client
 # NewsScraper -> Lazy load
 from config import config
-from auth_middleware import get_current_user
+from auth_middleware import get_current_user, verify_owner
 from notifier import notifier
 from redis_manager import redis_client
 import os
@@ -80,6 +80,22 @@ async def initialize_systems():
 pipeline_cache = {}
 training_metrics = {}
 
+# Training Status Tracker (Global)
+training_status = {
+    "is_training": False,
+    "progress": 0,
+    "stage": "IDLE",
+    "message": "No training in progress",
+    "started_at": None,
+    "completed_at": None,
+    "metrics": {}
+}
+
+# Observatory Simulation Engine (Global)
+from simulation_engine import SimulationEngine
+simulation_engine = SimulationEngine(data_dir="observatory_data")
+simulation_task = None  # Will hold the asyncio task
+
 def normalize_symbol(symbol: str):
     """Maps frontend symbols to yfinance symbols."""
     u_symbol = symbol.upper()
@@ -106,12 +122,31 @@ async def startup_event():
     config.save()
 
 async def run_watchdog():
+    """
+    Watches specialized data pipelines and system health.
+    Also handles daily data updates at 4:00 PM IST.
+    """
+    from daily_data_updater import update_daily_data
+    
     while True:
         try:
-            await asyncio.to_thread(monitor.check_watchdog)
+            # System Health Check
+            if not config.GEMINI_API_KEY:
+                logger.warning("Watchdog: Gemini API Key Not Found")
+                
+            # Check if it's 4:00 PM IST (16:00) for daily update
+            # Simple check run once a minute
+            now = datetime.now()
+            if now.hour == 16 and now.minute == 0:
+                logger.info("Watchdog: Triggering Daily Data Update")
+                asyncio.create_task(update_daily_data())
+                # Sleep for 61 seconds to avoid double triggering
+                await asyncio.sleep(61)
+                
+            await asyncio.sleep(60)
         except Exception as e:
             logger.error(f"Watchdog Error: {e}")
-        await asyncio.sleep(5)
+            await asyncio.sleep(60)
 
 @app.get("/")
 async def root():
@@ -396,9 +431,269 @@ async def get_brain_status(symbol: str = "NSE:BANKNIFTY"):
         logger.error(f"Brain Status Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/ai/train")
+async def train_swarm_background():
+    """
+    Background task to retrain the entire AI Swarm.
+    """
+    global training_status
+    from datetime import datetime
+    
+    try:
+        training_status.update({
+            "is_training": True,
+            "progress": 5,
+            "stage": "DATA_INGESTION",
+            "message": "Fetching historical data...",
+            "started_at": datetime.now().isoformat()
+        })
+        
+        # Import heavy modules
+        from data_pipeline import DataPipeline
+        from model_engine import ModelEngine
+        from tft_engine import TFTEngine
+        from rl_trading_agent import RLTradingAgent
+        from regime_engine import IntradayRegimeEngine
+        
+        # Stage 1: Daily Strategist
+        training_status.update({"progress": 15, "stage": "DAILY_STRATEGIST", "message": "Training Daily Ensemble..."})
+        logger.info("[TRAIN_SWARM] Stage 1: Daily Strategist")
+        dp_daily = DataPipeline(symbol="^NSEBANK", interval="1d")
+        dp_daily.run_full_pipeline()
+        daily_engine = ModelEngine(model_type="daily")
+        daily_metrics = daily_engine.train(dp_daily.train_data, dp_daily.test_data)
+        
+        # Stage 2: Intraday Sniper
+        training_status.update({"progress": 35, "stage": "INTRADAY_SNIPER", "message": "Training Intraday Model..."})
+        logger.info("[TRAIN_SWARM] Stage 2: Intraday Sniper")
+        dp_intraday = DataPipeline(symbol="^NSEBANK", interval="1m")
+        dp_intraday.run_full_pipeline()
+        intraday_engine = ModelEngine(model_type="intraday")
+        intraday_metrics = intraday_engine.train(dp_intraday.train_data, dp_intraday.test_data)
+        
+        # Stage 3: TFT Transformer
+        training_status.update({"progress": 55, "stage": "TFT_TRANSFORMER", "message": "Training Deep Transformer..."})
+        logger.info("[TRAIN_SWARM] Stage 3: TFT Transformer")
+        tft = TFTEngine(daily_engine.features)
+        tft.train(dp_daily.train_data, epochs=10)
+        tft.save_model()
+        
+        # Stage 4: RL Sniper
+        training_status.update({"progress": 75, "stage": "RL_OPTIMIZER", "message": "Training RL Sniper..."})
+        logger.info("[TRAIN_SWARM] Stage 4: RL Sniper")
+        rl_agent = RLTradingAgent(dp_intraday.train_data, daily_engine.features)
+        rl_agent.train(total_timesteps=10000)
+        rl_agent.save_model()
+        
+        # Stage 5: Regime HMM
+        training_status.update({"progress": 90, "stage": "REGIME_ENGINE", "message": "Training Regime Classifier..."})
+        logger.info("[TRAIN_SWARM] Stage 5: Regime HMM")
+        regime_engine = IntradayRegimeEngine()
+        regime_engine.fit(dp_intraday.cleaned_data)
+        regime_engine.save_model()
+        
+        # Complete
+        training_status.update({
+            "is_training": False,
+            "progress": 100,
+            "stage": "COMPLETE",
+            "message": "All models retrained successfully!",
+            "completed_at": datetime.now().isoformat(),
+            "metrics": {
+                "daily": daily_metrics,
+                "intraday": intraday_metrics
+            }
+        })
+        logger.info("[TRAIN_SWARM] ✅ Full Swarm Rebuild Complete")
+        
+    except Exception as e:
+        logger.error(f"[TRAIN_SWARM] ❌ Training Failed: {e}")
+        training_status.update({
+            "is_training": False,
+            "stage": "ERROR",
+            "message": f"Training failed: {str(e)}",
+            "completed_at": datetime.now().isoformat()
+        })
+
+@app.post("/api/ai/train")
+async def trigger_training(background_tasks: BackgroundTasks, user: dict = Depends(verify_owner)):
+    """
+    Triggers a full AI Swarm retrain in the background (Owner-only).
+    """
+    if training_status["is_training"]:
+        raise HTTPException(status_code=409, detail="Training already in progress")
+    
+    background_tasks.add_task(train_swarm_background)
+    return {
+        "status": "started",
+        "message": "AI Swarm retraining started in background"
+    }
+
+@app.get("/api/ai/train/status")
+async def get_training_status(user: dict = Depends(get_current_user)):
+    """
+    Returns the current training status.
+    """
+    return training_status
+
+# ============= OBSERVATORY ENDPOINTS =============
+
+@app.post("/api/observatory/start")
+async def start_observatory(user: dict = Depends(verify_owner)):
+    """
+    Start the live simulation engine (Owner-only).
+    """
+    global simulation_task, intelligence
+    
+    if simulation_engine.is_running:
+        raise HTTPException(status_code=409, detail="Simulation already running")
+    
+    if intelligence is None:
+        raise HTTPException(status_code=503, detail="Intelligence layer not initialized")
+    
+    # Start simulation in background
+    simulation_task = asyncio.create_task(simulation_engine.run_simulation_loop(intelligence))
+    
+    return {
+        "status": "started",
+        "message": "Observatory simulation started"
+    }
+
+@app.post("/api/observatory/stop")
+async def stop_observatory(user: dict = Depends(verify_owner)):
+    """
+    Stop the live simulation engine (Owner-only).
+    """
+    if not simulation_engine.is_running:
+        raise HTTPException(status_code=409, detail="Simulation not running")
+    
+    simulation_engine.stop()
+    
+    return {
+        "status": "stopped",
+        "message": "Observatory simulation stopped"
+    }
+
+@app.get("/api/observatory/status")
+async def get_observatory_status(user: dict = Depends(get_current_user)):
+    """
+    Get current observatory simulation status.
+    """
+    return simulation_engine.get_status()
+
+@app.get("/api/observatory/results")
+async def get_observatory_results(date: Optional[str] = None, user: dict = Depends(get_current_user)):
+    """
+    Get simulation results for a specific date (defaults to today).
+    """
+    return simulation_engine.get_results(date)
+
+@app.get("/api/observatory/summary")
+async def get_observatory_summary(date: Optional[str] = None, user: dict = Depends(get_current_user)):
+    """
+    Get performance summary for a specific date (defaults to today).
+    """
+    return simulation_engine.get_performance_summary(date)
+
+
+# ============= DATA MANAGEMENT ENDPOINTS =============
+
+@app.post("/api/data/refresh")
+async def refresh_data(user: dict = Depends(verify_owner)):
+    """
+    Manually triggers the daily data update cycle (Owner-only).
+    """
+    from daily_data_updater import update_daily_data
+    
+    # Run in background to avoid timeout
+    asyncio.create_task(update_daily_data())
+    
+    return {
+        "status": "started",
+        "message": "Data refresh cycle started in background"
+    }
+
+# ============= BACKTEST ENDPOINT =============
+
+@app.post("/api/ai/backtest")
+async def run_backtest_endpoint(request: dict):
+    """
+    Comprehensive Backtest Endpoint.
+    Supports: daily_12y, intraday_7d, intraday_1m, intraday_1y
+    """
+    symbol = request.get("symbol", "^NSEBANK")
+    model_type = request.get("model_type", "daily_12y")
+    normalized_symbol = normalize_symbol(symbol)
+    
+    logger.info(f"Running Backtest: {model_type} for {normalized_symbol}")
+    
+    try:
+        from data_pipeline import DataPipeline
+        from model_engine import ModelEngine
+        
+        # 1. Configuration based on model_type
+        interval = "1d"
+        lookback_days = 3650 # 10 years
+        
+        if model_type == "intraday_7d":
+            interval = "1m"
+            lookback_days = 7
+        elif model_type == "intraday_1m":
+            interval = "5m"
+            lookback_days = 30
+        elif model_type == "intraday_1y":
+            interval = "15m" 
+            lookback_days = 365
+            
+        # 2. Fetch Data
+        pipeline = DataPipeline(symbol=normalized_symbol, interval=interval, lookback_days=lookback_days)
+        pipeline.run_full_pipeline()
+        
+        if pipeline.train_data is None or pipeline.test_data is None:
+             # Fallback if split failed (e.g. not enough data)
+             if pipeline.cleaned_data is not None and len(pipeline.cleaned_data) > 100:
+                  pipeline.split_data()
+             else:
+                  raise HTTPException(status_code=400, detail="Insufficient data for backtest")
+
+        # 3. Validation Metrics (mock training for speed if needed, or real training)
+        # Using ModelEngine to train/test
+        engine_type = "intraday" if "intraday" in model_type else "daily"
+        engine = ModelEngine(model_type=engine_type)
+        
+        # Use a smaller subset for speed if it's a huge dataset in "interactive" backtest
+        # But user wants "real actual data", so we use full
+        metrics = engine.train(pipeline.train_data, pipeline.test_data)
+        
+        # 4. Enhance Metrics with Data Quality
+        quality = pipeline.get_data_quality_metrics()
+        
+        # Merge metrics
+        response_metrics = {**metrics, **quality}
+        
+        # Add Split Info
+        response_metrics.update({
+             "train_start": pipeline.train_data.index[0].strftime("%Y-%m-%d"),
+             "train_end": pipeline.train_data.index[-1].strftime("%Y-%m-%d"),
+             "test_start": pipeline.test_data.index[0].strftime("%Y-%m-%d"),
+             "test_end": pipeline.test_data.index[-1].strftime("%Y-%m-%d"),
+             "train_records": len(pipeline.train_data),
+             "test_records": len(pipeline.test_data)
+        })
+        
+        return {
+            "status": "success",
+            "metrics": response_metrics
+        }
+        
+    except Exception as e:
+        logger.error(f"Backtest Failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ai/train_legacy")
 async def train_model(symbol: str = "NSE:BANKNIFTY"):
     """
+    DEPRECATED: Legacy sync training endpoint (kept for backwards compatibility).
     Triggers the Hybrid AI Training process using the loaded data pipeline.
     """
     normalized_symbol = normalize_symbol(symbol)
@@ -594,31 +889,37 @@ async def get_settings(user: dict = Depends(get_current_user)):
     else:
         is_live_connected = False
 
+    # IP Protection: Mask credentials if not owner
+    is_owner = user.get("email") == config.OWNER_EMAIL
+    
+    masked_creds = {
+        "angel_client_id": settings.get("ANGEL_CLIENT_ID", config.ANGEL_CLIENT_ID) if is_owner else "RESTRICTED",
+        "angel_api_key": settings.get("ANGEL_API_KEY", config.ANGEL_API_KEY) if is_owner else "RESTRICTED",
+        "angel_totp_key": settings.get("ANGEL_TOTP_KEY", config.ANGEL_TOTP_KEY) if is_owner else "RESTRICTED",
+        "angel_password": settings.get("ANGEL_PASSWORD", config.ANGEL_PASSWORD) if is_owner else "RESTRICTED"
+    }
+
     return {
         "env": settings.get("ENV", "MOCK"),
         "active_broker": settings.get("ACTIVE_BROKER", "ANGEL"),
         "user_profile": profile,
         "angel_connected": is_live_connected,
+        "is_owner": is_owner,
         "broker_status": profile.get("status", "UNKNOWN"),
-        "angel_credentials": {
-            "angel_client_id": settings.get("ANGEL_CLIENT_ID", config.ANGEL_CLIENT_ID),
-            "angel_api_key": settings.get("ANGEL_API_KEY", config.ANGEL_API_KEY),
-            "angel_totp_key": settings.get("ANGEL_TOTP_KEY", config.ANGEL_TOTP_KEY),
-            "angel_password": settings.get("ANGEL_PASSWORD", config.ANGEL_PASSWORD)
-        },
+        "angel_credentials": masked_creds,
         "whatsapp_credentials": {
-            "whatsapp_phone": settings.get("WHATSAPP_PHONE", config.WHATSAPP_PHONE),
-            "whatsapp_api_key": settings.get("WHATSAPP_API_KEY", config.WHATSAPP_API_KEY)
+            "whatsapp_phone": settings.get("WHATSAPP_PHONE", config.WHATSAPP_PHONE) if is_owner else "RESTRICTED",
+            "whatsapp_api_key": settings.get("WHATSAPP_API_KEY", config.WHATSAPP_API_KEY) if is_owner else "RESTRICTED"
         },
         "telegram_credentials": {
-            "telegram_bot_token": settings.get("TELEGRAM_BOT_TOKEN", config.TELEGRAM_BOT_TOKEN),
-            "telegram_chat_id": settings.get("TELEGRAM_CHAT_ID", config.TELEGRAM_CHAT_ID)
+            "telegram_bot_token": settings.get("TELEGRAM_BOT_TOKEN", config.TELEGRAM_BOT_TOKEN) if is_owner else "RESTRICTED",
+            "telegram_chat_id": settings.get("TELEGRAM_CHAT_ID", config.TELEGRAM_CHAT_ID) if is_owner else "RESTRICTED"
         },
-        "mode": config.TRADING_MODE # App-wide mode (or could be user-specific)
+        "mode": config.TRADING_MODE
     }
 
 @app.post("/api/settings/update")
-async def update_settings(payload: Dict = Body(...), user: dict = Depends(get_current_user)):
+async def update_settings(payload: Dict = Body(...), user: dict = Depends(verify_owner)):
     """
     Updates runtime settings for the authenticated user.
     Saves to Redis to persist across restarts and sessions.
@@ -755,7 +1056,7 @@ async def update_settings(payload: Dict = Body(...), user: dict = Depends(get_cu
     }
 
 @app.post("/api/settings/mode")
-async def set_execution_mode(request: Request, mode: str = Body(..., embed=True), user: dict = Depends(get_current_user)):
+async def set_execution_mode(request: Request, mode: str = Body(..., embed=True), user: dict = Depends(verify_owner)):
     """
     Sets the execution mode (MANUAL or AUTO). Protected with IP validation.
     """

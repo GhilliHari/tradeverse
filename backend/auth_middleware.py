@@ -74,3 +74,15 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         set_user_context(user_data['uid'])
         
     return user_data
+
+async def verify_owner(user: dict = Depends(get_current_user)):
+    """
+    Dependency to restrict access to the system owner only.
+    """
+    if user.get("email") != config.OWNER_EMAIL:
+        logger.warning(f"🚫 Unauthorized Access Attempt: User {user.get('email')} tried to access OWNER-ONLY resources.")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. This operation is restricted to the Tradeverse system owner."
+        )
+    return user

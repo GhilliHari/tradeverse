@@ -24,6 +24,43 @@ class DataPipeline:
         self.train_data = None
         self.test_data = None
 
+    def get_data_quality_metrics(self) -> dict:
+        """
+        Calculate data quality metrics for the loaded dataset.
+        """
+        if self.cleaned_data is None or len(self.cleaned_data) == 0:
+            return {
+                "total_records": 0,
+                "missing_values_pct": 0.0,
+                "data_coverage_pct": 0.0,
+                "last_updated": datetime.now().isoformat(),
+                "data_freshness_hours": 0.0
+            }
+            
+        total_cells = len(self.cleaned_data) * len(self.cleaned_data.columns)
+        missing_cells = self.cleaned_data.isnull().sum().sum()
+        missing_pct = (missing_cells / total_cells) * 100 if total_cells > 0 else 0
+        
+        last_timestamp = self.cleaned_data.index[-1]
+        if isinstance(last_timestamp, str):
+            # Handle case where index might be string (shouldn't happen with pandas datetime index but safety first)
+            last_timestamp = datetime.fromisoformat(last_timestamp)
+            
+        # Ensure timezone awareness compatibility
+        now = datetime.now()
+        if last_timestamp.tzinfo is not None:
+             last_timestamp = last_timestamp.replace(tzinfo=None) # Compare naive-to-naive for simplicity
+             
+        freshness_hours = (now - last_timestamp).total_seconds() / 3600
+        
+        return {
+            "total_records": len(self.cleaned_data),
+            "missing_values_pct": round(missing_pct, 4),
+            "data_coverage_pct": round(100 - missing_pct, 2),
+            "last_updated": last_timestamp.isoformat(),
+            "data_freshness_hours": round(freshness_hours, 1)
+        }
+
     def get_frac_diff(self, series, d, thres=0.01):
         """
         Calculates Fractional Differentiation for a series to make it stationary 
@@ -50,10 +87,12 @@ class DataPipeline:
         end_date = datetime.now()
         
         if self.interval == "1d":
-            start_date = end_date - timedelta(days=12*365)
+            days = self.lookback_days if self.lookback_days else 12*365
+            start_date = end_date - timedelta(days=days)
         else:
-            # Intraday - Increase buffer to 30 days if using Broker
-            start_date = end_date - timedelta(days=30) 
+            # Intraday
+            days = self.lookback_days if self.lookback_days else 30
+            start_date = end_date - timedelta(days=days) 
         
         logger.info(f"Fetching {self.symbol} data ({self.interval}) from {start_date.date()} to {end_date.date()}...")
         

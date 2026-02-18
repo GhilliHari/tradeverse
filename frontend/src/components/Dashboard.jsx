@@ -6,7 +6,7 @@ import {
     LayoutDashboard, ListOrdered, GraduationCap, BarChart3, Database,
     Lightbulb, Briefcase, HeartPulse, User, LogOut, Terminal,
     Key, Eye, Cpu, Globe, Wifi, Bell, Search, Lock, Unlock,
-    MessageCircle, Send
+    MessageCircle, Send, Menu, X
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -34,6 +34,7 @@ import Observatory from './Observatory';
 import LessonsLearned from './LessonsLearned';
 import { Telescope, ScrollText, BookOpen } from 'lucide-react';
 import MarketClock from './MarketClock';
+import { auth } from '../firebase';
 
 
 // BASE API URL
@@ -96,10 +97,14 @@ const DashboardWithLogic = () => {
     const [showModeConfirm, setShowModeConfirm] = useState(false);
     const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [toast, setToast] = useState(null);
     const [emergencyResult, setEmergencyResult] = useState(null);
     const [isLiquidating, setIsLiquidating] = useState(false);
     const isConfirmingRef = useRef(false);
+
+    const OWNER_EMAIL = "final_success_verified_v3@tradeverse.ai";
+    const [isOwner, setIsOwner] = useState(false);
 
     const [user, setUser] = useState({ name: 'Guest', initials: 'G', status: 'OFFLINE' });
     const [marketStatus, setMarketStatus] = useState({ isOpen: false, countdown: '00:00:00' });
@@ -107,6 +112,12 @@ const DashboardWithLogic = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isTraining, setIsTraining] = useState(false);
     const [modelMetrics, setModelMetrics] = useState(null);
+    const [trainingStatus, setTrainingStatus] = useState({
+        is_training: false,
+        progress: 0,
+        stage: 'IDLE',
+        message: 'No training in progress'
+    });
     const [settings, setSettings] = useState({
         active_broker: 'ANGEL',
         angel_connected: false,
@@ -390,11 +401,15 @@ const DashboardWithLogic = () => {
 
     const handleEnvSwitch = async (env) => {
         console.log(`[HANDLE_ENV_SWITCH] Attempting to switch to: ${env}`);
-        console.log(`[HANDLE_ENV_SWITCH] Current Settings:`, settings);
 
-        // If switching to LIVE but not connected, prompt for login
+        // IP Protection: Restrict LIVE to Owner
+        if (env === 'LIVE' && !isOwner) {
+            showToast("Live Environment toggle restricted to Owner account.", "error");
+            return;
+        }
+
+        // If switching to LIVE but not connected or guest, prompt for login
         if (env === 'LIVE') {
-            // Updated Logic: Check if User is Guest First
             if (!isLoggedIn || user.status === 'GUEST') {
                 console.log("[HANDLE_ENV_SWITCH] Blocked: Guest User. prompting Login.");
                 setShowLogin(true);
@@ -444,6 +459,12 @@ const DashboardWithLogic = () => {
     };
 
     const handleModeToggle = useCallback(async () => {
+        // IP Protection: Restrict AUTO PILOT to Owner
+        if (!isOwner) {
+            showToast("Auto-Pilot Protocol restricted to Owner profile.", "error");
+            return;
+        }
+
         const nextMode = isAutoMode ? 'MANUAL' : 'AUTO';
 
         if (nextMode === 'AUTO') {
@@ -592,7 +613,24 @@ const DashboardWithLogic = () => {
             setIsLoggedIn(true);
             setShowLogin(false);
             setUser({ name: 'Guest Trader', initials: 'G', status: 'GUEST' });
+
+            // Detect owner on mount
+            if (auth?.currentUser?.email === OWNER_EMAIL) {
+                setIsOwner(true);
+            }
         }
+    }, []);
+
+    // Also watch auth state for changes
+    useEffect(() => {
+        const unsubscribe = auth?.onAuthStateChanged(user => {
+            if (user?.email === OWNER_EMAIL) {
+                setIsOwner(true);
+            } else {
+                setIsOwner(false);
+            }
+        });
+        return () => unsubscribe && unsubscribe();
     }, []);
 
     // Sync User Profile with Environment Settings
@@ -667,7 +705,7 @@ const DashboardWithLogic = () => {
         { icon: LayoutDashboard, label: 'Portfolio' },
         { icon: HeartPulse, label: 'System Health' },
         { icon: BookOpen, label: 'Lessons Learned' },
-        { icon: Settings, label: 'Settings' },
+        ...(isOwner ? [{ icon: Settings, label: 'Settings' }] : []),
     ];
 
     useEffect(() => {
@@ -940,17 +978,65 @@ const DashboardWithLogic = () => {
         fetchSettings(mockToken);
     };
 
-    const handleTrainModel = async () => {
-        setIsTraining(true);
+    const handleTriggerTraining = async () => {
+        if (!window.confirm("⚠️ This will retrain ALL 5 AI models (Daily, Intraday, TFT, RL, Regime).\n\nThis process takes ~5-15 minutes and requires significant compute.\n\nContinue?")) {
+            return;
+        }
+
         try {
-            const res = await fetch(`${API_URL}/api/ai/train?symbol=${symbol}`);
-            const result = await res.json();
-            if (result.status === 'success') {
-                setModelMetrics(result.metrics);
+            const res = await fetch(`${API_URL}/api/ai/train`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.detail || "Training trigger failed");
             }
-        } catch (e) { console.error("Training Trigger Failed", e); }
-        setIsTraining(false);
+
+            const result = await res.json();
+            if (result.status === 'started') {
+                showToast("🧠 AI Swarm Retraining Started!", "success");
+                setIsTraining(true);
+                // Start polling for status
+                pollTrainingStatus();
+            }
+        } catch (e) {
+            console.error("Training Trigger Failed", e);
+            showToast(e.message || "Failed to start training", "error");
+        }
     };
+
+    const pollTrainingStatus = async () => {
+        const interval = setInterval(async () => {
+            try {
+                const res = await fetch(`${API_URL}/api/ai/train/status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const status = await res.json();
+                setTrainingStatus(status);
+
+                if (!status.is_training) {
+                    clearInterval(interval);
+                    setIsTraining(false);
+
+                    if (status.stage === 'COMPLETE') {
+                        showToast("✅ AI Swarm Rebuild Complete!", "success");
+                        setModelMetrics(status.metrics);
+                    } else if (status.stage === 'ERROR') {
+                        showToast("❌ Training Failed", "error");
+                    }
+                }
+            } catch (e) {
+                console.error("Status Poll Failed", e);
+            }
+        }, 2000); // Poll every 2 seconds
+    };
+
+    const handleTrainModel = handleTriggerTraining; // Backwards compatibility
 
     const fetchOrders = async () => {
         try {
@@ -1005,6 +1091,12 @@ const DashboardWithLogic = () => {
     }, [activeTab]);
 
     const handleTabChange = (tabLabel) => {
+        // IP Protection: Backup Tab Restriction
+        if (tabLabel === 'Settings' && !isOwner) {
+            showToast("Access Denied: Settings restricted to system owner.", "error");
+            return;
+        }
+
         const ALLOWED_MOCK_TABS = ['Live Terminal', 'Settings', 'Backtest', 'Strategies', 'Analytics', 'INSIGHTS', 'Simulations', 'Observatory', 'Lessons Learned'];
 
         if (settings.env === 'MOCK' && !ALLOWED_MOCK_TABS.some(t => t.toUpperCase() === tabLabel.toUpperCase())) {
@@ -1013,10 +1105,95 @@ const DashboardWithLogic = () => {
             return;
         }
         setActiveTab(tabLabel);
+        setIsDrawerOpen(false); // Close drawer on tab change
     };
 
     return (
-        <div className="flex h-screen bg-[#0c0d12] text-white font-sans overflow-hidden selection:bg-indigo-500/30">
+        <div className="flex flex-col lg:flex-row h-screen bg-[#0c0d12] text-white font-sans overflow-hidden selection:bg-indigo-500/30">
+            {/* Mobile Bottom Navigation */}
+            <nav className="fixed bottom-6 left-4 right-4 z-[100] h-16 glass-premium border border-white/10 rounded-3xl flex items-center justify-around px-4 lg:hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                {[
+                    { icon: Terminal, label: 'Live Terminal' },
+                    { icon: Lightbulb, label: 'INSIGHTS' },
+                    { icon: ListOrdered, label: 'Orders' },
+                    { icon: LayoutDashboard, label: 'Portfolio' },
+                ].map((item) => (
+                    <button
+                        key={item.label}
+                        onClick={() => handleTabChange(item.label)}
+                        className={`flex flex-col items-center gap-1 transition-all duration-300 ${activeTab === item.label ? 'text-indigo-400 scale-110' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                        <item.icon className={`w-5 h-5 ${activeTab === item.label ? 'drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]' : ''}`} />
+                        <span className="text-[8px] font-black uppercase tracking-tighter transition-opacity">{activeTab === item.label ? item.label.split(' ')[0] : ''}</span>
+                    </button>
+                ))}
+                <button
+                    onClick={() => setIsDrawerOpen(true)}
+                    className="flex flex-col items-center gap-1 text-slate-500 hover:text-indigo-400 transition-all active:scale-90"
+                >
+                    <Menu className="w-5 h-5" />
+                    <span className="text-[8px] font-black uppercase tracking-tighter">MENU</span>
+                </button>
+            </nav>
+
+            {/* Mobile Slide-out Drawer */}
+            <AnimatePresence>
+                {isDrawerOpen && (
+                    <div className="fixed inset-0 z-[200] lg:hidden">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsDrawerOpen(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ x: '-100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '-100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            className="relative w-72 h-full glass-panel border-r border-white/10 flex flex-col p-6 shadow-2xl bg-[#0c0d12]/90"
+                        >
+                            <div className="flex items-center justify-between mb-8">
+                                <h1 className="text-xl font-black tracking-tighter bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent italic">
+                                    TRADEVERSE
+                                </h1>
+                                <button
+                                    onClick={() => setIsDrawerOpen(false)}
+                                    className="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <nav className="flex-1 space-y-1 overflow-y-auto custom-scrollbar pr-2">
+                                {navItems.map((item) => (
+                                    <SidebarItem
+                                        key={item.label}
+                                        icon={item.icon}
+                                        label={item.label}
+                                        active={activeTab === item.label}
+                                        onClick={() => handleTabChange(item.label)}
+                                    />
+                                ))}
+
+                                <div className="mt-8 pt-6 border-t border-white/5">
+                                    <button
+                                        onClick={() => {
+                                            setIsDrawerOpen(false);
+                                            handleLogout();
+                                        }}
+                                        className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-red-500 hover:bg-red-500/10 transition-all font-bold uppercase text-xs tracking-widest"
+                                    >
+                                        <LogOut className="w-5 h-5" />
+                                        Disconnect
+                                    </button>
+                                </div>
+                            </nav>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
             {/* Sidebar Pane */}
             <aside className="w-72 glass-panel border-r border-white/10 flex flex-col p-6 hidden lg:flex shadow-[20px_0_50px_rgba(0,0,0,0.3)]">
                 <div className="mb-10">
@@ -1106,13 +1283,13 @@ const DashboardWithLogic = () => {
             </aside >
 
             {/* Main Content Area */}
-            < main className="flex-1 overflow-y-auto custom-scrollbar" >
+            <main className="flex-1 overflow-y-auto custom-scrollbar pb-32 lg:pb-8">
                 <div className="p-4 md:p-8 space-y-8">
                     {/* Top Bar */}
                     {/* Top Bar - Floating HUD */}
-                    <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sticky top-0 z-50 py-2 -mx-2 px-2">
-                        <div className="glass-premium px-6 py-2 rounded-full border border-white/15 shadow-2xl flex items-center gap-4 backdrop-blur-xl">
-                            <h2 className="text-xl font-black text-white tracking-widest uppercase">{activeTab}</h2>
+                    <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sticky top-0 z-50 py-4 lg:py-2 -mx-2 px-2 bg-[#0c0d12]/80 lg:bg-transparent backdrop-blur-lg lg:backdrop-blur-none transition-all">
+                        <div className="glass-premium px-4 lg:px-6 py-2 rounded-full border border-white/15 shadow-2xl flex items-center gap-3 lg:gap-4 backdrop-blur-xl w-full md:w-auto">
+                            <h2 className="text-lg lg:text-xl font-black text-white tracking-widest uppercase truncate max-w-[120px] lg:max-w-none">{activeTab}</h2>
                             <div className="h-4 w-[1px] bg-white/10" />
                             <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest group relative">
                                 <input
@@ -1142,7 +1319,7 @@ const DashboardWithLogic = () => {
                                         }, 200);
                                     }}
                                     placeholder="SEARCH NSE..."
-                                    className="bg-transparent border-none outline-none text-white font-black w-32 focus:ring-0 placeholder:text-slate-700"
+                                    className="bg-transparent border-none outline-none text-white font-black w-24 lg:w-32 focus:ring-0 placeholder:text-slate-700 text-xs lg:text-sm"
                                 />
                                 {searchInput && searchInput !== symbol && (
                                     <button
@@ -1177,10 +1354,10 @@ const DashboardWithLogic = () => {
 
                         <div className="flex items-center gap-3">
                             {/* Controls Group */}
-                            <div className="flex items-center gap-2 mr-2">
+                            <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto custom-scrollbar pb-2 md:pb-0">
                                 {/* Auto Pilot Switch */}
                                 <ControlToggle
-                                    label={isAutoMode ? "AUTO PILOT" : "MANUAL MODE"}
+                                    label={isAutoMode ? "AUTO" : "MANUAL"}
                                     active={isAutoMode}
                                     onClick={handleModeToggle}
                                     color="emerald"
@@ -1189,11 +1366,11 @@ const DashboardWithLogic = () => {
                                 {/* Emergency Kill Switch */}
                                 <button
                                     onClick={handleEmergencyStop}
-                                    className="px-4 py-2 rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 hover:border-red-500/40 transition-all flex items-center gap-3 hover:scale-105 active:scale-95 cursor-pointer z-50 group"
+                                    className="flex-shrink-0 px-3 lg:px-4 py-2 rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 hover:border-red-500/40 transition-all flex items-center gap-2 lg:gap-3 hover:scale-105 active:scale-95 cursor-pointer z-50 group"
                                     title="CRITICAL EMERGENCY STOP"
                                 >
-                                    <AlertTriangle className="w-4 h-4 text-red-500/60 group-hover:text-red-500" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500/60 group-hover:text-red-500">KILL SWITCH</span>
+                                    <AlertTriangle className="w-3 h-3 lg:w-4 lg:h-4 text-red-500/60 group-hover:text-red-500" />
+                                    <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.15em] lg:tracking-[0.2em] text-red-500/60 group-hover:text-red-500">KILL SWITCH</span>
                                 </button>
                             </div>
 
@@ -1659,6 +1836,7 @@ const DashboardWithLogic = () => {
                                 <div className="glass-panel p-4 rounded-[32px] space-y-2">
                                     {[
                                         { id: 'API Keys', icon: Key, label: 'API Keys', desc: 'Manage Credentials' },
+                                        { id: 'Intelligence', icon: Brain, label: 'Intelligence', desc: 'AI Training' },
                                         { id: 'Notifications', icon: Bell, label: 'Notifications', desc: 'Alert Configuration' },
                                         { id: 'Appearance', icon: Eye, label: 'Appearance', desc: 'Theme & Layout' },
                                         { id: 'System', icon: Cpu, label: 'System', desc: 'Logs & Diagnostics' },
@@ -1815,6 +1993,109 @@ const DashboardWithLogic = () => {
                                                     </button>
                                                 )}
                                             </div>
+                                        </div>
+                                    </div>
+                                ) : activeSettingsTab === 'Intelligence' ? (
+                                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                                        <div className="flex items-start gap-6 mb-8">
+                                            <div className="p-4 bg-purple-500/10 rounded-3xl text-purple-400 border border-purple-500/20 shadow-lg shadow-purple-500/10">
+                                                <Brain className="w-8 h-8" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl font-black text-white tracking-tight">AI Swarm Intelligence</h3>
+                                                <p className="text-slate-500 text-sm font-medium mt-2 max-w-md">Retrain the entire neural core - 5 AI models working in harmony. Training takes ~5-15 minutes.</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Training Control Panel */}
+                                        <div className="glass-panel p-8 rounded-3xl space-y-6 border border-purple-500/10">
+                                            <div className="flex items-center justify-between mb-6">
+                                                <div>
+                                                    <h4 className="text-lg font-black text-white">Training Status</h4>
+                                                    <p className="text-[10px] font-black uppercase text-slate-500 mt-1 tracking-widest">{trainingStatus.stage}</p>
+                                                </div>
+                                                <button
+                                                    onClick={handleTriggerTraining}
+                                                    disabled={isTraining}
+                                                    className={`px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-lg ${isTraining
+                                                        ? 'bg-slate-500/20 text-slate-500 cursor-not-allowed'
+                                                        : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-500/40'
+                                                        }`}
+                                                >
+                                                    {isTraining ? '⏳ Training...' : '🧠 Rebuild Swarm'}
+                                                </button>
+                                            </div>
+
+                                            {/* Progress Bar */}
+                                            {trainingStatus.progress > 0 && (
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center justify-between text-xs mb-1">
+                                                        <span className="font-mono text-slate-400">{trainingStatus.message}</span>
+                                                        <span className="font-mono text-purple-400 font-black">{trainingStatus.progress}%</span>
+                                                    </div>
+                                                    <div className="w-full h-3 bg-black/30 rounded-full overflow-hidden border border-white/5">
+                                                        <div
+                                                            className="h-full bg-gradient-to-r from-purple-600 to-indigo-600 transition-all duration-1000 ease-out shadow-lg shadow-purple-500/50"
+                                                            style={{ width: `${trainingStatus.progress}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Training Stages */}
+                                            <div className="grid grid-cols-5 gap-3 mt-6">
+                                                {[
+                                                    { name: 'Daily', key: 'DAILY_STRATEGIST', icon: TrendingUp },
+                                                    { name: 'Intraday', key: 'INTRADAY_SNIPER', icon: Zap },
+                                                    { name: 'TFT', key: 'TFT_TRANSFORMER', icon: Activity },
+                                                    { name: 'RL', key: 'RL_OPTIMIZER', icon: Brain },
+                                                    { name: 'Regime', key: 'REGIME_ENGINE', icon: Shield }
+                                                ].map((stage) => {
+                                                    const isComplete = ['DAILY_STRATEGIST', 'INTRADAY_SNIPER', 'TFT_TRANSFORMER', 'RL_OPTIMIZER', 'REGIME_ENGINE'].indexOf(stage.key) < ['DAILY_STRATEGIST', 'INTRADAY_SNIPER', 'TFT_TRANSFORMER', 'RL_OPTIMIZER', 'REGIME_ENGINE'].indexOf(trainingStatus.stage);
+                                                    const isActive = trainingStatus.stage === stage.key;
+                                                    const Icon = stage.icon;
+
+                                                    return (
+                                                        <div
+                                                            key={stage.key}
+                                                            className={`p-4 rounded-2xl text-center transition-all ${isComplete ? 'bg-emerald-500/10 border border-emerald-500/30' :
+                                                                isActive ? 'bg-purple-500/10 border border-purple-500/30 animate-pulse' :
+                                                                    'bg-black/20 border border-white/5'
+                                                                }`}
+                                                        >
+                                                            <Icon className={`w-6 h-6 mx-auto mb-2 ${isComplete ? 'text-emerald-400' :
+                                                                isActive ? 'text-purple-400' :
+                                                                    'text-slate-600'
+                                                                }`} />
+                                                            <p className={`text-[10px] font-black uppercase tracking-widest ${isComplete ? 'text-emerald-400' :
+                                                                isActive ? 'text-purple-400' :
+                                                                    'text-slate-600'
+                                                                }`}>{stage.name}</p>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {/* Model Metrics (if available) */}
+                                            {modelMetrics && (
+                                                <div className="mt-6 p-6 bg-black/20 rounded-2xl border border-white/5">
+                                                    <h5 className="text-xs font-black uppercase text-slate-500 tracking-widest mb-4">Latest Metrics</h5>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        {modelMetrics.daily && (
+                                                            <>
+                                                                <div>
+                                                                    <p className="text-[10px] text-slate-500 mb-1">Daily Precision</p>
+                                                                    <p className="text-lg font-mono font-black text-emerald-400">{(modelMetrics.daily.precision * 100).toFixed(1)}%</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[10px] text-slate-500 mb-1">Daily F1 Score</p>
+                                                                    <p className="text-lg font-mono font-black text-cyan-400">{modelMetrics.daily.f1.toFixed(3)}</p>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ) : activeSettingsTab === 'Notifications' ? (
