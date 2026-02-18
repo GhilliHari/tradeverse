@@ -57,7 +57,7 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
 const ControlToggle = ({ label, active, onClick, color = 'emerald' }) => (
     <button
         onClick={onClick}
-        className={`relative px-4 py-2 h-[38px] rounded-xl border transition-all duration-500 flex items-center gap-3 overflow-hidden group hover:scale-105 active:scale-95 cursor-pointer z-50 ${active
+        className={`relative px-4 py-1.5 h-[38px] rounded-xl border transition-all duration-500 flex items-center gap-3 overflow-hidden group hover:scale-105 active:scale-95 cursor-pointer z-50 ${active
             ? `bg-${color}-500/10 border-${color}-500/30 shadow-[0_0_20px_rgba(16,185,129,0.2)]`
             : 'bg-white/5 border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/5'
             }`}
@@ -983,6 +983,7 @@ const DashboardWithLogic = () => {
             return;
         }
 
+        setIsTraining(true); // Immediate feedback
         try {
             const res = await fetch(`${API_URL}/api/ai/train`, {
                 method: 'POST',
@@ -1000,12 +1001,14 @@ const DashboardWithLogic = () => {
             const result = await res.json();
             if (result.status === 'started') {
                 showToast("🧠 AI Swarm Retraining Started!", "success");
-                setIsTraining(true);
                 // Start polling for status
                 pollTrainingStatus();
+            } else {
+                throw new Error("Training failed to start");
             }
         } catch (e) {
             console.error("Training Trigger Failed", e);
+            setIsTraining(false); // Revert state on failure
             showToast(e.message || "Failed to start training", "error");
         }
     };
@@ -1388,7 +1391,7 @@ const DashboardWithLogic = () => {
                                 {/* Emergency Kill Switch */}
                                 <button
                                     onClick={handleEmergencyStop}
-                                    className="flex-shrink-0 px-3 lg:px-4 py-2 h-[38px] rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 hover:border-red-500/40 transition-all flex items-center gap-2 lg:gap-3 hover:scale-105 active:scale-95 cursor-pointer z-50 group"
+                                    className="flex-shrink-0 px-3 lg:px-4 py-1.5 h-[38px] rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 hover:border-red-500/40 transition-all flex items-center gap-2 lg:gap-3 hover:scale-105 active:scale-95 cursor-pointer z-50 group"
                                     title="CRITICAL EMERGENCY STOP"
                                 >
                                     <AlertTriangle className="w-3 h-3 lg:w-4 lg:h-4 text-red-500/60 group-hover:text-red-500" />
