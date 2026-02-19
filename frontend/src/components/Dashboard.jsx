@@ -130,10 +130,10 @@ const DashboardWithLogic = () => {
         whatsapp_phone: '', whatsapp_api_key: '',
         telegram_bot_token: '', telegram_chat_id: ''
     });
-    const [isConnecting, setIsConnecting] = useState(false);
-    const [trustedIPs, setTrustedIPs] = useState([]);
-    const [newIP, setNewIP] = useState('');
     const [systemStatus, setSystemStatus] = useState({ backend: false, intelligence: false });
+    const [connCountdown, setConnCountdown] = useState(0);
+    const [serverLatency, setServerLatency] = useState(null);
+    const abortControllerRef = useRef(null);
 
     // Wake-up Ping on Mount
     useEffect(() => {
@@ -152,13 +152,28 @@ const DashboardWithLogic = () => {
                 setSystemStatus(prev => ({ ...prev, backend: true }));
             } catch (e) {
                 console.warn("Dashboard: Wake-up Ping failed (Backend might be sleeping deep)", e);
-                // Don't show error toast here to avoid alarming user on load. 
-                // The explicit connect action has robust error handling.
             }
         };
 
         wakeUpBackend();
     }, []);
+
+    const checkServerHealth = async () => {
+        setServerLatency("PINGING...");
+        const start = Date.now();
+        try {
+            const res = await fetch(`${API_URL}/`, { method: 'GET', cache: 'no-store' });
+            const latency = Date.now() - start;
+            if (res.ok) {
+                setServerLatency(`${latency}ms (ONLINE)`);
+                setSystemStatus(prev => ({ ...prev, backend: true }));
+            } else {
+                setServerLatency(`Error ${res.status}`);
+            }
+        } catch (e) {
+            setServerLatency("UNREACHABLE");
+        }
+    };
 
     const showToast = (message, type = 'info') => {
         setToast({ message, type });
@@ -192,10 +207,23 @@ const DashboardWithLogic = () => {
 
     const handleUpdateCredentials = async () => {
         setIsConnecting(true);
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout for Render cold starts
+        setConnCountdown(90);
 
-        // Show "Waking up server" toast if it takes longer than 6 seconds
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+        const timeoutId = setTimeout(() => controller.abort(), 90000);
+
+        // Countdown interval
+        const timerId = setInterval(() => {
+            setConnCountdown(prev => {
+                if (prev <= 1) {
+                    clearInterval(timerId);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
         const wakeUpToastId = setTimeout(() => {
             showToast("⏳ Waking up server... (this may take a minute)", "info");
         }, 6000);
@@ -212,6 +240,7 @@ const DashboardWithLogic = () => {
                 signal: controller.signal
             });
 
+            clearInterval(timerId);
             clearTimeout(timeoutId);
             clearTimeout(wakeUpToastId);
 
@@ -248,17 +277,21 @@ const DashboardWithLogic = () => {
                 showToast(data.message || "Update Failed", "error");
             }
         } catch (e) {
+            clearInterval(timerId);
             clearTimeout(wakeUpToastId); // Ensure wake toast timer is cleared on error
             if (e.name === 'AbortError') {
-                showToast("Connection Timed Out (90s). Backend Unresponsive.", "error");
+                showToast(connCountdown > 0 ? "Connection Cancelled" : "Connection Timed Out (90s)", "error");
             } else {
                 console.error("Credential Update Error:", e);
                 showToast(`Network Error: ${e.message}`, "error");
             }
         } finally {
             setIsConnecting(false);
+            setConnCountdown(0);
             clearTimeout(timeoutId);
             clearTimeout(wakeUpToastId);
+            clearInterval(timerId);
+            abortControllerRef.current = null;
         }
     };
 
@@ -2061,21 +2094,49 @@ const DashboardWithLogic = () => {
                                                 />
                                             </div>
 
-                                            <div className="pt-8">
+                                            {/* Advanced Diagnostics Section */}
+                                            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Server Health</span>
+                                                    <span className={`text-[10px] font-mono font-bold ${serverLatency?.includes('ONLINE') ? 'text-emerald-400' : serverLatency?.includes('Error') || serverLatency === 'UNREACHABLE' ? 'text-red-400' : 'text-slate-400'}`}>
+                                                        {serverLatency || 'NOT CHECKED'}
+                                                    </span>
+                                                </div>
                                                 <button
-                                                    onClick={handleUpdateCredentials}
-                                                    disabled={isConnecting}
-                                                    className={`w-full py-4 ${isConnecting ? 'bg-indigo-500/50 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'} text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-3 active:scale-95`}
+                                                    onClick={checkServerHealth}
+                                                    className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-300 transition-all flex items-center justify-center gap-2"
                                                 >
-                                                    {isConnecting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                                                    {isConnecting ? 'Connecting to Exchange...' : 'Connect Angel One'}
+                                                    <Zap className="w-3 h-3" /> Check Server Status
                                                 </button>
+                                            </div>
+
+                                            <div className="pt-4 flex flex-col gap-3">
+                                                <div className="flex gap-3">
+                                                    <button
+                                                        onClick={handleUpdateCredentials}
+                                                        disabled={isConnecting}
+                                                        className={`flex-1 py-4 ${isConnecting ? 'bg-indigo-500/50 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'} text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-3 active:scale-95`}
+                                                    >
+                                                        {isConnecting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                                                        {isConnecting ? `Connecting (${connCountdown}s)...` : 'Connect Angel One'}
+                                                    </button>
+
+                                                    {isConnecting && (
+                                                        <button
+                                                            onClick={() => abortControllerRef.current?.abort()}
+                                                            className="px-6 py-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95"
+                                                            title="Cancel Connection"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    )}
+                                                </div>
 
 
                                                 {settings.angel_connected && (
                                                     <button
                                                         onClick={() => setShowDisconnectConfirm(true)}
-                                                        className="w-full mt-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
+                                                        className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
                                                     >
                                                         <LogOut className="w-4 h-4" /> Disconnect Angel One
                                                     </button>
