@@ -130,6 +130,9 @@ const DashboardWithLogic = () => {
         whatsapp_phone: '', whatsapp_api_key: '',
         telegram_bot_token: '', telegram_chat_id: ''
     });
+    const [isConnecting, setIsConnecting] = useState(false);
+    const [trustedIPs, setTrustedIPs] = useState([]);
+    const [newIP, setNewIP] = useState('');
     const [systemStatus, setSystemStatus] = useState({ backend: false, intelligence: false });
     const [connCountdown, setConnCountdown] = useState(0);
     const [serverLatency, setServerLatency] = useState(null);
