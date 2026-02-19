@@ -52,6 +52,10 @@ initialization_status = {"ready": False, "error": None}
 async def initialize_systems():
     global kite, risk_engine, intelligence, initialization_status
     try:
+        # Wait for 5 seconds to allow Uvicorn to bind port and serve health checks
+        # This prevents CPU starvation during startup from causing deployment timeouts
+        await asyncio.sleep(5)
+        
         logger.info("⚙️ Starting Background System Initialization...")
         # broker_factory handles credentials from Redis/Config
         # Offload blocking network/disk I/O to threads to prevent event loop freeze
