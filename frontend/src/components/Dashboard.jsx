@@ -38,7 +38,7 @@ import { auth } from '../firebase';
 
 
 // BASE API URL
-const API_URL = "https://tradeverse-1-aosu.onrender.com"; // Forced for production reliability
+const API_URL = "/api"; // Using relative path to leverage Vercel proxy and bypass CORS
 
 const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
     <button
