@@ -1960,6 +1960,9 @@ const DashboardWithLogic = () => {
                                                     <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">Client ID</label>
                                                     <input
                                                         type="text"
+                                                        id="angel_client_id"
+                                                        name="angel_client_id"
+                                                        autocomplete="username"
                                                         value={credentials.angel_client_id}
                                                         onChange={(e) => setCredentials({ ...credentials, angel_client_id: e.target.value })}
                                                         placeholder="Client ID"
@@ -1970,6 +1973,9 @@ const DashboardWithLogic = () => {
                                                     <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">Password / MPIN</label>
                                                     <input
                                                         type="password"
+                                                        id="angel_password"
+                                                        name="angel_password"
+                                                        autocomplete="current-password"
                                                         value={credentials.angel_password}
                                                         onChange={(e) => setCredentials({ ...credentials, angel_password: e.target.value })}
                                                         placeholder="Password"
@@ -1981,6 +1987,9 @@ const DashboardWithLogic = () => {
                                                 <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">Angel API Key</label>
                                                 <input
                                                     type="text"
+                                                    id="angel_api_key"
+                                                    name="angel_api_key"
+                                                    autocomplete="off"
                                                     value={credentials.angel_api_key}
                                                     onChange={(e) => setCredentials({ ...credentials, angel_api_key: e.target.value })}
                                                     placeholder="SmartAPI Key"
@@ -1991,6 +2000,9 @@ const DashboardWithLogic = () => {
                                                 <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">TOTP Secret Key</label>
                                                 <input
                                                     type="password"
+                                                    id="angel_totp_key"
+                                                    name="angel_totp_key"
+                                                    autocomplete="off"
                                                     value={credentials.angel_totp_key}
                                                     onChange={(e) => setCredentials({ ...credentials, angel_totp_key: e.target.value })}
                                                     placeholder="TOTP Secret (for 2FA)"
