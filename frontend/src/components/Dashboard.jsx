@@ -210,11 +210,11 @@ const DashboardWithLogic = () => {
 
     const handleUpdateCredentials = async () => {
         setIsConnecting(true);
-        setConnCountdown(90);
+        setConnCountdown(30); // Reduced from 90s for immediate feel
 
         const controller = new AbortController();
         abortControllerRef.current = controller;
-        const timeoutId = setTimeout(() => controller.abort(), 90000);
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // Unified timeout
 
         // Countdown interval
         const timerId = setInterval(() => {
@@ -228,8 +228,10 @@ const DashboardWithLogic = () => {
         }, 1000);
 
         const wakeUpToastId = setTimeout(() => {
-            showToast("⏳ Waking up server... (this may take a minute)", "info");
-        }, 6000);
+            if (!systemStatus.backend) {
+                showToast("⏳ Waking up server... (this may take a minute)", "info");
+            }
+        }, 4000); // Slightly faster check
 
         try {
             const payload = { ...credentials, active_broker: 'ANGEL' };
@@ -1215,6 +1217,9 @@ const DashboardWithLogic = () => {
             console.log(`[TAB_RESTRICTION] Blocked access to ${tabLabel} in MOCK mode.`);
             setShowLogin(true);
             return;
+        }
+        if (tabLabel === 'Settings') {
+            checkServerHealth();
         }
         setActiveTab(tabLabel);
         setIsDrawerOpen(false); // Close drawer on tab change
