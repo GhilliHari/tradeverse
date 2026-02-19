@@ -1940,7 +1940,7 @@ const DashboardWithLogic = () => {
                             </div>
 
                         </div>
-                    ) : activeTab.toLowerCase() === 'settings' ? (
+                    ) : (activeTab || "").toLowerCase() === 'settings' ? (
                         <div className="h-full flex gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             {/* Left Column: Sidebar & Environment */}
                             <div className="w-80 flex flex-col gap-6">
@@ -2203,7 +2203,7 @@ const DashboardWithLogic = () => {
                                                     { name: 'RL', key: 'RL_OPTIMIZER', icon: Brain },
                                                     { name: 'Regime', key: 'REGIME_ENGINE', icon: Shield }
                                                 ].map((stage) => {
-                                                    const isComplete = ['DAILY_STRATEGIST', 'INTRADAY_SNIPER', 'TFT_TRANSFORMER', 'RL_OPTIMIZER', 'REGIME_ENGINE'].indexOf(stage.key) < ['DAILY_STRATEGIST', 'INTRADAY_SNIPER', 'TFT_TRANSFORMER', 'RL_OPTIMIZER', 'REGIME_ENGINE'].indexOf(trainingStatus.stage);
+                                                    const isComplete = (['DAILY_STRATEGIST', 'INTRADAY_SNIPER', 'TFT_TRANSFORMER', 'RL_OPTIMIZER', 'REGIME_ENGINE'].indexOf(stage.key) < ['DAILY_STRATEGIST', 'INTRADAY_SNIPER', 'TFT_TRANSFORMER', 'RL_OPTIMIZER', 'REGIME_ENGINE'].indexOf(trainingStatus?.stage || 'IDLE'));
                                                     const isActive = trainingStatus.stage === stage.key;
                                                     const Icon = stage.icon;
 
@@ -2233,7 +2233,7 @@ const DashboardWithLogic = () => {
                                                 <div className="mt-6 p-6 bg-black/20 rounded-2xl border border-white/5">
                                                     <h5 className="text-xs font-black uppercase text-slate-500 tracking-widest mb-4">Latest Metrics</h5>
                                                     <div className="grid grid-cols-2 gap-4">
-                                                        {modelMetrics.daily && (
+                                                        {modelMetrics?.daily && (
                                                             <>
                                                                 <div>
                                                                     <p className="text-[10px] text-slate-500 mb-1">Daily Precision</p>
@@ -2241,7 +2241,7 @@ const DashboardWithLogic = () => {
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-[10px] text-slate-500 mb-1">Daily F1 Score</p>
-                                                                    <p className="text-lg font-mono font-black text-cyan-400">{modelMetrics.daily.f1.toFixed(3)}</p>
+                                                                    <p className="text-lg font-mono font-black text-cyan-400">{(modelMetrics?.daily?.f1 || 0).toFixed(3)}</p>
                                                                 </div>
                                                             </>
                                                         )}
