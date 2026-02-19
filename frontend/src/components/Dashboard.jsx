@@ -161,20 +161,32 @@ const DashboardWithLogic = () => {
         wakeUpBackend();
     }, []);
 
-    const checkServerHealth = async () => {
+    const checkServerHealth = async (retryCount = 0) => {
         setServerLatency("PINGING...");
         const start = Date.now();
         try {
             const res = await fetch(`${API_URL}/`, { method: 'GET', cache: 'no-store' });
             const latency = Date.now() - start;
+
             if (res.ok) {
                 setServerLatency(`${latency}ms (ONLINE)`);
                 setSystemStatus(prev => ({ ...prev, backend: true }));
+            } else if ((res.status === 502 || res.status === 503) && retryCount < 3) {
+                // Render Hibernation / Startup Handshake phase
+                setServerLatency(`WAKING UP (${retryCount + 1})...`);
+                setTimeout(() => checkServerHealth(retryCount + 1), 3000);
             } else {
                 setServerLatency(`Error ${res.status}`);
+                setSystemStatus(prev => ({ ...prev, backend: false }));
             }
         } catch (e) {
-            setServerLatency("UNREACHABLE");
+            if (retryCount < 2) {
+                setServerLatency("RETRYING...");
+                setTimeout(() => checkServerHealth(retryCount + 1), 2000);
+            } else {
+                setServerLatency("UNREACHABLE");
+                setSystemStatus(prev => ({ ...prev, backend: false }));
+            }
         }
     };
 
