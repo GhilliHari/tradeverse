@@ -38,7 +38,7 @@ app = FastAPI(title="Tradeverse Agentic Platform")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False, # Use False to avoid security blocks when using wildcard origins
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -52,10 +52,6 @@ initialization_status = {"ready": False, "error": None}
 async def initialize_systems():
     global kite, risk_engine, intelligence, initialization_status
     try:
-        # Wait for 5 seconds to allow Uvicorn to bind port and serve health checks
-        # This prevents CPU starvation during startup from causing deployment timeouts
-        await asyncio.sleep(5)
-        
         logger.info("⚙️ Starting Background System Initialization...")
         # broker_factory handles credentials from Redis/Config
         # Offload blocking network/disk I/O to threads to prevent event loop freeze
@@ -282,15 +278,21 @@ async def analyze_market(symbol: str, positions: List[Dict] = Body(default=[])):
 
 @app.get("/api/market/options/{symbol}")
 async def get_options(symbol: str):
-    if not kite:
-        return {"status": "error", "detail": "Broker not initialized"}
-    return kite.get_option_chain(symbol)
+    if not kite or not initialization_status["ready"]:
+        return {"status": "error", "detail": "System initialization in progress..."}
+    try:
+        return kite.get_option_chain(symbol)
+    except Exception as e:
+        logger.error(f"Failed to fetch options for {symbol}: {e}")
+        return {"status": "error", "detail": str(e)}
 
 @app.get("/api/orders")
 async def get_orders():
     """
     Fetches the order book from the active broker.
     """
+    if not kite or not initialization_status["ready"]:
+        return []
     try:
         return kite.orders()
     except Exception as e:
