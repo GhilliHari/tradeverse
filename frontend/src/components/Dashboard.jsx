@@ -167,6 +167,9 @@ const DashboardWithLogic = () => {
 
     const handleUpdateCredentials = async () => {
         setIsConnecting(true);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
         try {
             const payload = { ...credentials, active_broker: 'ANGEL' };
             const res = await fetch(`${API_URL}/api/settings/update`, {
@@ -175,8 +178,14 @@ const DashboardWithLogic = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
+                signal: controller.signal
             });
+
+            clearTimeout(timeoutId);
+
+            if (!res.ok) throw new Error(`Server returned ${res.status}`);
+
             const data = await res.json();
             if (data.status === 'success') {
                 if (data.broker_connected) {
@@ -204,11 +213,20 @@ const DashboardWithLogic = () => {
                     const eMsg = data.error || "Check logs";
                     showToast(`Connection Failed: ${eMsg}`, "error");
                 }
+            } else {
+                showToast(data.message || "Update Failed", "error");
             }
         } catch (e) {
-            showToast("Network or Server Error", "error");
+            if (e.name === 'AbortError') {
+                showToast("Connection Timed Out (30s). Backend Unresponsive.", "error");
+            } else {
+                console.error("Credential Update Error:", e);
+                showToast(`Network Error: ${e.message}`, "error");
+            }
+        } finally {
+            setIsConnecting(false);
+            clearTimeout(timeoutId);
         }
-        setIsConnecting(false);
     };
 
     const handleAngelDisconnect = async () => {
