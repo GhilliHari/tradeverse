@@ -135,6 +135,31 @@ const DashboardWithLogic = () => {
     const [newIP, setNewIP] = useState('');
     const [systemStatus, setSystemStatus] = useState({ backend: false, intelligence: false });
 
+    // Wake-up Ping on Mount
+    useEffect(() => {
+        const wakeUpBackend = async () => {
+            // Only ping if not already connected/logged in to avoid redundant traffic
+            if (isLoggedIn) return;
+
+            console.log("Dashboard: Sending Wake-up Ping to Backend...");
+            showToast("🚀 Initializing backend connection...", "info");
+
+            try {
+                // Simple HEAD or GET request to root to wake up Render
+                await fetch(`${API_URL}/`, { method: 'GET' });
+                console.log("Dashboard: Backend Woken Up!");
+                showToast("✅ Backend Online & Ready", "success");
+                setSystemStatus(prev => ({ ...prev, backend: true }));
+            } catch (e) {
+                console.warn("Dashboard: Wake-up Ping failed (Backend might be sleeping deep)", e);
+                // Don't show error toast here to avoid alarming user on load. 
+                // The explicit connect action has robust error handling.
+            }
+        };
+
+        wakeUpBackend();
+    }, []);
+
     const showToast = (message, type = 'info') => {
         setToast({ message, type });
         setTimeout(() => setToast(null), 4000);
