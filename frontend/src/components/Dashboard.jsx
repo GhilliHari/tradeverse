@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-// Tradeverse Dashboard Controller
+// Tradeverse Dashboard Controller - v1.0.4 (Trigger Redeploy)
 import {
     TrendingUp, TrendingDown, Shield, Brain, Activity,
     Settings, Zap, AlertTriangle, RefreshCw, CheckCircle, ChevronRight,
