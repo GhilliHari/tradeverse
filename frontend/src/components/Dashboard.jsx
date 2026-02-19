@@ -57,7 +57,7 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
 const ControlToggle = ({ label, active, onClick, color = 'emerald' }) => (
     <button
         onClick={onClick}
-        className={`relative px-4 py-1.5 h-[38px] rounded-xl border transition-all duration-500 flex items-center gap-3 overflow-hidden group hover:scale-105 active:scale-95 cursor-pointer z-50 ${active
+        className={`relative px-4 py-1.5 h-[38px] min-w-fit whitespace-nowrap rounded-xl border transition-all duration-500 flex items-center gap-3 overflow-hidden group hover:scale-105 active:scale-95 cursor-pointer z-50 ${active
             ? `bg-${color}-500/10 border-${color}-500/30 shadow-[0_0_20px_rgba(16,185,129,0.2)]`
             : 'bg-white/5 border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/5'
             }`}
@@ -168,7 +168,12 @@ const DashboardWithLogic = () => {
     const handleUpdateCredentials = async () => {
         setIsConnecting(true);
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout for Render cold starts
+
+        // Show "Waking up server" toast if it takes longer than 6 seconds
+        const wakeUpToastId = setTimeout(() => {
+            showToast("⏳ Waking up server... (this may take a minute)", "info");
+        }, 6000);
 
         try {
             const payload = { ...credentials, active_broker: 'ANGEL' };
@@ -183,6 +188,7 @@ const DashboardWithLogic = () => {
             });
 
             clearTimeout(timeoutId);
+            clearTimeout(wakeUpToastId);
 
             if (!res.ok) throw new Error(`Server returned ${res.status}`);
 
@@ -217,8 +223,9 @@ const DashboardWithLogic = () => {
                 showToast(data.message || "Update Failed", "error");
             }
         } catch (e) {
+            clearTimeout(wakeUpToastId); // Ensure wake toast timer is cleared on error
             if (e.name === 'AbortError') {
-                showToast("Connection Timed Out (30s). Backend Unresponsive.", "error");
+                showToast("Connection Timed Out (90s). Backend Unresponsive.", "error");
             } else {
                 console.error("Credential Update Error:", e);
                 showToast(`Network Error: ${e.message}`, "error");
@@ -226,6 +233,7 @@ const DashboardWithLogic = () => {
         } finally {
             setIsConnecting(false);
             clearTimeout(timeoutId);
+            clearTimeout(wakeUpToastId);
         }
     };
 
