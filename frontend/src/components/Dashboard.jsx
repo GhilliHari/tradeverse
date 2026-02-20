@@ -38,7 +38,7 @@ import { auth } from '../firebase';
 
 
 // BASE API URL
-const API_URL = "/api"; // Using relative path to leverage Vercel proxy and bypass CORS
+const API_URL = ""; // Relative root to avoid double /api/ prefix while leveraging Vercel proxy
 
 const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
     <button
