@@ -59,84 +59,149 @@ class IntelligenceLayer:
         self.model = genai.GenerativeModel('gemini-2.5-flash')
         self.scraper = NewsScraper()
         
-        # Lazy Import Helper Modules
-        try:
-             from broker_factory import get_broker_client
-             self.kite = get_broker_client()
-        except: self.kite = None
-
-        try:
-             from risk_engine import RiskEngine
-             self.risk_engine = RiskEngine()
-        except: self.risk_engine = None
-
-        # Lazy load ModelEngine (Sklearn) and ML Agents
-        self.model_engine = None
-        self.tft_engine = None
-        self.rl_agent = None
+        # Core flags and status
+        self._kite = None
+        self._risk_engine = None
+        self._model_engine = None
+        self._tft_engine = None
+        self._rl_agent = None
         self.features = []
-
-        # COR Upgrade Components (Weeks 4-6)
-        self.causality_engine = None
-        self.regime_engine = None
-        self.feature_optimizer = None
-        self.stability_filters = None
         
-        # Structural Alpha Components (Week 10)
-        self.component_tracker = None
-        self.gex_engine = None
+        # COR Upgrade Components (Weeks 4-6) - Lazy Loaded
+        self._causality_engine = None
+        self._regime_engine = None
+        self._feature_optimizer = None
+        self._stability_filters = None
         
-        try:
-             from model_engine import ModelEngine
-             self.model_engine = ModelEngine()
-             self.features = self.model_engine.features
-             logger.info("✅ Classic AI Engine (Sklearn) Loaded")
-        except ImportError:
-             logger.warning("⚠️ Classic AI Engine (Sklearn) skipped (Lite Mode)")
-        except Exception as e:
-             logger.error(f"❌ Model Engine Init Failed: {e}")
+        # Structural Alpha Components (Week 10) - Lazy Loaded
+        self._component_tracker = None
+        self._gex_engine = None
+        self._meta_labeler = None
+        
+        self.workflow = self._create_workflow()
+        self.token_manager = TokenManager()
+        
+        logger.info("⚡ IntelligenceLayer Initialized (LITE/Lazy Mode)")
 
-        # Lazy Load Deep Learning Engines
-        try:
-            from tft_engine import TFTEngine
-            from rl_trading_agent import RLTradingAgent
-            
-            if self.features:
-                self.tft_engine = TFTEngine(self.features)
-                self.tft_engine.load_model()
-                self.rl_agent = RLTradingAgent(None, self.features)
-                self.rl_agent.load_model()
-                logger.info("✅ Heavy ML Engines Loaded (TFT + RL)")
-        except ImportError as e:
-            logger.warning(f"⚠️ Heavy ML Engines skipped (Lite Mode): {e}")
-        except Exception as e:
-            logger.error(f"❌ ML Engine Init Failed: {e}")
+    @property
+    def kite(self):
+        if self._kite is None:
+            try:
+                from broker_factory import get_broker_client
+                self._kite = get_broker_client()
+            except Exception as e:
+                logger.error(f"Lazy Load Kite Failed: {e}")
+        return self._kite
 
-        # Initialize COR Upgrade Components
-        try:
-             from causality_engine import BankNiftyCausalityEngine
-             from regime_engine import IntradayRegimeEngine
-             from feature_optimizer import FeatureOptimizer
-             from stability_filters import StabilityFilters
-             from component_causality import ComponentTracker
-             from gex_engine import GEXEngine
-             from meta_labeler import MetaLabeler
-             
-             self.causality_engine = BankNiftyCausalityEngine()
-             self.regime_engine = IntradayRegimeEngine()
-             self.feature_optimizer = FeatureOptimizer()
-             self.stability_filters = StabilityFilters()
-             self.component_tracker = ComponentTracker(self.kite)
-             self.gex_engine = GEXEngine()
-             self.meta_labeler = MetaLabeler()
-             
-             # Load trained models
-             if self.regime_engine:
-                 self.regime_engine.load_model()
-                 
-             logger.info("✅ Structural, COR & Meta Engines Loaded")
-        except Exception as e:
-             logger.error(f"❌ COR Engine Init Failed: {e}")
+    @property
+    def risk_engine(self):
+        if self._risk_engine is None:
+            try:
+                from risk_engine import RiskEngine
+                self._risk_engine = RiskEngine()
+            except Exception as e:
+                logger.error(f"Lazy Load RiskEngine Failed: {e}")
+        return self._risk_engine
+
+    @property
+    def model_engine(self):
+        if self._model_engine is None:
+            try:
+                from model_engine import ModelEngine
+                self._model_engine = ModelEngine()
+                self.features = self._model_engine.features
+                logger.info("✅ Classic AI Engine Loaded")
+            except Exception as e:
+                logger.error(f"Lazy Load ModelEngine Failed: {e}")
+        return self._model_engine
+
+    @property
+    def tft_engine(self):
+        if self._tft_engine is None and self.features:
+            try:
+                from tft_engine import TFTEngine
+                self._tft_engine = TFTEngine(self.features)
+                self._tft_engine.load_model()
+                logger.info("✅ TFT Engine Loaded")
+            except Exception as e:
+                logger.error(f"Lazy Load TFTEngine Failed: {e}")
+        return self._tft_engine
+
+    @property
+    def rl_agent(self):
+        if self._rl_agent is None and self.features:
+            try:
+                from rl_trading_agent import RLTradingAgent
+                self._rl_agent = RLTradingAgent(None, self.features)
+                self._rl_agent.load_model()
+                logger.info("✅ RL agent Loaded")
+            except Exception as e:
+                logger.error(f"Lazy Load RL agent Failed: {e}")
+        return self._rl_agent
+
+    @property
+    def causality_engine(self):
+        if self._causality_engine is None:
+            try:
+                from causality_engine import BankNiftyCausalityEngine
+                self._causality_engine = BankNiftyCausalityEngine()
+            except: pass
+        return self._causality_engine
+
+    @property
+    def regime_engine(self):
+        if self._regime_engine is None:
+            try:
+                from regime_engine import IntradayRegimeEngine
+                self._regime_engine = IntradayRegimeEngine()
+                self._regime_engine.load_model()
+            except: pass
+        return self._regime_engine
+
+    @property
+    def feature_optimizer(self):
+        if self._feature_optimizer is None:
+            try:
+                from feature_optimizer import FeatureOptimizer
+                self._feature_optimizer = FeatureOptimizer()
+            except: pass
+        return self._feature_optimizer
+
+    @property
+    def stability_filters(self):
+        if self._stability_filters is None:
+            try:
+                from stability_filters import StabilityFilters
+                self._stability_filters = StabilityFilters()
+            except: pass
+        return self._stability_filters
+
+    @property
+    def component_tracker(self):
+        if self._component_tracker is None:
+            try:
+                from component_causality import ComponentTracker
+                self._component_tracker = ComponentTracker(self.kite)
+            except: pass
+        return self._component_tracker
+
+    @property
+    def gex_engine(self):
+        if self._gex_engine is None:
+            try:
+                from gex_engine import GEXEngine
+                self._gex_engine = GEXEngine()
+            except: pass
+        return self._gex_engine
+
+    @property
+    def meta_labeler(self):
+        if self._meta_labeler is None:
+            try:
+                from meta_labeler import MetaLabeler
+                self._meta_labeler = MetaLabeler()
+            except: pass
+        return self._meta_labeler
 
         self.workflow = self._create_workflow()
         self.token_manager = TokenManager() # Initialize Token Manager
