@@ -222,11 +222,11 @@ const DashboardWithLogic = () => {
 
     const handleUpdateCredentials = async () => {
         setIsConnecting(true);
-        setConnCountdown(30); // Reduced from 90s for immediate feel
+        setConnCountdown(90); // Increased to 90s to account for Render cold start
 
         const controller = new AbortController();
         abortControllerRef.current = controller;
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // Unified timeout
+        const timeoutId = setTimeout(() => controller.abort(), 90000); // Unified 90s timeout
 
         // Countdown interval
         const timerId = setInterval(() => {
@@ -394,6 +394,7 @@ const DashboardWithLogic = () => {
                 angel_connected: data.angel_connected
             }));
             setIsAutoMode(data.mode === 'AUTO');
+            if (data.serverLatency) setServerLatency(data.serverLatency);
 
             if (data.angel_credentials) {
                 setCredentials(prev => ({
@@ -503,10 +504,9 @@ const DashboardWithLogic = () => {
     const handleEnvSwitch = async (env) => {
         console.log(`[HANDLE_ENV_SWITCH] Attempting to switch to: ${env}`);
 
-        // IP Protection: Restrict LIVE to Owner
+        // Environment Switch
         if (env === 'LIVE' && !isOwner) {
-            showToast("Live Environment toggle restricted to Owner account.", "error");
-            return;
+            console.log("[HANDLE_ENV_SWITCH] Non-owner attempting LIVE switch. Proceeding with user-isolated mode.");
         }
 
         // If switching to LIVE but not connected or guest, prompt for login
@@ -560,10 +560,9 @@ const DashboardWithLogic = () => {
     };
 
     const handleModeToggle = useCallback(async () => {
-        // IP Protection: Restrict AUTO PILOT to Owner
+        // Mode Toggle
         if (!isOwner) {
-            showToast("Auto-Pilot Protocol restricted to Owner profile.", "error");
-            return;
+            console.log("[HANDLE_MODE_TOGGLE] Non-owner attempting Auto-Pilot switch.");
         }
 
         const nextMode = isAutoMode ? 'MANUAL' : 'AUTO';
@@ -1036,12 +1035,13 @@ const DashboardWithLogic = () => {
         localStorage.setItem('authToken', mockToken); // Persist token in localStorage
         setUser({ name: 'Guest Trader', initials: 'G', status: 'GUEST' });
 
-        const fetchSettings = async (overrideToken = null) => {
+        const fetchSettingsLocal = async (overrideToken = null) => {
             try {
                 const res = await fetch(`${API_URL}/api/settings`, {
                     headers: { 'Authorization': `Bearer ${overrideToken || token}` }
                 });
                 const data = await res.json();
+                if (data.serverLatency) setServerLatency(data.serverLatency);
 
                 // Auto-Revert Logic: If backend says LIVE but no connection, force MOCK
                 let effectiveEnv = data.env;
