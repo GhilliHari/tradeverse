@@ -111,7 +111,7 @@ const DashboardWithLogic = () => {
     const [isLiquidating, setIsLiquidating] = useState(false);
     const isConfirmingRef = useRef(false);
 
-    const OWNER_EMAIL = "final_success_verified_v3@tradeverse.ai";
+    const OWNER_EMAIL = "Hari@tradeverse.ai";
     const [isOwner, setIsOwner] = useState(false);
 
     const [user, setUser] = useState({ name: 'Guest', initials: 'G', status: 'OFFLINE' });
