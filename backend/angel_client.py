@@ -20,7 +20,21 @@ class AngelClient:
 
     def _login(self):
         try:
+            # Dynamic IP Detection
+            default_ip = "106.193.147.98"
+            try:
+                import requests
+                detected_ip = requests.get("https://api.ipify.org", timeout=5).text
+                self.clientPublicIP = detected_ip
+                logger.info(f"Dynamic IP Detection: {detected_ip}")
+            except Exception as ipe:
+                logger.warning(f"IP Detection failed, using fallback: {ipe}")
+                self.clientPublicIP = default_ip
+
             self.smart_api = SmartConnect(api_key=self.api_key)
+            self.smart_api.timeout = 15 # Explicitly set timeout to prevent infinite hangs if IP is blocked
+            import socket
+            socket.setdefaulttimeout(15) # Global fallback
             
             # Generate TOTP if key is provided
             totp_val = None
@@ -90,11 +104,10 @@ class AngelClient:
                 self.smart_api.refresh_token = refresh_token
             
             # Capture Session Info for manual fetches
-            self.clientPublicIP = getattr(self.smart_api, 'clientPublicIP', '106.193.147.98')
             self.clientLocalIP = getattr(self.smart_api, 'clientLocalIP', '127.0.0.1')
             self.clientMacAddress = getattr(self.smart_api, 'clientMacAddress', '96:9a:ac:dd:ee:7b')
             
-            logger.info(f"Login Metadata: JWT_LEN={len(jwt)}, IP={self.clientPublicIP}")
+            logger.info(f"Login Metadata: JWT_LEN={len(jwt)}, DetectedPublicIP={self.clientPublicIP}")
 
             # Manually update session headers - this helps the SDK's internal requests
             if hasattr(self.smart_api, 'session'):
@@ -135,17 +148,26 @@ class AngelClient:
     def is_connected(self):
         """
         Public method to check if the client is truly connected.
+        Caches result for 60 seconds to avoid API rate limits during polling.
         """
         if not self.smart_api or not getattr(self.smart_api, 'jwtToken', None):
             return False
+            
+        # Check cache
+        now = datetime.now()
+        if hasattr(self, '_last_conn_check'):
+            if (now - self._last_conn_check).total_seconds() < 60:
+                return getattr(self, '_cached_conn_status', False)
+        
         # Try a small profile check to verify session
         try:
-            # Use a slightly more robust check than just status
+            self._last_conn_check = now
             p = self.smart_api.getProfile(self.smart_api.jwtToken)
-            if p.get('status', False) and p.get('data', {}).get('clientcode'):
-                return True
-            return False
+            status = p.get('status', False) and p.get('data', {}).get('clientcode') is not None
+            self._cached_conn_status = status
+            return status
         except:
+            self._cached_conn_status = False
             return False
 
     def profile(self):
