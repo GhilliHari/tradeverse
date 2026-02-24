@@ -4,7 +4,14 @@ import {
     XCircle, Clock, CheckCircle, AlertTriangle, Zap, Bot
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const getApiUrl = () => {
+    try {
+        const saved = localStorage.getItem('tradeverse_api_url');
+        if (saved) return saved.replace(/\/$/, '');
+    } catch (e) { }
+    return import.meta.env.VITE_API_URL || "";
+};
+const API_URL = getApiUrl();
 
 const PaperTrade = ({ token, symbol, ltp }) => {
     const [action, setAction] = useState('BUY');

@@ -38,7 +38,14 @@ import { auth } from '../firebase';
 
 
 // BASE API URL
-const API_URL = ""; // Relative root to avoid double /api/ prefix while leveraging Vercel proxy
+const getApiUrl = () => {
+    try {
+        const saved = localStorage.getItem('tradeverse_api_url');
+        if (saved) return saved.replace(/\/$/, ''); // Remove trailing slash
+    } catch (e) { }
+    return ""; // Default to relative (Vercel proxy)
+};
+const API_URL = getApiUrl();
 
 const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
     <button
@@ -2390,6 +2397,34 @@ const DashboardWithLogic = () => {
                                                         </button>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : activeSettingsTab === 'System' ? (
+                                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                                        <div className="flex items-start gap-6 mb-8">
+                                            <div className="p-4 bg-emerald-500/10 rounded-3xl text-emerald-400 border border-emerald-500/20 shadow-lg shadow-emerald-500/10">
+                                                <Cpu className="w-8 h-8" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl font-black text-white tracking-tight">System Configuration</h3>
+                                                <p className="text-slate-500 text-sm font-medium mt-2 max-w-md">Manage advanced network settings and backend targeting.</p>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-6 pt-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-1">Custom Backend URL (Local Tunnel)</label>
+                                                <input
+                                                    type="url"
+                                                    defaultValue={localStorage.getItem('tradeverse_api_url') || ''}
+                                                    onChange={(e) => localStorage.setItem('tradeverse_api_url', e.target.value)}
+                                                    placeholder="e.g., https://your-tunnel.ngrok-free.app (Leave empty for Default)"
+                                                    className="w-full bg-black/20 border border-emerald-500/20 rounded-2xl px-6 py-4 text-sm font-mono text-emerald-300 focus:outline-none focus:border-emerald-500/60 focus:bg-black/40 transition-all placeholder:text-slate-700"
+                                                />
+                                                <p className="text-xs text-slate-500 mt-2 px-1">
+                                                    Enter your ngrok or localtunnel URL here to bypass the main cloud backend. <br />
+                                                    <span className="text-emerald-400 font-bold">Important:</span> Refresh the page after saving to reconnect.
+                                                </p>
                                             </div>
                                         </div>
                                     </div>

@@ -7,7 +7,14 @@ import HUDCard from './ui/HUDCard';
 import ScrambleText from './ui/ScrambleText';
 
 // BASE API URL
-const API_URL = import.meta.env.VITE_API_URL || "";
+const getApiUrl = () => {
+    try {
+        const saved = localStorage.getItem('tradeverse_api_url');
+        if (saved) return saved.replace(/\/$/, '');
+    } catch (e) { }
+    return import.meta.env.VITE_API_URL || "";
+};
+const API_URL = getApiUrl();
 
 const Backtest = () => {
     const [isLoading, setIsLoading] = useState(false);

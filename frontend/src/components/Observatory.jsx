@@ -5,7 +5,14 @@ import {
     AlertCircle, Zap, Calendar
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const getApiUrl = () => {
+    try {
+        const saved = localStorage.getItem('tradeverse_api_url');
+        if (saved) return saved.replace(/\/$/, '');
+    } catch (e) { }
+    return import.meta.env.VITE_API_URL || 'http://localhost:8000';
+};
+const API_URL = getApiUrl();
 
 const Observatory = () => {
     const [isRunning, setIsRunning] = useState(false);
@@ -171,8 +178,8 @@ const Observatory = () => {
                     onClick={isRunning ? handleStop : handleStart}
                     disabled={isLoading}
                     className={`px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-lg flex items-center gap-3 ${isRunning
-                            ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-500/40'
-                            : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-500/40'
+                        ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-500/40'
+                        : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-500/40'
                         } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                     {isRunning ? (
@@ -319,8 +326,8 @@ const Observatory = () => {
                                     <div>
                                         <p className="text-[8px] font-black uppercase text-slate-500 mb-1">Signal</p>
                                         <div className={`px-2 py-1 rounded-lg text-[10px] font-black tracking-widest inline-block ${pred.prediction.signal === 'BUY_CE' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                                                pred.prediction.signal === 'BUY_PE' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                                                    'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+                                            pred.prediction.signal === 'BUY_PE' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                                                'bg-slate-500/10 text-slate-400 border border-slate-500/20'
                                             }`}>
                                             {pred.prediction.signal}
                                         </div>
@@ -347,7 +354,7 @@ const Observatory = () => {
                                         {pred.actual_outcome ? (
                                             <div className="flex items-center gap-2">
                                                 <p className={`text-sm font-black font-mono ${pred.actual_outcome.pnl > 0 ? 'text-emerald-400' :
-                                                        pred.actual_outcome.pnl < 0 ? 'text-red-400' : 'text-slate-400'
+                                                    pred.actual_outcome.pnl < 0 ? 'text-red-400' : 'text-slate-400'
                                                     }`}>
                                                     {pred.actual_outcome.pnl > 0 ? '+' : ''}₹{pred.actual_outcome.pnl.toFixed(0)}
                                                 </p>
