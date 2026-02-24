@@ -54,7 +54,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     # 1. Dev Bypass / Mock Mode
     if config.ENV != "LIVE" or token == "mock-token-123":
         logger.info(f"Allowing Mock Auth for token: {token[:5]}...")
-        user_data = {"uid": "mock-user-001", "email": "dev@tradeverse.ai", "name": "Dev User"}
+        user_data = {"uid": "mock-user-001", "email": config.OWNER_EMAIL, "name": "System Owner"}
 
     # 2. Verify with Firebase
     else:
@@ -79,10 +79,15 @@ async def verify_owner(user: dict = Depends(get_current_user)):
     """
     Dependency to restrict access to the system owner only.
     """
-    if user.get("email") != config.OWNER_EMAIL:
-        logger.warning(f"🚫 Unauthorized Access Attempt: User {user.get('email')} tried to access OWNER-ONLY resources.")
+    user_email = user.get("email", "").lower().strip()
+    owner_email = config.OWNER_EMAIL.lower().strip()
+    
+    logger.info(f"Owner Check: User={user_email} | Owner={owner_email}")
+
+    if user_email != owner_email:
+        logger.warning(f"🚫 Unauthorized Access Attempt: User {user_email} tried to access OWNER-ONLY resources. Registered Owner: {owner_email}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied. This operation is restricted to the Tradeverse system owner."
+            detail=f"Access denied. This operation is restricted to the Tradeverse system owner ({owner_email})."
         )
     return user

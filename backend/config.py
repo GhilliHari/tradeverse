@@ -11,7 +11,7 @@ logger = logging.getLogger("Config")
 
 class Config:
     # IP Protection: Master Operator ID
-    OWNER_EMAIL = "final_success_verified_v3@tradeverse.ai"
+    OWNER_EMAIL = os.getenv("OWNER_EMAIL", "Hari@tradeverse.ai")
 
     # Environment: MOCK or LIVE
     ENV = os.getenv("TRADEVERSE_ENV", "MOCK").upper()

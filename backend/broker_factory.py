@@ -9,6 +9,17 @@ from redis_manager import redis_client
 
 logger = logging.getLogger("BrokerFactory")
 
+# In-memory cache for broker clients to avoid expensive re-logins on every request
+# Format: { user_id: { "client": broker_instance, "credentials_hash": str } }
+BROKER_CACHE = {}
+
+def _get_credentials_hash(settings: dict) -> str:
+    """Creates a simple hash of credentials to detect changes."""
+    keys = ["ANGEL_API_KEY", "ANGEL_CLIENT_ID", "ANGEL_PASSWORD", "ANGEL_TOTP_KEY"]
+    cred_vals = [str(settings.get(k, "")) for k in keys]
+    import hashlib
+    return hashlib.md5("".join(cred_vals).encode()).hexdigest()
+
 class MockAngelClient:
     def __init__(self, user_id):
         self.user_id = user_id
@@ -72,7 +83,24 @@ def get_broker_client(user_id: str = None):
         totp_key = user_settings.get("ANGEL_TOTP_KEY", config.ANGEL_TOTP_KEY if is_owner else None)
         
         if api_key and client_id:
-             return AngelClient(api_key, client_id, password, totp_key)
+            # CHECK CACHE
+            current_cred_hash = _get_credentials_hash(user_settings)
+            cached_data = BROKER_CACHE.get(user_id)
+            
+            if cached_data and cached_data.get("credentials_hash") == current_cred_hash:
+                cached_client = cached_data.get("client")
+                if hasattr(cached_client, 'is_connected') and cached_client.is_connected():
+                    logger.info(f"Reusing cached AngelClient for {user_id}")
+                    return cached_client
+            
+            # CREATE NEW CLIENT
+            logger.info(f"Creating NEW AngelClient for {user_id} (Cache Miss or Cred Change)")
+            client = AngelClient(api_key, client_id, password, totp_key)
+            BROKER_CACHE[user_id] = {
+                "client": client,
+                "credentials_hash": current_cred_hash
+            }
+            return client
         else:
              logger.warning(f"Angel keys missing for unauthorized user {user_id}. Falling back to Mock.")
              return MockAngelClient(f"MOCK_{user_id}")

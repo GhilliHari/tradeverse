@@ -38,10 +38,9 @@ app = FastAPI(title="Tradeverse Agentic Platform")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False, # Must be False if allow_origins=["*"] in FastAPI
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_credentials=False, # Use False to avoid security blocks when using wildcard origins
+    allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]
 )
 
 # Global Objects (Initialized lazily during startup)
@@ -70,12 +69,6 @@ async def initialize_systems():
         
         initialization_status["ready"] = True
         logger.info("✅ Systems Initialized & Ready.")
-
-        # Automatically start Observatory Simulation if in Market Hours or just to keep it warm
-        global simulation_task
-        if not simulation_engine.is_running:
-            logger.info("🔭 Watchdog: Auto-starting Observatory Simulation...")
-            simulation_task = asyncio.create_task(simulation_engine.run_simulation_loop(intelligence))
         
         # Notify via sync wrapper since we are in async context but notifier might be sync
         await asyncio.to_thread(notifier.notify_sync, "🚀 *Tradeverse Online*: Systems initialized and ready for execution.")
@@ -116,36 +109,6 @@ def normalize_symbol(symbol: str):
 
 from monitoring import monitor
 
-async def run_watchdog():
-    """
-    Watches specialized data pipelines and system health.
-    Also handles daily data updates at 4:00 PM IST.
-    """
-    from daily_data_updater import update_daily_data
-    
-    while True:
-        try:
-            # System Health Check
-            if not config.GEMINI_API_KEY:
-                logger.warning("Watchdog: Gemini API Key Not Found")
-                
-            # Ensure Observatory Simulation is running during market hours
-            global simulation_task, intelligence
-            if initialization_status["ready"] and intelligence:
-                if simulation_engine.is_market_hours():
-                    if not simulation_engine.is_running or (simulation_task and simulation_task.done()):
-                        logger.info("🔭 Watchdog: Restarting Observatory Simulation (Market is Open)...")
-                        simulation_task = asyncio.create_task(simulation_engine.run_simulation_loop(intelligence))
-
-            # Check if it's 4:00 PM IST (16:00) for daily update
-            now = datetime.now()
-            if now.hour == 16 and now.minute == 0:
-                logger.info("Watchdog: Triggering Daily Data Update")
-                from daily_data_updater import update_daily_data
-                asyncio.create_task(update_daily_data())
-                # Sleep for 61 seconds to avoid double triggering
-                await asyncio.sleep(61)
-                
             await asyncio.sleep(60)
         except Exception as e:
             logger.error(f"Watchdog Error: {e}")
@@ -604,15 +567,6 @@ async def trigger_training(background_tasks: BackgroundTasks, user: dict = Depen
     """
     if training_status["is_training"]:
         raise HTTPException(status_code=409, detail="Training already in progress")
-    
-    # Set status immediately to avoid race condition with poller
-    training_status.update({
-        "is_training": True,
-        "progress": 2,
-        "stage": "INITIALIZING",
-        "message": "Preparing AI Swarm for rebuild...",
-        "started_at": datetime.now().isoformat()
-    })
     
     background_tasks.add_task(train_swarm_background)
     return {
