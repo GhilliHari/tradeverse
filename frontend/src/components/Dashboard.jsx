@@ -123,13 +123,24 @@ const DashboardWithLogic = () => {
         angel_connected: false,
         env: 'MOCK'
     });
+    // Load saved credentials from localStorage if available
+    const loadSavedCredentials = () => {
+        try {
+            const saved = localStorage.getItem('tradeverse_credentials');
+            if (saved) return JSON.parse(saved);
+        } catch (e) {
+            console.warn("Failed to load saved credentials", e);
+        }
+        return {
+            angel_client_id: '', angel_password: '', angel_api_key: '', angel_totp_key: '',
+            kite_api_key: '', kite_access_token: '',
+            whatsapp_phone: '', whatsapp_api_key: '',
+            telegram_bot_token: '', telegram_chat_id: ''
+        };
+    };
+
     const [activeSettingsTab, setActiveSettingsTab] = useState('API Keys');
-    const [credentials, setCredentials] = useState({
-        angel_client_id: '', angel_password: '', angel_api_key: '', angel_totp_key: '',
-        kite_api_key: '', kite_access_token: '',
-        whatsapp_phone: '', whatsapp_api_key: '',
-        telegram_bot_token: '', telegram_chat_id: ''
-    });
+    const [credentials, setCredentials] = useState(loadSavedCredentials());
     const [isConnecting, setIsConnecting] = useState(false);
     const [trustedIPs, setTrustedIPs] = useState([]);
     const [newIP, setNewIP] = useState('');
@@ -137,6 +148,15 @@ const DashboardWithLogic = () => {
     const [connCountdown, setConnCountdown] = useState(0);
     const [serverLatency, setServerLatency] = useState(null);
     const abortControllerRef = useRef(null);
+
+    // Save credentials to localStorage whenever they change
+    useEffect(() => {
+        try {
+            localStorage.setItem('tradeverse_credentials', JSON.stringify(credentials));
+        } catch (e) {
+            console.warn("Failed to save credentials locally", e);
+        }
+    }, [credentials]);
 
     // Wake-up Ping on Mount
     useEffect(() => {

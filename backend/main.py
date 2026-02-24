@@ -109,45 +109,47 @@ def normalize_symbol(symbol: str):
 
 from monitoring import monitor
 
+            await asyncio.sleep(60)
+        except Exception as e:
+            logger.error(f"Watchdog Error: {e}")
+            await asyncio.sleep(60)
+
+async def keep_awake_pinger():
+    """
+    Background task to ping the server every 14 minutes to prevent Render free tier from sleeping.
+    Render sleeps after 15 mins of inactivity.
+    """
+    import httpx
+    while True:
+        try:
+            await asyncio.sleep(14 * 60) # Ping every 14 minutes
+            # Using httpx for async internal request. PORT defaults to 8000 for local, Render sets it dynamically.
+            port = os.getenv("PORT", "8000")
+            url = f"http://127.0.0.1:{port}/api/ping"
+            
+            # Simple unauthenticated ping to self
+            async with httpx.AsyncClient() as client:
+                res = await client.get(url, timeout=5.0)
+                logger.info(f"Self-Ping Keep-Awake: {res.status_code}")
+        except Exception as e:
+            # We don't want this to crash the server if httpx fails
+            logger.debug(f"Self-Ping Error (ignoring): {e}")
+
 @app.on_event("startup")
 async def startup_event():
     # Start systems initialization in background so we don't block port bind
     asyncio.create_task(initialize_systems())
     # Start watchdog
     asyncio.create_task(run_watchdog())
+    # Start keep awake pinger
+    asyncio.create_task(keep_awake_pinger())
 
-    # Force Default to MOCK on Startup for Safety
-    logger.info("🔒 Enforcing Default MOCK Mode on Startup")
-    config.ENV = "MOCK"
-    config.ACTIVE_BROKER = "MOCK_KITE"
-    config.save()
+    logger.info("🚀 Tradeverse Backend Startup Sequence Initiated")
 
-async def run_watchdog():
-    """
-    Watches specialized data pipelines and system health.
-    Also handles daily data updates at 4:00 PM IST.
-    """
-    from daily_data_updater import update_daily_data
-    
-    while True:
-        try:
-            # System Health Check
-            if not config.GEMINI_API_KEY:
-                logger.warning("Watchdog: Gemini API Key Not Found")
-                
-            # Check if it's 4:00 PM IST (16:00) for daily update
-            # Simple check run once a minute
-            now = datetime.now()
-            if now.hour == 16 and now.minute == 0:
-                logger.info("Watchdog: Triggering Daily Data Update")
-                asyncio.create_task(update_daily_data())
-                # Sleep for 61 seconds to avoid double triggering
-                await asyncio.sleep(61)
-                
-            await asyncio.sleep(60)
-        except Exception as e:
-            logger.error(f"Watchdog Error: {e}")
-            await asyncio.sleep(60)
+@app.get("/api/ping")
+async def ping():
+    """Lightweight endpoint to keep the server awake."""
+    return {"status": "awake", "time": datetime.now().isoformat()}
 
 @app.get("/")
 async def root():
@@ -959,11 +961,12 @@ async def get_settings(user: dict = Depends(get_current_user)):
             "telegram_bot_token": settings.get("TELEGRAM_BOT_TOKEN", config.TELEGRAM_BOT_TOKEN) if is_owner else "RESTRICTED",
             "telegram_chat_id": settings.get("TELEGRAM_CHAT_ID", config.TELEGRAM_CHAT_ID) if is_owner else "RESTRICTED"
         },
-        "mode": config.TRADING_MODE
+        "mode": config.TRADING_MODE,
+        "serverLatency": f"ONLINE | IP: {user_broker.clientPublicIP}" if hasattr(user_broker, 'clientPublicIP') else "ONLINE"
     }
 
 @app.post("/api/settings/update")
-async def update_settings(payload: Dict = Body(...), user: dict = Depends(verify_owner)):
+async def update_settings(payload: Dict = Body(...), user: dict = Depends(get_current_user)):
     """
     Updates runtime settings for the authenticated user.
     Saves to Redis to persist across restarts and sessions.
@@ -1002,53 +1005,56 @@ async def update_settings(payload: Dict = Body(...), user: dict = Depends(verify
              raise HTTPException(status_code=400, detail=f"LIVE Mode Denied: Invalid Credentials. {str(e)}")
 
     # Update fields only after validation pass
+    is_owner = user.get("email") == config.OWNER_EMAIL
+    
     if "active_broker" in payload: settings["ACTIVE_BROKER"] = payload["active_broker"]
     
     # SAVE Angel Credentials if provided
     if "angel_api_key" in payload: 
         settings["ANGEL_API_KEY"] = payload["angel_api_key"]
-        config.ANGEL_API_KEY = payload["angel_api_key"]
+        if is_owner: config.ANGEL_API_KEY = payload["angel_api_key"]
     if "angel_client_id" in payload: 
         settings["ANGEL_CLIENT_ID"] = payload["angel_client_id"]
-        config.ANGEL_CLIENT_ID = payload["angel_client_id"]
+        if is_owner: config.ANGEL_CLIENT_ID = payload["angel_client_id"]
     if "angel_password" in payload: 
         settings["ANGEL_PASSWORD"] = payload["angel_password"]
-        config.ANGEL_PASSWORD = payload["angel_password"]
+        if is_owner: config.ANGEL_PASSWORD = payload["angel_password"]
     if "angel_totp_key" in payload: 
         settings["ANGEL_TOTP_KEY"] = payload["angel_totp_key"]
-        config.ANGEL_TOTP_KEY = payload["angel_totp_key"]
+        if is_owner: config.ANGEL_TOTP_KEY = payload["angel_totp_key"]
 
     if "whatsapp_phone" in payload:
         settings["WHATSAPP_PHONE"] = payload["whatsapp_phone"]
-        config.WHATSAPP_PHONE = payload["whatsapp_phone"]
+        if is_owner: config.WHATSAPP_PHONE = payload["whatsapp_phone"]
         
     if "whatsapp_api_key" in payload:
         settings["WHATSAPP_API_KEY"] = payload["whatsapp_api_key"]
-        config.WHATSAPP_API_KEY = payload["whatsapp_api_key"]
+        if is_owner: config.WHATSAPP_API_KEY = payload["whatsapp_api_key"]
 
     if "telegram_bot_token" in payload:
         settings["TELEGRAM_BOT_TOKEN"] = payload["telegram_bot_token"]
-        config.TELEGRAM_BOT_TOKEN = payload["telegram_bot_token"]
+        if is_owner: config.TELEGRAM_BOT_TOKEN = payload["telegram_bot_token"]
         
     if "telegram_chat_id" in payload:
         settings["TELEGRAM_CHAT_ID"] = payload["telegram_chat_id"]
-        config.TELEGRAM_CHAT_ID = payload["telegram_chat_id"]
+        if is_owner: config.TELEGRAM_CHAT_ID = payload["telegram_chat_id"]
 
     if "env" in payload: 
         settings["ENV"] = payload["env"]
-        # Also update global config for persistence
+        # Also update global config for persistence if OWNER
         if payload["env"] in ["MOCK", "LIVE"]:
-            config.ENV = payload["env"]
+            if is_owner: config.ENV = payload["env"]
             
         if payload["env"] == "MOCK":
             settings["ACTIVE_BROKER"] = "NONE" # Deactivate real broker
-            config.ACTIVE_BROKER = "MOCK_KITE"
+            if is_owner: config.ACTIVE_BROKER = "MOCK_KITE"
         elif payload["env"] == "LIVE":
             settings["ACTIVE_BROKER"] = "ANGEL" # Auto-activate Angel One
-            config.ACTIVE_BROKER = "ANGEL"
+            if is_owner: config.ACTIVE_BROKER = "ANGEL"
             
-    # Persist to disk (so it survives backend restart even if Redis is Mock)
-    config.save()
+    # Persist to disk ONLY IF OWNER (so it survives backend restart even if Redis is Mock)
+    if is_owner:
+        config.save()
             
     # Save back to Redis
     redis_client.set(user_key, json.dumps(settings))
