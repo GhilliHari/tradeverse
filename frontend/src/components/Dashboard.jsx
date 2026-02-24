@@ -278,7 +278,9 @@ const DashboardWithLogic = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true', // Bypasses ngrok warning
+                    'Bypass-Tunnel-Reminder': 'true' // Bypasses localtunnel/pinggy warning
                 },
                 body: JSON.stringify(payload),
                 signal: controller.signal
