@@ -101,6 +101,7 @@ const DashboardWithLogic = () => {
     const [token, setToken] = useState(null);
     const [showLogin, setShowLogin] = useState(true);
     const [showEmergencyConfirm, setShowEmergencyConfirm] = useState(false);
+    const [showTrainingConfirm, setShowTrainingConfirm] = useState(false);
     const [showModeConfirm, setShowModeConfirm] = useState(false);
     const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -1109,10 +1110,7 @@ const DashboardWithLogic = () => {
     };
 
     const handleTriggerTraining = async () => {
-        if (!window.confirm("⚠️ This will retrain ALL 5 AI models (Daily, Intraday, TFT, RL, Regime).\n\nThis process takes ~5-15 minutes and requires significant compute.\n\nContinue?")) {
-            return;
-        }
-
+        setShowTrainingConfirm(false);
         setIsTraining(true); // Immediate feedback
         try {
             const res = await fetch(`${API_URL}/api/ai/train`, {
@@ -2213,7 +2211,7 @@ const DashboardWithLogic = () => {
                                                     <p className="text-[10px] font-black uppercase text-slate-500 mt-1 tracking-widest">{trainingStatus.stage}</p>
                                                 </div>
                                                 <button
-                                                    onClick={handleTriggerTraining}
+                                                    onClick={() => setShowTrainingConfirm(true)}
                                                     disabled={isTraining}
                                                     className={`px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-lg ${isTraining
                                                         ? 'bg-slate-500/20 text-slate-500 cursor-not-allowed'
@@ -2628,6 +2626,59 @@ const DashboardWithLogic = () => {
 
                             <p className="text-center text-[8px] text-indigo-500/40 font-black uppercase tracking-[0.3em] pt-6">
                                 AUTONOMOUS EXECUTION PROTOCOL
+                            </p>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* AI Swarm Training Confirmation Modal */}
+            <AnimatePresence>
+                {showTrainingConfirm && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowTrainingConfirm(false)}
+                            className="absolute inset-0 bg-purple-950/40 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                            className="relative w-full max-w-sm glass-panel p-8 rounded-[40px] shadow-2xl border-purple-500/30 bg-black/80"
+                        >
+                            <div className="text-center space-y-4 mb-8">
+                                <div className="w-20 h-20 mx-auto mb-4 bg-purple-500/10 text-purple-400 rounded-3xl flex items-center justify-center border border-purple-500/20 shadow-purple-500/10">
+                                    <Brain className="w-10 h-10 animate-pulse" />
+                                </div>
+                                <h3 className="text-2xl font-black tracking-tight text-white uppercase">
+                                    Rebuild Swarm?
+                                </h3>
+                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed">
+                                    ⚠️ THIS WILL RETRAIN <span className="text-purple-400">ALL 5 AI MODELS</span>.<br /><br />
+                                    PROCESS TAKES ~5-15 MINUTES AND REQUIRES SIGNIFICANT COMPUTE.
+                                </p>
+                            </div>
+
+                            <div className="space-y-3">
+                                <button
+                                    onClick={handleTriggerTraining}
+                                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] transition-all shadow-xl shadow-purple-900/40 active:scale-[0.95]"
+                                >
+                                    START REBUILD
+                                </button>
+                                <button
+                                    onClick={() => setShowTrainingConfirm(false)}
+                                    className="w-full bg-white/5 hover:bg-white/10 text-slate-400 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border border-white/5"
+                                >
+                                    ABORT MISSION
+                                </button>
+                            </div>
+
+                            <p className="text-center text-[8px] text-purple-500/40 font-black uppercase tracking-[0.3em] pt-6">
+                                NEURAL SWARM RETRAINING PROTOCOL
                             </p>
                         </motion.div>
                     </div>
