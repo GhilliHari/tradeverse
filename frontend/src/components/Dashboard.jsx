@@ -111,7 +111,7 @@ const DashboardWithLogic = () => {
     const [isLiquidating, setIsLiquidating] = useState(false);
     const isConfirmingRef = useRef(false);
 
-    const OWNER_EMAIL = "Hari@tradeverse.ai";
+    const OWNER_EMAIL = "hari@tradeverse.ai";
     const [isOwner, setIsOwner] = useState(false);
 
     const [user, setUser] = useState({ name: 'Guest', initials: 'G', status: 'OFFLINE' });
@@ -745,7 +745,7 @@ const DashboardWithLogic = () => {
             setUser({ name: 'Guest Trader', initials: 'G', status: 'GUEST' });
 
             // Detect owner on mount
-            if (auth?.currentUser?.email === OWNER_EMAIL) {
+            if (auth?.currentUser?.email?.toLowerCase() === OWNER_EMAIL) {
                 setIsOwner(true);
             }
         }
@@ -754,7 +754,7 @@ const DashboardWithLogic = () => {
     // Also watch auth state for changes
     useEffect(() => {
         const unsubscribe = auth?.onAuthStateChanged(user => {
-            if (user?.email === OWNER_EMAIL) {
+            if (user?.email?.toLowerCase() === OWNER_EMAIL) {
                 setIsOwner(true);
             } else {
                 setIsOwner(false);
