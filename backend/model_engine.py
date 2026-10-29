@@ -292,6 +292,17 @@ class ModelEngine:
         logger.info("All model artifacts and config saved.")
 
     def load_artifacts(self):
+        if not os.path.exists(self.model_path):
+            try:
+                logger.info(f"Model artifact {self.model_path} not found locally; building from GitHub-backed cache...")
+                from data_pipeline import DataPipeline
+                interval = "1d" if self.model_type == "daily" else "5m"
+                dp = DataPipeline(symbol="^NSEBANK", interval=interval)
+                if dp.run_full_pipeline():
+                    self.train(dp.train_data, dp.test_data)
+            except Exception as e:
+                logger.warning(f"Auto-build of {self.model_type} model artifact failed: {e}")
+
         if all(os.path.exists(p) for p in [self.model_path, self.scaler_path, self.config_path]):
             self.model = joblib.load(self.model_path)
             self.scaler = joblib.load(self.scaler_path)

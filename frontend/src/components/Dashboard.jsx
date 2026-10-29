@@ -46,9 +46,15 @@ import { auth } from '../firebase';
 const getApiUrl = () => {
     try {
         const saved = localStorage.getItem('tradeverse_api_url');
-        if (saved) return saved.replace(/\/$/, ''); // Remove trailing slash
+        if (saved) {
+            if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && saved.includes('trycloudflare.com')) {
+                localStorage.removeItem('tradeverse_api_url');
+            } else {
+                return saved.replace(/\/$/, '');
+            }
+        }
     } catch (e) { }
-    return ""; // Default to relative (Vercel proxy)
+    return ""; // Default to relative (Vite/Vercel proxy)
 };
 const API_URL = getApiUrl();
 

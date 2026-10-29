@@ -8,7 +8,13 @@ import {
 const getApiUrl = () => {
     try {
         const saved = localStorage.getItem('tradeverse_api_url');
-        if (saved) return saved.replace(/\/$/, '');
+        if (saved) {
+            if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && saved.includes('trycloudflare.com')) {
+                localStorage.removeItem('tradeverse_api_url');
+            } else {
+                return saved.replace(/\/$/, '');
+            }
+        }
     } catch (e) { }
     return import.meta.env.VITE_API_URL || 'http://localhost:8000';
 };
