@@ -10,7 +10,24 @@ Calculates:
 
 import math
 import numpy as np
-import scipy.stats as si
+try:
+    import scipy.stats as si
+except ImportError:
+    class _NormFallback:
+        @staticmethod
+        def cdf(x, loc=0.0, scale=1.0):
+            z = (float(x) - loc) / scale
+            return 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
+
+        @staticmethod
+        def pdf(x, loc=0.0, scale=1.0):
+            z = (float(x) - loc) / scale
+            return (1.0 / (scale * math.sqrt(2.0 * math.pi))) * math.exp(-0.5 * z * z)
+
+    class _SciPyStatsFallback:
+        norm = _NormFallback()
+
+    si = _SciPyStatsFallback()
 import logging
 from typing import Dict, List, Optional, Any
 

@@ -14,8 +14,14 @@ Author: Tradeverse AI
 
 import numpy as np
 import pandas as pd
-from statsmodels.tsa.stattools import grangercausalitytests
-import networkx as nx
+try:
+    from statsmodels.tsa.stattools import grangercausalitytests
+except ImportError:
+    grangercausalitytests = None
+try:
+    import networkx as nx
+except ImportError:
+    nx = None
 import logging
 from typing import Dict, List, Tuple
 

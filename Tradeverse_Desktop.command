@@ -17,11 +17,14 @@ fi
 # 1. Pull latest GitHub backup data
 GIT_TERMINAL_PROMPT=0 git pull origin main --no-edit 2>/dev/null || true
 
-# 2. Ensure Backend .venv exists
+# 2. Ensure Backend .venv & all packages exist
 if [ ! -x "$SCRIPT_DIR/backend/.venv/bin/python3" ]; then
     echo "📦 Creating Backend Python environment..."
     cd "$SCRIPT_DIR/backend" && python3 -m venv .venv && ./.venv/bin/pip install --upgrade pip && ./.venv/bin/pip install -r requirements.txt
     cd "$SCRIPT_DIR"
+elif ! "$SCRIPT_DIR/backend/.venv/bin/python3" -c "import scipy, networkx, sklearn, fastapi, pandas, yfinance" >/dev/null 2>&1; then
+    echo "📦 Installing missing Python packages (scipy, networkx, etc.)..."
+    cd "$SCRIPT_DIR/backend" && ./.venv/bin/pip install -r requirements.txt && cd "$SCRIPT_DIR"
 fi
 
 # 3. Ensure ML models & simulation data are synced

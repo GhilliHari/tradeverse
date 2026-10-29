@@ -28,12 +28,15 @@ echo "=================================================="
 echo "🔄 Checking GitHub for latest backup data..."
 GIT_TERMINAL_PROMPT=0 git pull origin main --no-edit 2>/dev/null || echo "ℹ️ Running with local GitHub backup cache."
 
-# 2. Ensure Backend Python Virtual Environment is ready
+# 2. Ensure Backend Python Virtual Environment & all packages (scipy, sklearn, etc.) are ready
 cd "$BACKEND_DIR" || exit 1
 if [ ! -x "./.venv/bin/python3" ]; then
     echo "📦 Setting up Python virtual environment on this MacBook..."
     python3 -m venv .venv
     ./.venv/bin/pip install --upgrade pip
+    ./.venv/bin/pip install -r requirements.txt
+elif ! ./.venv/bin/python3 -c "import scipy, networkx, sklearn, fastapi, pandas, yfinance" >/dev/null 2>&1; then
+    echo "📦 Installing missing Python packages (scipy, networkx, etc.)..."
     ./.venv/bin/pip install -r requirements.txt
 fi
 

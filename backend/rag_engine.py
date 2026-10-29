@@ -12,8 +12,12 @@ Collections:
 import os
 import logging
 from typing import List, Dict, Optional, Any
-import chromadb
-from chromadb.config import Settings
+try:
+    import chromadb
+    from chromadb.config import Settings
+except ImportError:
+    chromadb = None
+    Settings = None
 
 logger = logging.getLogger("tradeverse.rag")
 
