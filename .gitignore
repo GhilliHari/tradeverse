@@ -9,9 +9,7 @@ venv/
 .venv/
 backend/.venv/
 ENV/
-build/
 develop-eggs/
-dist/
 dist_desktop/
 downloads/
 eggs/
@@ -27,11 +25,6 @@ wheels/
 *.egg
 *.pid
 backend/cloudflared
-
-# Environment variables
-.env
-.env.local
-.env.*.local
 
 # IDE
 .vscode/
@@ -49,8 +42,7 @@ Thumbs.db
 logs/
 backend/logs/
 
-# Large model artifacts (rebuilt from backed-up cache data; keep lightweight models & configs tracked)
-backend/market_model*.joblib
+# Model artifacts (keep all iMac .joblib, .pth, .zip models tracked in GitHub so MacBook is 100% identical)
 *.pkl
 *.h5
 *.pt
@@ -61,11 +53,6 @@ backend/market_model*.joblib
 # Node modules (frontend)
 node_modules/
 .pnpm-store/
-
-# Build outputs
-dist/
-build/
-*.egg-info/
 
 # Firebase
 firebase-debug.log
@@ -78,7 +65,3 @@ firebase-debug.log
 .pytest_cache/
 .coverage
 htmlcov/
-settings.json
-backend/settings.json
-token_usage.json
-backend/token_usage.json

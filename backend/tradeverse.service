@@ -1,0 +1,16 @@
+[Unit]
+Description=Tradeverse AI Trading Engine 24/7 Service
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/tradeverse/backend
+ExecStart=/home/ubuntu/tradeverse/backend/.venv/bin/python3 main.py
+Restart=always
+RestartSec=5
+Environment=PORT=8000
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

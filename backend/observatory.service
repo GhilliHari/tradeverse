@@ -1,0 +1,15 @@
+[Unit]
+Description=Tradeverse Observatory Scanner 24/7 Service
+After=network.target tradeverse.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/tradeverse/backend
+ExecStart=/home/ubuntu/tradeverse/backend/.venv/bin/python3 /home/ubuntu/tradeverse/backend/automated_observatory_daemon.py
+Restart=always
+RestartSec=10
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

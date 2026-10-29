@@ -1,0 +1,2 @@
+{"trade_id": "PAPER_1770910106856", "timestamp": "2026-02-12T20:58:26.856661", "action": "OPEN", "symbol": "NSE:BANKNIFTY", "side": "BUY", "quantity": 15, "entry_price": 45000.0, "type": "MARKET", "status": "OPEN", "pnl": 0.0, "reasoning": "Integration Test Buy", "mode": "TEST"}
+{"trade_id": "PAPER_1770910106856", "timestamp": "2026-02-12T20:58:26.889179", "action": "CLOSE", "symbol": "NSE:BANKNIFTY", "side": "BUY", "quantity": 15, "entry_price": 45000.0, "exit_price": 45100.0, "status": "CLOSED", "pnl": 1500.0, "reasoning": "Integration Test Close", "mode": "TEST"}

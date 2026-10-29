@@ -1,56 +1,65 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🔄 Tradeverse MacBook 1-Step Updater (Updates Code, Backup Data & Desktop App)
+# 🔄 Tradeverse MacBook Exact-Clone Updater (100% Identical to iMac)
 # ==============================================================================
 
-set -e
-
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$SCRIPT_DIR"
+cd "$SCRIPT_DIR" || exit 1
 
 echo "============================================================"
-echo "🔄 Updating Tradeverse on this MacBook to Latest Version..."
+echo "🔄 Syncing MacBook with Exact iMac Tradeverse State..."
 echo "============================================================"
 
-# 1. Fetch & reset to latest main branch from GitHub
+# 1. Stop any old running backend/frontend/Electron processes
+echo "🛑 Stopping old processes on ports 8000 & 5173..."
+lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+lsof -ti:5173 | xargs kill -9 2>/dev/null || true
+
+# 2. Fetch & hard-reset to exact iMac state on GitHub
+echo "📥 Pulling exact iMac files, models, settings & data from GitHub..."
 git fetch origin main
 git reset --hard origin/main
 
-# 2. Update Backend Python dependencies & sync simulation backup data
-cd "$SCRIPT_DIR/backend"
+# 3. Ensure Backend Python .venv has all packages (including scipy, networkx, statsmodels)
+cd "$SCRIPT_DIR/backend" || exit 1
 if [ ! -x "./.venv/bin/python3" ]; then
+    echo "📦 Creating Python virtual environment..."
     python3 -m venv .venv
 fi
+echo "📦 Verifying Python dependencies (scipy, networkx, statsmodels, etc.)..."
 ./.venv/bin/pip install --upgrade pip -q
 ./.venv/bin/pip install -r requirements.txt -q
 
-if [ ! -f "./market_model_daily.joblib" ] || [ ! -f "./market_model_intraday.joblib" ]; then
-    echo "🧠 Rebuilding local ML models from GitHub-backed cache..."
-    ./.venv/bin/python3 train_lite.py || true
-fi
-
-echo "📊 Syncing latest market-hours simulation & paper trades..."
+echo "📊 Syncing market-hours simulation & paper trades..."
 ./.venv/bin/python3 run_market_simulation.py --days 14 || true
 
-# 3. Update Frontend dependencies & build production bundle
-cd "$SCRIPT_DIR/frontend"
-npm install
+# 4. Ensure Frontend & Electron dependencies are installed and built
+cd "$SCRIPT_DIR/frontend" || exit 1
+if [ ! -d "./node_modules" ]; then
+    echo "📦 Installing Frontend dependencies..."
+    npm install
+fi
 npm run build
 
-# 4. Rebuild macOS Native Desktop App (Tradeverse AI.app) if electron-builder is installed
-cd "$SCRIPT_DIR"
-if [ -d "./node_modules" ]; then
-    echo "🖥️ Updating macOS Desktop App (Tradeverse AI.app)..."
+cd "$SCRIPT_DIR" || exit 1
+if [ ! -d "./node_modules" ]; then
+    echo "📦 Installing Electron Desktop dependencies..."
+    npm install
+fi
+
+# 5. If Tradeverse AI.app is in /Applications, update it to match iMac
+if [ -d "/Applications/Tradeverse AI.app" ]; then
+    echo "🖥️ Updating /Applications/Tradeverse AI.app..."
     npm run pack || true
-    if [ -d "./dist_desktop/mac-arm64/Tradeverse AI.app" ] && [ -d "/Applications/Tradeverse AI.app" ]; then
+    if [ -d "./dist_desktop/mac-arm64/Tradeverse AI.app" ]; then
         rm -rf "/Applications/Tradeverse AI.app"
         cp -R "./dist_desktop/mac-arm64/Tradeverse AI.app" "/Applications/"
-        echo "✅ Updated /Applications/Tradeverse AI.app!"
+        echo "✅ /Applications/Tradeverse AI.app updated!"
     fi
 fi
 
 echo ""
-echo "✅ MacBook is now running the LATEST Tradeverse version!"
-echo "🚀 Launching Tradeverse Now..."
-./Tradeverse_Launcher.command
+echo "✅ MacBook is now 100% identical to your iMac!"
+echo "🚀 Launching Tradeverse Desktop Suite (Backend + Frontend + Electron)..."
+npm run desktop
