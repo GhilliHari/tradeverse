@@ -1,0 +1,55 @@
+{
+  "name": "tradeverse",
+  "version": "1.0.0",
+  "description": "Tradeverse is an advanced, high-frequency algorithmic trading system powered by a hybrid AI architecture combining Large Language Models (Gemini 1.5 Flash), Deep Learning (Temporal Fusion Transformers), and Reinforcement Learning agents.",
+  "main": "electron-main.cjs",
+  "scripts": {
+    "backend": "cd backend && ./.venv/bin/python3 main.py",
+    "frontend": "cd frontend && npm run dev",
+    "desktop": "concurrently \"npm run backend\" \"npm run frontend\" \"wait-on http://localhost:5173 && electron .\"",
+    "build:frontend": "cd frontend && npm run build",
+    "pack": "npm run build:frontend && electron-builder --dir",
+    "dist": "npm run build:frontend && electron-builder",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "build": {
+    "appId": "com.tradeverse.app",
+    "productName": "Tradeverse AI",
+    "directories": {
+      "output": "dist_desktop"
+    },
+    "files": [
+      "electron-main.cjs",
+      "frontend/dist/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.finance",
+      "target": [
+        "dmg"
+      ],
+      "icon": "build/icon.icns"
+    },
+    "win": {
+      "icon": "build/icon.ico"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GhilliHari/tradeverse.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/GhilliHari/tradeverse/issues"
+  },
+  "homepage": "https://github.com/GhilliHari/tradeverse#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "electron": "^41.0.1",
+    "electron-builder": "^26.8.1",
+    "wait-on": "^9.0.4"
+  }
+}

@@ -3,12 +3,19 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+    base: './',
     plugins: [react()],
     server: {
+        allowedHosts: true,
         proxy: {
             '/api': {
                 target: 'http://localhost:8000',
                 changeOrigin: true
+            },
+            '/backend-status': {
+                target: 'http://localhost:8000',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/backend-status/, '')
             }
         }
     }

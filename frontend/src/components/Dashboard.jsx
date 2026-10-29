@@ -47,13 +47,16 @@ const getApiUrl = () => {
     try {
         const saved = localStorage.getItem('tradeverse_api_url');
         if (saved) {
-            if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && saved.includes('trycloudflare.com')) {
+            if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') && saved.includes('trycloudflare.com')) {
                 localStorage.removeItem('tradeverse_api_url');
             } else {
                 return saved.replace(/\/$/, '');
             }
         }
     } catch (e) { }
+    if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
+        return 'http://localhost:8000';
+    }
     return ""; // Default to relative (Vite/Vercel proxy)
 };
 const API_URL = getApiUrl();
