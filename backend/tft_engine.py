@@ -157,11 +157,16 @@ class TFTEngine:
 
     def load_model(self):
         if os.path.exists(self.model_path):
-            self.model.load_state_dict(torch.load(self.model_path, map_location=self.device))
-            import joblib
-            self.scaler = joblib.load(self.scaler_path)
-            logger.info("TFT Model Loaded successfully.")
-            return True
+            try:
+                self.model.load_state_dict(torch.load(self.model_path, map_location=self.device))
+                import joblib
+                if os.path.exists(self.scaler_path):
+                    self.scaler = joblib.load(self.scaler_path)
+                logger.info("TFT Model Loaded successfully.")
+                return True
+            except Exception as e:
+                logger.warning(f"⚠️ TFT Model loading failed due to checkpoint/feature mismatch: {e}. Retraining recommended.")
+                return False
         return False
 
 if __name__ == "__main__":

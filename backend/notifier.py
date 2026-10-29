@@ -24,7 +24,7 @@ class WhatsAppNotifier:
 
     def __init__(self):
         if not self.enabled:
-            logger.warning("⚠️ WhatsApp Notifier disabled: Missing Phone or API Key.")
+            logger.info("ℹ️ WhatsApp Notifier unconfigured (Optional alert channel).")
         else:
             logger.info(f"✅ WhatsApp Notifier initialized for {self.phone[:5]}***.")
 
@@ -126,12 +126,18 @@ class MultiNotifier:
 
     def notify_sync(self, text: str):
         """Synchronous fire-and-forget wrapper."""
+        if not self.enabled:
+            return
         try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                asyncio.create_task(self.send_message(text))
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
+
+            if loop and loop.is_running():
+                loop.create_task(self.send_message(text))
             else:
-                loop.run_until_complete(self.send_message(text))
+                asyncio.run(self.send_message(text))
         except Exception as e:
             logger.error(f"Error in MultiNotifier sync: {e}")
 

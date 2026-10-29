@@ -70,7 +70,7 @@ class SignalCache:
     """
     def __init__(self, client=None):
         self.client = client if client else redis_client
-        self.ttl = 60 # 1 minute default cache (since we use 1m candles)
+        self.ttl = 300 # 5 minute default cache (since we use 5m candles)
 
     def cache_signal(self, symbol: str, signal_data: dict, ttl=None):
         """

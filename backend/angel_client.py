@@ -126,15 +126,27 @@ class AngelClient:
             
             self.feed_token = self.smart_api.getfeedToken()
             
-            # SESSION VERIFICATION: Try to get profile
+            # SESSION & API KEY VERIFICATION: Test profile and orderbook to validate Trading API Key
             try:
                 profile = self.smart_api.getProfile(jwt)
-                if profile['status']:
-                    logger.info(f"Verified Session for: {profile['data'].get('clientname', 'Unknown User')}")
-                else:
-                    logger.error(f"Session check fail: {profile.get('message')} (Code: {profile.get('errorCode')})")
+                if not profile or profile.get('status') == False or profile.get('success') == False:
+                    err_msg = profile.get('message', 'Profile Check Failed') if profile else 'Profile Check Failed'
+                    self.login_error = f"Angel API Key Error: {err_msg}"
+                    raise Exception(self.login_error)
+                
+                # Test orderBook to verify Trading API Key validity
+                ob_check = self.smart_api.orderBook()
+                if isinstance(ob_check, dict) and (ob_check.get('status') == False or ob_check.get('success') == False):
+                    err_msg = ob_check.get('message', 'Invalid API Key')
+                    self.login_error = f"Angel API Key Invalid: {err_msg}"
+                    logger.error(f"Trading API Key verification failed: {err_msg}")
+                    raise Exception(self.login_error)
+
+                logger.info(f"Verified Session for: {profile['data'].get('clientname', 'Unknown User')}")
             except Exception as e:
-                logger.error(f"Profile check exception: {e}")
+                logger.error(f"Session verification exception: {e}")
+                self.login_error = str(e)
+                raise
 
             logger.info("Angel Client fully initialized.")
             
@@ -147,9 +159,11 @@ class AngelClient:
 
     def is_connected(self):
         """
-        Public method to check if the client is truly connected.
-        Caches result for 60 seconds to avoid API rate limits during polling.
+        Public method to check if the client is truly connected with a valid API Key.
         """
+        if getattr(self, 'login_error', None):
+            return False
+            
         if not self.smart_api or not getattr(self.smart_api, 'jwtToken', None):
             return False
             
@@ -159,14 +173,16 @@ class AngelClient:
             if (now - self._last_conn_check).total_seconds() < 60:
                 return getattr(self, '_cached_conn_status', False)
         
-        # Try a small profile check to verify session
+        # Verify profile and JWT token validity
         try:
             self._last_conn_check = now
             p = self.smart_api.getProfile(self.smart_api.jwtToken)
-            status = p.get('status', False) and p.get('data', {}).get('clientcode') is not None
-            self._cached_conn_status = status
-            return status
-        except:
+            profile_ok = bool(p and (p.get('status') == True or p.get('success') == True) and p.get('data', {}).get('clientcode') is not None)
+            self._cached_conn_status = profile_ok
+            return profile_ok
+        except Exception:
+            if getattr(self.smart_api, 'jwtToken', None):
+                return True
             self._cached_conn_status = False
             return False
 
@@ -243,10 +259,18 @@ class AngelClient:
                 "BANKNIFTY": ("NSE", "Nifty Bank", "99926009"),
                 "NIFTY": ("NSE", "Nifty 50", "99926000"),
                 "FINNIFTY": ("NSE", "Nifty Fin Services", "99926037"),
+                "MIDCPNIFTY": ("NSE", "Nifty Midcap 100", "99926074"),
                 "Nifty Bank": ("NSE", "Nifty Bank", "99926009"),
                 "Nifty 50": ("NSE", "Nifty 50", "99926000"),
-                "SBIN": ("NSE", "SBIN-EQ", "3045")
+                "NIFTY MIDCAP 100": ("NSE", "Nifty Midcap 100", "99926074"),
+                "SBIN": ("NSE", "SBIN-EQ", "3045"),
+                "^NSEBANK": ("NSE", "Nifty Bank", "99926009"),
+                "^NSEI": ("NSE", "Nifty 50", "99926000"),
+                "^CNXFIN": ("NSE", "Nifty Fin Services", "99926037"),
+                "^NSMIDCP": ("NSE", "Nifty Midcap 100", "99926074")
             }
+
+
             
             if symbol in mapping:
                 res = mapping[symbol]
@@ -467,14 +491,51 @@ class AngelClient:
 
             logger.info(f"Order placed via Angel. ID: {order_id}")
             return order_id
-            
         except Exception as e:
             logger.error(f"Angel Order Placement Error: {e}")
             raise
 
+    def modify_order(self, order_id, price=None, quantity=None, order_type="LIMIT", variety="NORMAL", product="MIS", tradingsymbol=None, exchange="NFO", symboltoken=None):
+        if not self.smart_api:
+            raise Exception("Broker not connected")
+        try:
+            angel_product = "INTRADAY" if product == "MIS" else "DELIVERY"
+            if product == "NRML": angel_product = "CARRYFORWARD"
+            res_token = symboltoken
+            res_symbol = tradingsymbol
+            if not res_token and tradingsymbol:
+                _, res_symbol, res_token = self._get_token_and_exchange(f"{exchange}:{tradingsymbol}")
+            orderparams = {
+                "variety": variety or "NORMAL",
+                "orderid": str(order_id),
+                "ordertype": order_type,
+                "producttype": angel_product,
+                "duration": "DAY",
+                "price": price if price else 0,
+                "quantity": quantity if quantity else 1,
+                "tradingsymbol": res_symbol,
+                "symboltoken": res_token or "",
+                "exchange": exchange
+            }
+            logger.info(f"Modifying Angel Order {order_id}: Price={price}, Qty={quantity}")
+            return self.smart_api.modifyOrder(orderparams)
+        except Exception as e:
+            logger.error(f"Angel Order Modification Error: {e}")
+            raise
+
+    def cancel_order(self, order_id, variety="NORMAL"):
+        if not self.smart_api:
+            raise Exception("Broker not connected")
+        try:
+            logger.info(f"Cancelling Angel Order: {order_id}")
+            return self.smart_api.cancelOrder(str(order_id), variety or "NORMAL")
+        except Exception as e:
+            logger.error(f"Angel Cancel Order Error: {e}")
+            raise
+
     def get_option_chain(self, symbol="NSE:BANKNIFTY", expiry=None):
         """
-        Fetches the option chain with real-time OI and LTP.
+        Fetches the option chain with real-time OI and LTP using marketData API.
         """
         if not self.smart_api:
             return []
@@ -486,66 +547,103 @@ class AngelClient:
                 return []
             
             last_price = ltp_data[symbol]['last_price']
-            base_strike = round(last_price / 100) * 100
             
-            # 2. Build Strike Tokens
-            # This is a bit complex in Angel as we need the specific tokens for NIFTY BANK CE/PE
-            # For simplicity in this refinement, we'll try to resolve 12 key strikes (6 ITM, 6 OTM)
-            strikes = []
+            # 2. Dynamic Strike Step selection
+            strike_step = 100
+            search_query = "BANKNIFTY"
             
-            # Weekly expiry names are usually format: BANKNIFTY24FEB45000CE
-            # We'll use searchScrip to find the nearest strikes
-            search_query = "BANKNIFTY" if "BANK" in symbol.upper() else "NIFTY"
+            if "FIN" in symbol.upper():
+                strike_step = 50 # Fin Nifty usually 50/100
+                search_query = "FINNIFTY"
+            elif "MID" in symbol.upper():
+                strike_step = 25 # Midcap Nifty is 25/50
+                search_query = "MIDCPNIFTY"
+            elif "NIFTY" in symbol.upper() and "BANK" not in symbol.upper():
+                strike_step = 50 
+                search_query = "NIFTY"
             
-            logger.info(f"Fetching real-time option chain for {search_query} around {base_strike}")
+            base_strike = round(last_price / strike_step) * strike_step
             
-            # We'll fetch 5 strikes above and 5 below
+            logger.info(f"Fetching real-time option chain for {search_query} around {base_strike} (Step: {strike_step})")
+
+            
+            # Gather all tokens
+            strike_data = {}
+            nfo_tokens = []
+            
             for i in range(-5, 6):
-                strike = base_strike + (i * 100)
-                
-                # Fetch CE and PE tokens
-                # Note: In a production environment, you'd have a local master-contract mapping
-                # because searching 20 times per signal is slow.
-                # For now, we'll use a slightly optimized heuristic or cached tokens.
-                
+                strike = base_strike + (i * strike_step)
+
                 ce_sym = f"{search_query}{strike}CE"
                 pe_sym = f"{search_query}{strike}PE"
                 
-                # We'll mock the premiums if search/fetch fails, but try to get real values
-                # In a real system, we'd use the full Option Chain API if the broker provides it
-                # or pre-calculate the tokens.
-                
-                # Let's try to fetch LTP for these symbols
-                # We need tokens first
                 _, _, ce_token = self._get_token_and_exchange(f"NFO:{ce_sym}")
                 _, _, pe_token = self._get_token_and_exchange(f"NFO:{pe_sym}")
                 
-                ce_ltp = 0
-                pe_ltp = 0
-                ce_oi = 0
-                pe_oi = 0
-                
-                if ce_token:
-                    res_ce = self.ltp(f"NFO:{ce_sym}")
-                    ce_ltp = res_ce.get(f"NFO:{ce_sym}", {}).get('last_price', 0)
-                    # To get OI, we usually need the market data call
-                    # self.smart_api.ltpData returns OI in some SDK versions
-                
-                if pe_token:
-                    res_pe = self.ltp(f"NFO:{pe_sym}")
-                    pe_ltp = res_pe.get(f"NFO:{pe_sym}", {}).get('last_price', 0)
-
-                strikes.append({
+                strike_data[strike] = {
                     "strike": strike,
-                    "ce_premium": ce_ltp if ce_ltp > 0 else max(10, (last_price - strike) + 100),
-                    "pe_premium": pe_ltp if pe_ltp > 0 else max(10, (strike - last_price) + 100),
-                    "oi_ce": 0, # OI fetching requires a different API call usually
+                    "ce_token": ce_token,
+                    "pe_token": pe_token,
+                    "ce_premium": 0,
+                    "pe_premium": 0,
+                    "oi_ce": 0,
                     "oi_pe": 0
+                }
+                
+                if ce_token: nfo_tokens.append(ce_token)
+                if pe_token: nfo_tokens.append(pe_token)
+                
+            # Fetch Market Data in Bulk
+            if nfo_tokens:
+                try:
+                    mode = "FULL"
+                    exchangeTokens = {"NFO": nfo_tokens}
+                    res = self.smart_api.getMarketData(mode, exchangeTokens)
+                    
+                    if res and res.get('status') and res.get('data'):
+                        market_data_list = res.get('data', {}).get('fetched', [])
+                        if not market_data_list and isinstance(res.get('data'), list):
+                             market_data_list = res['data']
+                             
+                        # Map fetched data to strikes
+                        token_to_data = {str(item.get('symbolToken', item.get('symboltoken', ''))): item for item in market_data_list}
+                        
+                        for strike_val, sd in strike_data.items():
+                            if sd['ce_token'] and str(sd['ce_token']) in token_to_data:
+                                item = token_to_data[str(sd['ce_token'])]
+                                # Some API versions return opnInterest, others oi
+                                sd['ce_premium'] = item.get('ltp', item.get('last_price', 0))
+                                sd['oi_ce'] = item.get('opnInterest', item.get('oi', 0))
+                                
+                            if sd['pe_token'] and str(sd['pe_token']) in token_to_data:
+                                item = token_to_data[str(sd['pe_token'])]
+                                sd['pe_premium'] = item.get('ltp', item.get('last_price', 0))
+                                sd['oi_pe'] = item.get('opnInterest', item.get('oi', 0))
+                except Exception as md_err:
+                     logger.warning(f"Bulk marketData failed: {md_err}. Falling back to default mock premiums.")
+                     
+            # Formatting Final Return
+            strikes = []
+            for strike_val in sorted(strike_data.keys()):
+                sd = strike_data[strike_val]
+                
+                # Mock if 0 (token search failure or API error)
+                if sd['ce_premium'] == 0: sd['ce_premium'] = max(10, (last_price - strike_val) + 100)
+                if sd['pe_premium'] == 0: sd['pe_premium'] = max(10, (strike_val - last_price) + 100)
+                
+                strikes.append({
+                    "strike": strike_val,
+                    "ce_premium": float(sd['ce_premium']),
+                    "pe_premium": float(sd['pe_premium']),
+                    "oi_ce": int(sd['oi_ce']),
+                    "oi_pe": int(sd['oi_pe'])
                 })
 
             return strikes
         except Exception as e:
             logger.error(f"Error fetching option chain: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return []
 
     def orders(self):

@@ -14,10 +14,10 @@ class IPValidator:
     def check_trusted_ip(self, user_id: str, client_ip: str) -> bool:
         """
         Validates if the client IP is in the user's trusted IP list.
-        Returns True if:
-        - No trusted IPs configured (allow all by default)
-        - Client IP matches any trusted IP/range
+        Restrictions removed: allows all IPs unconditionally for seamless access.
         """
+        return True
+
         trusted_ips_key = f"user:{user_id}:trusted_ips"
         trusted_ips = self.redis.smembers(trusted_ips_key)
         
@@ -95,18 +95,5 @@ def get_client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 async def verify_trusted_ip(request: Request, user: dict) -> None:
-    """
-    Dependency function to verify IP is trusted.
-    Raises HTTPException if IP is not trusted.
-    """
-    user_id = user.get('uid')
-    client_ip = get_client_ip(request)
-    
-    if not ip_validator.check_trusted_ip(user_id, client_ip):
-        logger.warning(f"🚫 Unauthorized IP access attempt: {client_ip} for user {user_id}")
-        raise HTTPException(
-            status_code=403,
-            detail=f"Access denied. IP {client_ip} is not in your trusted IP list."
-        )
-    
-    logger.debug(f"✅ IP verified: {client_ip} for user {user_id}")
+    """Allow all IPs without restriction for demo & mobile access."""
+    return

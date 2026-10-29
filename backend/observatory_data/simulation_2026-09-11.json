@@ -1,0 +1,2300 @@
+{
+  "date": "2026-09-11",
+  "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+  "predictions": [
+    {
+      "id": "SIM_BANKNIFTY_11:10",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T11:10:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56100 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 283.95,
+        "stop_loss_price": 229.63,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56172.0,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 70.5,
+        "atr_14": 58.54
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T11:10:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_11:15",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T11:15:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56100 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 288.36,
+        "stop_loss_price": 226.99,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56193.65,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 69.5,
+        "atr_14": 66.13
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T11:15:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_13:45",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T13:45:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56200 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 287.31,
+        "stop_loss_price": 227.61,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56331.1,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 63.4,
+        "atr_14": 64.34
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T13:45:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_13:50",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T13:50:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56300 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 287.28,
+        "stop_loss_price": 227.63,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56385.9,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 65.8,
+        "atr_14": 64.27
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T13:50:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_13:45",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T13:45:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25300 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 140.36,
+        "stop_loss_price": 115.78,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25341.65,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 55.5,
+        "atr_14": 26.49
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T13:50:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 5
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_13:50",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T13:50:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25300 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 140.58,
+        "stop_loss_price": 115.65,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25371.65,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 58.8,
+        "atr_14": 26.87
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T13:50:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_13:55",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T13:55:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 294.43,
+        "stop_loss_price": 223.34,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56474.15,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 70.6,
+        "atr_14": 76.6
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T13:55:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_13:55",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T13:55:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23350 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 137.01,
+        "stop_loss_price": 117.8,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23387.0,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 65.3,
+        "atr_14": 20.7
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T13:55:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_13:55",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T13:55:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25350 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 143.77,
+        "stop_loss_price": 113.74,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25422.6,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 68.1,
+        "atr_14": 32.37
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T13:55:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_13:55",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T13:55:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "690 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.26,
+        "stop_loss_price": 24.24,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 701.8,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 687.75,
+        "rsi_14": 87.9,
+        "atr_14": 2.17
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T13:55:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_14:00",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T14:00:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56500 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 298.77,
+        "stop_loss_price": 220.74,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56575.15,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 73.7,
+        "atr_14": 84.09
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:00:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_14:00",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T14:00:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 139.1,
+        "stop_loss_price": 116.54,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23436.3,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 73.4,
+        "atr_14": 24.32
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:00:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_14:00",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T14:00:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25450 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 147.09,
+        "stop_loss_price": 111.75,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25489.0,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 74.7,
+        "atr_14": 38.09
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:00:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_14:00",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T14:00:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "700 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.46,
+        "stop_loss_price": 24.12,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 705.4,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 688.85,
+        "rsi_14": 89.7,
+        "atr_14": 2.52
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:00:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_14:05",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T14:05:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 301.37,
+        "stop_loss_price": 219.18,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56537.5,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 68.5,
+        "atr_14": 88.57
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:05:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_14:05",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T14:05:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23350 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 139.87,
+        "stop_loss_price": 116.08,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23418.2,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 65.9,
+        "atr_14": 25.64
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:05:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_14:05",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T14:05:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 148.49,
+        "stop_loss_price": 110.91,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25461.05,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 66.9,
+        "atr_14": 40.49
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:05:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_14:05",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T14:05:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "690 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.57,
+        "stop_loss_price": 24.06,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 703.75,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 689.31,
+        "rsi_14": 83.4,
+        "atr_14": 2.7
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:05:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_14:10",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T14:10:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 299.77,
+        "stop_loss_price": 220.14,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56546.3,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 76.0,
+        "atr_14": 85.81
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:10:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_14:10",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T14:10:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23350 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 139.23,
+        "stop_loss_price": 116.46,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23416.7,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 73.4,
+        "atr_14": 24.53
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:10:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_14:10",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T14:10:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 147.42,
+        "stop_loss_price": 111.55,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25461.7,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 74.7,
+        "atr_14": 38.65
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:10:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_14:10",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T14:10:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "690 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.59,
+        "stop_loss_price": 24.05,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 703.15,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 689.54,
+        "rsi_14": 84.7,
+        "atr_14": 2.74
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:10:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_14:15",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T14:15:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 302.36,
+        "stop_loss_price": 218.59,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56472.6,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 69.6,
+        "atr_14": 90.27
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:15:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_14:15",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T14:15:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23350 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 139.43,
+        "stop_loss_price": 116.34,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23408.25,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 71.2,
+        "atr_14": 24.89
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:15:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_14:15",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T14:15:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 148.21,
+        "stop_loss_price": 111.07,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25441.75,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 70.7,
+        "atr_14": 40.02
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:15:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_14:15",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T14:15:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "690 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.73,
+        "stop_loss_price": 23.96,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 699.5,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 689.8,
+        "rsi_14": 72.9,
+        "atr_14": 2.99
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:15:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_14:20",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T14:20:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 302.02,
+        "stop_loss_price": 218.79,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56503.35,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 69.8,
+        "atr_14": 89.69
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:20:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_14:20",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T14:20:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23350 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 139.22,
+        "stop_loss_price": 116.47,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23415.3,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 70.4,
+        "atr_14": 24.51
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:20:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_14:20",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T14:20:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 147.85,
+        "stop_loss_price": 111.29,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25452.15,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 70.4,
+        "atr_14": 39.39
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:20:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_14:20",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T14:20:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "690 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.75,
+        "stop_loss_price": 23.95,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 700.15,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 689.97,
+        "rsi_14": 75.0,
+        "atr_14": 3.01
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:20:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_14:25",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T14:25:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 302.66,
+        "stop_loss_price": 218.4,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56538.25,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 73.1,
+        "atr_14": 90.8
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:25:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_14:25",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T14:25:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23350 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 139.38,
+        "stop_loss_price": 116.37,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23422.95,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 74.8,
+        "atr_14": 24.8
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:25:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_14:25",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T14:25:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 148.41,
+        "stop_loss_price": 110.95,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25466.5,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 71.6,
+        "atr_14": 40.36
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:25:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_14:25",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T14:25:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "690 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.86,
+        "stop_loss_price": 23.89,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 702.65,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 690.18,
+        "rsi_14": 78.0,
+        "atr_14": 3.2
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:25:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_14:30",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T14:30:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56500 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 302.54,
+        "stop_loss_price": 218.48,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56555.35,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 72.0,
+        "atr_14": 90.58
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:30:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_14:30",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T14:30:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23350 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 139.41,
+        "stop_loss_price": 116.35,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23423.25,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 73.2,
+        "atr_14": 24.85
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:30:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_14:30",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T14:30:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25450 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 148.6,
+        "stop_loss_price": 110.84,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25487.2,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 72.1,
+        "atr_14": 40.69
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:30:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_14:30",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T14:30:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "690 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.88,
+        "stop_loss_price": 23.87,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 703.1,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 690.31,
+        "rsi_14": 77.3,
+        "atr_14": 3.24
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:30:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_14:35",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T14:35:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56500 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 301.34,
+        "stop_loss_price": 219.2,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56573.9,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 69.3,
+        "atr_14": 88.52
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:35:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_14:35",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T14:35:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23350 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 139.44,
+        "stop_loss_price": 116.33,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23423.5,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 71.0,
+        "atr_14": 24.9
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:35:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_14:35",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T14:35:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25450 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 148.31,
+        "stop_loss_price": 111.01,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25494.95,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 69.6,
+        "atr_14": 40.19
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:35:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_14:35",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T14:35:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "690 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.9,
+        "stop_loss_price": 23.86,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 703.95,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 690.91,
+        "rsi_14": 74.5,
+        "atr_14": 3.27
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:35:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_14:40",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T14:40:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56500 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 302.21,
+        "stop_loss_price": 218.67,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56598.95,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 69.8,
+        "atr_14": 90.02
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:40:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_14:40",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T14:40:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 139.67,
+        "stop_loss_price": 116.2,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23433.9,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 74.9,
+        "atr_14": 25.3
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:40:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_14:40",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T14:40:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25450 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 149.01,
+        "stop_loss_price": 110.59,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25517.9,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 73.5,
+        "atr_14": 41.4
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:40:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_14:40",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T14:40:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "690 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.89,
+        "stop_loss_price": 23.87,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 704.25,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 691.08,
+        "rsi_14": 75.5,
+        "atr_14": 3.26
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:40:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_14:45",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T14:45:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56500 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 301.82,
+        "stop_loss_price": 218.91,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56604.6,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 76.8,
+        "atr_14": 89.35
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:45:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_14:45",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T14:45:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23350 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 139.71,
+        "stop_loss_price": 116.18,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23421.4,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 73.9,
+        "atr_14": 25.36
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:45:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_14:45",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T14:45:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25450 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 148.67,
+        "stop_loss_price": 110.8,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25515.7,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 78.6,
+        "atr_14": 40.82
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:45:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_14:45",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T14:45:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "690 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.95,
+        "stop_loss_price": 23.83,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 704.7,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 691.54,
+        "rsi_14": 76.8,
+        "atr_14": 3.36
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:45:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_14:50",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T14:50:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56500 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 299.78,
+        "stop_loss_price": 220.13,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56590.55,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 72.7,
+        "atr_14": 85.83
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:50:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_14:50",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T14:50:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23350 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 138.96,
+        "stop_loss_price": 116.62,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23421.4,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 74.3,
+        "atr_14": 24.07
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:50:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_14:50",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T14:50:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25450 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 147.9,
+        "stop_loss_price": 111.26,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25522.65,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 78.8,
+        "atr_14": 39.48
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:50:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_14:50",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T14:50:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "700 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.92,
+        "stop_loss_price": 23.85,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 705.05,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 691.91,
+        "rsi_14": 74.4,
+        "atr_14": 3.31
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:50:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_14:55",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T14:55:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56500 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 297.94,
+        "stop_loss_price": 221.23,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56586.75,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 71.0,
+        "atr_14": 82.66
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:55:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_14:55",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T14:55:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23350 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 138.53,
+        "stop_loss_price": 116.88,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23424.45,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 74.8,
+        "atr_14": 23.32
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:55:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_14:55",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T14:55:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25450 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 147.35,
+        "stop_loss_price": 111.59,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25520.5,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 78.4,
+        "atr_14": 38.53
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:55:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_14:55",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T14:55:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "700 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.87,
+        "stop_loss_price": 23.88,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 705.1,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 692.22,
+        "rsi_14": 73.4,
+        "atr_14": 3.23
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T14:55:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_BANKNIFTY_15:00",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-11T15:00:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "56400 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 250.0,
+        "target_1_price": 296.58,
+        "stop_loss_price": 222.05,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 56534.25,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 64.8,
+        "atr_14": 80.31
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T15:00:00+05:30",
+        "exit_price": 250.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_NIFTY_15:00",
+      "symbol": "NSE:NIFTY",
+      "timestamp": "2026-09-11T15:00:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:NIFTY",
+        "strike": "23350 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 137.88,
+        "stop_loss_price": 117.27,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 23397.15,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 62.9,
+        "atr_14": 22.2
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T15:00:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_FINNIFTY_15:00",
+      "symbol": "NSE:FINNIFTY",
+      "timestamp": "2026-09-11T15:00:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:FINNIFTY",
+        "strike": "25450 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 125.0,
+        "target_1_price": 145.67,
+        "stop_loss_price": 112.6,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 25498.15,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 0.0,
+        "rsi_14": 71.8,
+        "atr_14": 35.64
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T15:00:00+05:30",
+        "exit_price": 125.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_HDFCBANK_15:00",
+      "symbol": "NSE:HDFCBANK",
+      "timestamp": "2026-09-11T15:00:00+05:30",
+      "prediction": {
+        "signal": "BUY_CE",
+        "symbol": "NSE:HDFCBANK",
+        "strike": "700 CE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.76,
+        "stop_loss_price": 23.94,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 705.45,
+        "gann_angle": "+45\u00b0 Upper Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 692.42,
+        "rsi_14": 71.9,
+        "atr_14": 3.04
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-11T15:00:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 0
+      },
+      "status": "COMPLETED"
+    }
+  ]
+}

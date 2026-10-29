@@ -2,10 +2,75 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+import os
 import logging
+import threading
+from greeks_engine import GreeksEngine
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("DataPipeline")
+
+# Thread-safe locks for CSV cache files to prevent race conditions during concurrent API requests
+_cache_locks = {}
+_cache_locks_lock = threading.Lock()
+_yf_download_lock = threading.Lock()
+
+_SYMBOL_PRICE_BOUNDS = {
+    "NSEBANK": (8000.0, 65000.0),
+    "NSEI": (4000.0, 32000.0),
+    "CNXFIN": (10000.0, 35000.0),
+    "NSMIDCP": (50000.0, 85000.0),
+    "INDIAVIX": (5.0, 85.0),
+    "BANKBEES.NS": (100.0, 1000.0),
+    "NIFTYBEES.NS": (50.0, 500.0),
+    "HDFCBANK.NS": (100.0, 2500.0),
+    "ICICIBANK.NS": (100.0, 2000.0),
+    "SBIN.NS": (100.0, 1500.0),
+    "KOTAKBANK.NS": (150.0, 2500.0),
+    "AXISBANK.NS": (150.0, 2000.0),
+    "USDINRX": (40.0, 105.0),
+    "BZF": (15.0, 150.0),
+    "DXY.NYB": (70.0, 125.0),
+}
+
+def _normalize_intraday_index(index: pd.Index, interval: str = "1d") -> pd.DatetimeIndex:
+    """Ensure intraday timestamps are converted from UTC to IST (09:15 - 15:30) and tz-naive."""
+    idx = pd.to_datetime(index)
+    if idx.tz is not None:
+        if interval != "1d":
+            idx = idx.tz_convert("Asia/Kolkata")
+        idx = idx.tz_localize(None)
+    if interval != "1d" and len(idx) > 0:
+        # Handle previously cached UTC-naive rows (03:45 - 09:55 UTC -> 09:15 - 15:25 IST)
+        utc_mask = idx.hour < 9
+        if utc_mask.any():
+            idx = pd.DatetimeIndex(np.where(utc_mask, idx + pd.Timedelta(hours=5, minutes=30), idx))
+    return idx
+
+def _sanitize_symbol_df(safe_sym: str, df: pd.DataFrame, interval: str = "1d") -> pd.DataFrame:
+    if df is None or df.empty or "Close" not in df.columns:
+        return df
+    close_num = pd.to_numeric(df["Close"], errors="coerce")
+    mask = close_num.notna() & (close_num > 0)
+    bounds = _SYMBOL_PRICE_BOUNDS.get(safe_sym)
+    if bounds:
+        lo, hi = bounds
+        if interval != "1d" and safe_sym == "NSEBANK":
+            lo = 35000.0
+        mask = mask & (close_num >= lo) & (close_num <= hi)
+    df_clean = df[mask].copy()
+    if len(df_clean) > 20 and interval != "1d":
+        c_sub = pd.to_numeric(df_clean["Close"], errors="coerce")
+        med = c_sub.median()
+        if med > 0:
+            df_clean = df_clean[(c_sub >= med * 0.45) & (c_sub <= med * 1.80)].copy()
+    return df_clean
+
+def get_cache_lock(cache_path):
+    with _cache_locks_lock:
+        if cache_path not in _cache_locks:
+            _cache_locks[cache_path] = threading.Lock()
+        return _cache_locks[cache_path]
 
 class DataPipeline:
     def __init__(self, symbol="^NSEBANK", interval="1d", lookback_days=None):
@@ -13,16 +78,91 @@ class DataPipeline:
         self.interval = interval
         # Auto-configure lookback based on interval
         if lookback_days is None:
-            self.lookback_days = 90 if interval in ["1m", "5m", "15m", "30m", "1h"] else 3650
+            self.lookback_days = 90 if interval in ["1m", "5m", "15m", "30m", "1h"] else 15*365
         else:
             self.lookback_days = lookback_days
         self.raw_data = None
         self.futures_data = None  # NEW: For futures data
         self.vix_data = None  # NEW: For VIX data
+        self.heavyweights_data = None  # NEW: For constituent stock data
         self.macro_raw = None
         self.cleaned_data = None
         self.train_data = None
         self.test_data = None
+
+    def _fetch_cached_yf(self, symbol, start_date, end_date, interval):
+        """
+        Helper to fetch yfinance data using a local CSV cache.
+        """
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        cache_dir = os.path.join(base_dir, "data", "cache")
+        os.makedirs(cache_dir, exist_ok=True)
+        
+        if isinstance(symbol, list):
+            safe_sym = "_".join([s.replace("^", "").replace("=", "").replace("-", "") for s in symbol])
+            sym_str = str(symbol)
+        else:
+            safe_sym = symbol.replace("^", "").replace("=", "").replace("-", "")
+            sym_str = symbol
+            
+        cache_path = os.path.join(cache_dir, f"{safe_sym}_{interval}.csv")
+        
+        with get_cache_lock(cache_path):
+            cached_df = None
+            if os.path.exists(cache_path):
+                try:
+                    cached_df = pd.read_csv(cache_path, index_col=0, parse_dates=True)
+                    cached_df = _sanitize_symbol_df(safe_sym, cached_df, interval=interval)
+                    if not cached_df.empty:
+                        cached_df.index = _normalize_intraday_index(cached_df.index, interval=interval)
+                        cached_df = cached_df[~cached_df.index.duplicated(keep='last')].sort_index()
+                        last_time = cached_df.index[-1]
+                        
+                        overlap_time = last_time - timedelta(days=1)
+                        if overlap_time < start_date:
+                            pass
+                        else:
+                            start_date = overlap_time
+                            logger.info(f"Using cache for {sym_str}. Fetching incremental from {start_date.date()}")
+                except Exception as e:
+                    logger.warning(f"Error reading cache for {sym_str}: {e}")
+                    
+            logger.info(f"Downloading {sym_str} ({interval}) from {start_date.date()} to {end_date.date()}...")
+            try:
+                with _yf_download_lock:
+                    df = yf.download(symbol, start=start_date, end=end_date, interval=interval, progress=False)
+            except Exception as dl_err:
+                logger.warning(f"Download error for {sym_str}: {dl_err}")
+                df = pd.DataFrame()
+            
+            # Flatten columns if multi-index (prevents multi-symbol download issues)
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
+            df = _sanitize_symbol_df(safe_sym, df, interval=interval)
+                
+            if df.empty:
+                if cached_df is not None:
+                    logger.warning(f"No new data returned for {sym_str}. Returning cached data.")
+                    return cached_df
+                else:
+                    return df
+                    
+            df.index = _normalize_intraday_index(df.index, interval=interval)
+            
+            if cached_df is not None and not cached_df.empty:
+                combined = pd.concat([cached_df, df])
+                combined = combined[~combined.index.duplicated(keep='last')]
+                combined.sort_index(inplace=True)
+                df = combined
+                
+            try:
+                df.to_csv(cache_path)
+                logger.info(f"Updated cache for {sym_str} at {cache_path}")
+            except Exception as e:
+                logger.warning(f"Failed to write cache for {sym_str}: {e}")
+                
+            return df
+
 
     def get_data_quality_metrics(self) -> dict:
         """
@@ -81,13 +221,13 @@ class DataPipeline:
     def fetch_data(self):
         """
         Fetches data based on interval.
-        - 1d: 12 years history
+        - 1d: 15 years history (12y Train + 3y Test)
         - 1m: 7 days history (YFinance limit)
         """
         end_date = datetime.now()
         
         if self.interval == "1d":
-            days = self.lookback_days if self.lookback_days else 12*365
+            days = self.lookback_days if self.lookback_days else 15*365
             start_date = end_date - timedelta(days=days)
         else:
             # Intraday
@@ -110,45 +250,72 @@ class DataPipeline:
             
             # 2. Fallback to yfinance (or default for Daily)
             if self.interval != "1d":
-                # Reset start_date to 7 days for yfinance if intraday to avoid errors
-                start_date = end_date - timedelta(days=7)
-                logger.warning(f"Falling back to yfinance (7-day limit) for intraday data.")
+                # yfinance limits: 1m (7 days), 5m+ (59-60 days)
+                max_days = 7 if self.interval == "1m" else 59
+                
+                requested_days = (end_date - start_date).days
+                if requested_days > max_days:
+                    start_date = end_date - timedelta(days=max_days)
+                    logger.warning(f"Capping {self.interval} intraday request to {max_days} days (yfinance limit).")
+                else:
+                    logger.info(f"YFinance fallback: fetching {requested_days} days of {self.interval} data.")
 
-            df = yf.download(self.symbol, start=start_date, end=end_date, interval=self.interval)
-            
-            # Flatten columns if multi-index (prevents multi-symbol download issues)
-            if isinstance(df.columns, pd.MultiIndex):
-                df.columns = df.columns.get_level_values(0)
-            
-            # Fetch Macro Data (Daily resolution, will be ffilled/interpolated for intraday)
-            # Only strictly needed for Daily models, but good for context in Intraday too
-            macro_start = start_date - timedelta(days=5) # Buffer for ffill
-            macro_data = yf.download(["USDINR=X", "^NSEI"], start=macro_start, end=end_date, interval="1d")['Close']
+            # Ensure symbol is yfinance compatible (Bank Nifty specifically)
+            yf_symbol = self.symbol
+            if "BANKNIFTY" in yf_symbol.upper() and not yf_symbol.startswith("^"):
+                yf_symbol = "^NSEBANK"
+            elif "NIFTY" in yf_symbol.upper() and "BANK" not in yf_symbol.upper() and not yf_symbol.startswith("^"):
+                yf_symbol = "^NSEI"
+
+            logger.info(f"Downloading from yfinance: {yf_symbol}...")
+            # Use cached fetcher
+            df = self._fetch_cached_yf(yf_symbol, start_date, end_date, self.interval)
             
             if df.empty:
-                raise ValueError("Downloaded data is empty.")
+                raise ValueError(f"Downloaded data for {yf_symbol} is empty.")
+            
+            # --- Volume Proxying for Index Symbols ---
+            if yf_symbol in ["^NSEBANK", "^NSEI"]:
+                proxy_symbol = "BANKBEES.NS" if yf_symbol == "^NSEBANK" else "NIFTYBEES.NS"
+                logger.info(f"Fetching Volume Proxy ETF: {proxy_symbol} for index volume...")
+                proxy_df = self._fetch_cached_yf(proxy_symbol, start_date, end_date, self.interval)
+                if not proxy_df.empty and 'Volume' in proxy_df.columns:
+                    # Align index and copy volume
+                    df['Volume'] = proxy_df['Volume'].reindex(df.index, method='ffill').fillna(0.0)
+                    logger.info(f"Successfully applied volume proxy using {proxy_symbol}.")
+            
+            # --- Heavyweight constituents fetching for Bank Nifty ---
+            if yf_symbol == "^NSEBANK":
+                self.heavyweights_data = {}
+                heavyweight_symbols = ["HDFCBANK.NS", "ICICIBANK.NS", "SBIN.NS", "KOTAKBANK.NS", "AXISBANK.NS"]
+                for hw_sym in heavyweight_symbols:
+                    logger.info(f"Fetching constituent stock: {hw_sym}")
+                    hw_df = self._fetch_cached_yf(hw_sym, start_date, end_date, self.interval)
+                    if not hw_df.empty:
+                        self.heavyweights_data[hw_sym] = hw_df
+                        logger.info(f"Fetched {len(hw_df)} records for constituent {hw_sym}.")
+
+            # Fetch Macro Data individually to avoid MultiIndex column issues
+            macro_start = start_date - timedelta(days=10) # Increased buffer for ffill
+            macro_symbols = ["USDINR=X", "^NSEI", "BZ=F", "DX-Y.NYB"]
+            macro_data_dict = {}
+            for sym in macro_symbols:
+                logger.info(f"Fetching macro symbol: {sym}")
+                sym_df = self._fetch_cached_yf(sym, macro_start, end_date, "1d")
+                if not sym_df.empty:
+                    if 'Close' in sym_df.columns:
+                        macro_data_dict[sym] = sym_df['Close']
+                    else:
+                        macro_data_dict[sym] = sym_df.iloc[:, 0]
+            macro_data = pd.DataFrame(macro_data_dict)
             
             self.raw_data = df
             self.macro_raw = macro_data
             
-            # NEW: Fetch Bank Nifty Futures data (for causality analysis)
-            if "BANK" in self.symbol.upper():
-                try:
-                    futures_symbol = "BANKNIFTY-I"  # NSE Futures symbol
-                    logger.info(f"Fetching Bank Nifty Futures data...")
-                    futures_df = yf.download(futures_symbol, start=start_date, end=end_date, interval=self.interval)
-                    if not futures_df.empty:
-                        self.futures_data = futures_df
-                        logger.info(f"Successfully fetched {len(futures_df)} futures records.")
-                    else:
-                        logger.warning("Futures data is empty, skipping.")
-                except Exception as e:
-                    logger.warning(f"Could not fetch futures data: {e}")
-            
-            # NEW: Fetch India VIX data (for volatility causality)
+            # Fetch India VIX data (for volatility causality)
             try:
                 logger.info(f"Fetching India VIX data...")
-                vix_df = yf.download("^INDIAVIX", start=start_date, end=end_date, interval=self.interval)
+                vix_df = self._fetch_cached_yf("^INDIAVIX", start_date, end_date, self.interval)
                 if not vix_df.empty:
                     self.vix_data = vix_df
                     logger.info(f"Successfully fetched {len(vix_df)} VIX records.")
@@ -194,8 +361,73 @@ class DataPipeline:
                 self.macro_raw.index = self.macro_raw.index.tz_localize(None)
 
         if self.vix_data is not None and not self.vix_data.empty:
+            if isinstance(self.vix_data.columns, pd.MultiIndex):
+                self.vix_data.columns = self.vix_data.columns.get_level_values(0)
             if self.vix_data.index.tz is not None:
                 self.vix_data.index = self.vix_data.index.tz_localize(None)
+            
+            # Pre-merge VIX into df
+            vix_close = self.vix_data['Close']
+            if isinstance(vix_close, pd.DataFrame):
+                vix_close = vix_close.iloc[:, 0]
+            df['VIX'] = vix_close.reindex(df.index, method='ffill')
+        else:
+            df['VIX'] = 15.0 # Fallback
+            
+        # Volatility features
+        df['VIX_Change'] = df['VIX'].diff().fillna(0.0)
+        df['VIX_Percentile'] = df['VIX'].rolling(window=60).apply(
+            lambda x: pd.Series(x).rank(pct=True).iloc[-1] if len(x) > 0 else 0.5
+        ).fillna(0.5)
+
+        # --- Heavyweight Constituent Features ---
+        if getattr(self, 'heavyweights_data', None):
+            hw_returns = {}
+            hw_emas = {}
+            weights = {
+                "HDFCBANK.NS": 0.29,
+                "ICICIBANK.NS": 0.23,
+                "AXISBANK.NS": 0.11,
+                "SBIN.NS": 0.10,
+                "KOTAKBANK.NS": 0.10
+            }
+            
+            for hw_sym, hw_df in self.heavyweights_data.items():
+                if not hw_df.empty:
+                    if hw_df.index.tz is not None:
+                        hw_df.index = hw_df.index.tz_localize(None)
+                    hw_close = hw_df['Close'].reindex(df.index, method='ffill')
+                    hw_ret = hw_close.pct_change().fillna(0.0)
+                    hw_returns[hw_sym] = hw_ret
+                    hw_ema = hw_close.ewm(span=20, adjust=False).mean()
+                    hw_emas[hw_sym] = (hw_close > hw_ema).astype(int)
+            
+            if hw_returns:
+                weighted_ret = pd.Series(0.0, index=df.index)
+                total_weight = 0.0
+                for sym, ret in hw_returns.items():
+                    w = weights.get(sym, 0.0)
+                    weighted_ret += ret * w
+                    total_weight += w
+                if total_weight > 0:
+                    weighted_ret = weighted_ret / total_weight
+                df['HWM'] = weighted_ret
+                
+                breadth = pd.Series(0.0, index=df.index)
+                for sym, ema_state in hw_emas.items():
+                    breadth += ema_state
+                df['SB'] = (breadth / len(hw_emas)) * 100.0
+                
+                ret_df = pd.DataFrame(hw_returns)
+                df['HWD'] = ret_df.std(axis=1).fillna(0.0)
+            else:
+                df['HWM'] = 0.0
+                df['SB'] = 50.0
+                df['HWD'] = 0.0
+        else:
+            df['HWM'] = 0.0
+            df['SB'] = 50.0
+            df['HWD'] = 0.0
         
         if self.futures_data is not None and not self.futures_data.empty:
             if self.futures_data.index.tz is not None:
@@ -384,11 +616,21 @@ class DataPipeline:
                 df['Nifty50'] = self.macro_raw['^NSEI'].reindex(df.index, method='ffill')
             else: df['Nifty50'] = df['Close'] # Fallback to BN itself if Nifty missing
             
+            if 'BZ=F' in self.macro_raw.columns:
+                df['Brent'] = self.macro_raw['BZ=F'].reindex(df.index, method='ffill')
+            else: df['Brent'] = 80.0
+            
+            if 'DX-Y.NYB' in self.macro_raw.columns:
+                df['DXY'] = self.macro_raw['DX-Y.NYB'].reindex(df.index, method='ffill')
+            else: df['DXY'] = 100.0
+            
             df['BN_Nifty_Ratio'] = df['Close'] / df['Nifty50']
         else:
             # Fallback values if macro data is missing
             df['USDINR'] = 83.0
             df['Nifty50'] = df['Close']
+            df['Brent'] = 80.0
+            df['DXY'] = 100.0
             df['BN_Nifty_Ratio'] = 1.0
         
         # Inflation & Interest Rate Proxy (Step function for mock sensitivity)
@@ -408,6 +650,26 @@ class DataPipeline:
         df['Impulse_Wave'] = 0
         df.loc[(df['Close'] > df['EMA_21']) & (df['RSI'] > 50), 'Impulse_Wave'] = 3 # Strong active impulse
         df.loc[(df['Close'] < df['EMA_21']) & (df['RSI'] < 40), 'Impulse_Wave'] = -3 # Downwards impulse
+
+        # --- Stop-Loss Hunting / Liquidity Grab Detector ---
+        body = abs(df['Open'] - df['Close'])
+        upper_wick = df['High'] - df[['Open', 'Close']].max(axis=1)
+        lower_wick = df[['Open', 'Close']].min(axis=1) - df['Low']
+        avg_vol_20 = df['Volume'].rolling(20).mean().replace(0, 1)
+        
+        # Bullish Liquidity Grab: Sweeps recent low, high volume, leaves long lower wick
+        is_bullish_grab = (lower_wick > 2 * body) & \
+                          (df['Low'] < df['Low'].rolling(10).min().shift(1)) & \
+                          (df['Volume'] > 1.2 * avg_vol_20)
+                          
+        # Bearish Liquidity Grab: Sweeps recent high, high volume, leaves long upper wick
+        is_bearish_grab = (upper_wick > 2 * body) & \
+                          (df['High'] > df['High'].rolling(10).max().shift(1)) & \
+                          (df['Volume'] > 1.2 * avg_vol_20)
+                          
+        df['Is_Liquidity_Grab'] = 0
+        df.loc[is_bullish_grab, 'Is_Liquidity_Grab'] = 1
+        df.loc[is_bearish_grab, 'Is_Liquidity_Grab'] = -1
 
         # Lagged Returns (Momentum)
         df['Ret_1d'] = df['Close'].pct_change()
@@ -461,7 +723,10 @@ class DataPipeline:
         
         # PCR usually increases as price drops (hedging) and decreases as price rises.
         # It's a mean-reverting oscillator.
-        df['PCR'] = 1.0 - (df['RSI'] - 50) / 100 + np.random.normal(0, 0.05, len(df))
+        # Use a fixed random state seed to ensure full reproducibility and remove training noise variance
+        rng_synth = np.random.RandomState(42)
+        noise_pcr = rng_synth.normal(0, 0.05, len(df))
+        df['PCR'] = 1.0 - (df['RSI'] - 50) / 100 + noise_pcr
         df['PCR'] = df['PCR'].clip(0.6, 1.6) # Standard BankNifty PCR range
         
         # OI Change as a proxy for institutional positioning
@@ -471,8 +736,52 @@ class DataPipeline:
         # --- Sentiment Quantization (Historical Simulation) ---
         # Historical sentiment isn't available via yfinance, so we initialize 
         # it with a slight correlation to price action + noise for training.
-        df['sentiment_score'] = (df['Ret_1d'] * 10).clip(-1, 1) + np.random.normal(0, 0.2, len(df))
+        noise_sent = rng_synth.normal(0, 0.2, len(df))
+        df['sentiment_score'] = (df['Ret_1d'] * 10).clip(-1, 1) + noise_sent
         df['sentiment_score'] = df['sentiment_score'].clip(-1, 1)
+        
+        # --- NEW: Direct Options Greeks Modeling ---
+        # Calculate theoretical ATM Option Greeks for every row
+        logger.info("Computing Black-Scholes Greeks (ATM)...")
+        ge = GreeksEngine()
+        
+        # Approximate 1-day to expiry for intraday, 7-days for daily
+        T = 1.0/365.0 if self.interval != "1d" else 7.0/365.0 
+        
+        # Vectorized-ish approach or apply for Greeks
+        def get_greeks_for_row(row):
+            spot = row['Close']
+            # ATM Strike is Spot rounded to nearest 100
+            strike = round(spot / 100) * 100 
+            
+            # Use real VIX if available, else fallback to 15% (0.15)
+            # Yfinance VIX is often in actual percentage (e.g. 15.5) so divide by 100
+            vol = (row['VIX'] / 100.0) if 'VIX' in row and row['VIX'] > 0 else 0.15
+            
+            # Calculate for Call
+            ce_price = ge.black_scholes_price(spot, strike, T, vol, "CE")
+            ce_greeks = ge.calculate_greeks(spot, strike, T, vol, "CE")
+            
+            # Calculate for Put
+            pe_price = ge.black_scholes_price(spot, strike, T, vol, "PE")
+            pe_greeks = ge.calculate_greeks(spot, strike, T, vol, "PE")
+            
+            return pd.Series({
+                'CE_Premium': ce_price,
+                'CE_Delta': ce_greeks['Delta'],
+                'CE_Theta': ce_greeks['Theta'],
+                'CE_Gamma': ce_greeks['Gamma'],
+                'CE_Vega': ce_greeks['Vega'],
+                'PE_Premium': pe_price,
+                'PE_Delta': pe_greeks['Delta'],
+                'PE_Theta': pe_greeks['Theta'],
+                'PE_Gamma': pe_greeks['Gamma'],
+                'PE_Vega': pe_greeks['Vega'],
+                'ATM_Strike': strike
+            })
+            
+        greeks_df = df.apply(get_greeks_for_row, axis=1)
+        df = pd.concat([df, greeks_df], axis=1)
 
         # --- Fractional Differentiation (Stationary Memory) ---
         # We apply frac diff to the Close price with d=0.4 (optimal for price preservation)
@@ -516,18 +825,7 @@ class DataPipeline:
                 df['Futures_Premium'] = 0
                 df['Basis_Change'] = 0
             
-            # 5. VIX integration (if VIX data available)
-            if self.vix_data is not None and not self.vix_data.empty:
-                vix_close = self.vix_data['Close'].reindex(df.index, method='ffill')
-                df['VIX'] = vix_close
-                df['VIX_Change'] = df['VIX'].diff()
-                df['VIX_Percentile'] = df['VIX'].rolling(window=60).apply(
-                    lambda x: pd.Series(x).rank(pct=True).iloc[-1] if len(x) > 0 else 0.5
-                )
-            else:
-                df['VIX'] = 15  # Default VIX value
-                df['VIX_Change'] = 0
-                df['VIX_Percentile'] = 0.5
+            # VIX is pre-merged at the start of clean_and_prepare
             
             logger.info(f"Added {sum([1 for c in df.columns if c in ['VWAP', 'Futures_Premium', 'VIX']])} intraday features.")
 
@@ -572,16 +870,72 @@ class DataPipeline:
             
             return labels
 
+        # --- NEW: Options Premium Labeling (Phase 7) ---
+        # Instead of predicting Spot movement, we predict if the ATM Option Premium
+        # hits a specific Profit Target before a Stop Loss within the vertical barrier.
+        def get_options_triple_barrier(df, side="CE", target_pct=0.10, sl_pct=0.08, time_limit=6):
+            """
+            Checks if the target_pct premium gain is hit before sl_pct premium loss.
+            time_limit: number of 5m candles to wait (e.g. 6 = 30 mins)
+            """
+            labels = pd.Series(index=df.index, data=0)
+            col = f"{side}_Premium"
+            
+            for i in range(len(df) - time_limit):
+                entry_premium = df[col].iloc[i]
+                if entry_premium <= 1.0: continue # Skip if premium is basically 0/expired
+                
+                # Barriers based on Option Premium percentages
+                tp = entry_premium * (1 + target_pct)
+                sl = entry_premium * (1 - sl_pct)
+                
+                found = False
+                for j in range(1, time_limit + 1):
+                    current_prem = df[col].iloc[i + j]
+                    
+                    if current_prem >= tp:
+                        labels.iloc[i] = 1 # Profit Hit
+                        found = True
+                        break
+                    elif current_prem <= sl:
+                        labels.iloc[i] = -1 # Loss Hit
+                        found = True
+                        break
+                        
+            return labels
+
         if self.interval == "1d":
-            # Daily: 2-day horizon, 1x vol target
+            # For Daily models, we still predict multi-day Spot direction for broader context
             df['Target_Next_Day'] = get_triple_barrier_labels(df, pt_sl=[1.5, 1.5], t1=2)
-            # Re-map -1 to 0 for binary classifier if needed, but model might support multi-class
-            # For now, let's keep it 1 for UP (profit hit) and 0 for others
             df['Target_Next_Day'] = (df['Target_Next_Day'] == 1).astype(int)
         else:
-            # Intraday (Sniper): 15-min horizon, tighter targets
-            df['Target_Next_Day'] = get_triple_barrier_labels(df, pt_sl=[1.0, 1.0], t1=15)
-            df['Target_Next_Day'] = (df['Target_Next_Day'] == 1).astype(int)
+            # For Intraday models, the target is specifically if a CE Option will yield +10% within 30 mins (6 candles)
+            # In a true system you'd predict CE and PE separately. Here we simplify to:
+            # 1 = CE hit target
+            # 2 = PE hit target (simulating downward spot)
+            # 0 = Choppy/Theta Decay
+            
+            ce_labels = get_options_triple_barrier(df, side="CE", target_pct=0.15, sl_pct=0.10, time_limit=6)
+            pe_labels = get_options_triple_barrier(df, side="PE", target_pct=0.15, sl_pct=0.10, time_limit=6)
+            
+            # Combine logic. Priority to CE if both somehow hit (rare on 5m scale)
+            df['Target_Next_Day'] = 0
+            df.loc[ce_labels == 1, 'Target_Next_Day'] = 1 # BUY CE
+            df.loc[pe_labels == 1, 'Target_Next_Day'] = 2 # BUY PE (effectively SELL SPOT)
+            
+            # Reduce multi-class to binary for the existing pipeline's compatibility
+            # Let's say 1 = Strong Directional Trade (either CE or PE), 0 = Theta Trap
+            # Or we can maintain Binary: 1 = UP, 0 = DOWN and filter in Agent Layer.
+            # To maintain current model shape with minimum disruption, we map:
+            # 1 = Upward Target Hit (CE)
+            # 0 = Downward Target Hit (PE) or Choppy
+            # The model will learn to predict 1 only when CE is highly profitable.
+            df['Target_Next_Day'] = (ce_labels == 1).astype(int)
+        
+        # Log distribution for debugging "0 win rate"
+        counts = df['Target_Next_Day'].value_counts()
+        logger.info(f"Target Distribution ({self.interval}): {counts.to_dict()}")
+
         
         # 3. Clean up
         # Replace Inf with Nan
@@ -596,7 +950,7 @@ class DataPipeline:
                 df[col] = df[col].fillna(0.0)
         
         # Ensure macro columns are also filled
-        macro_cols = ['USDINR', 'Nifty50', 'BN_Nifty_Ratio', 'Inflation_Proxy', 'RBI_Rate_Proxy']
+        macro_cols = ['USDINR', 'Nifty50', 'Brent', 'DXY', 'BN_Nifty_Ratio', 'Inflation_Proxy', 'RBI_Rate_Proxy']
         for col in macro_cols:
             if col in df.columns:
                 df[col] = df[col].ffill().bfill().fillna(0.0)
@@ -661,9 +1015,10 @@ class DataPipeline:
             "continuity_score": round(continuity, 2)
         }
 
-    def split_data(self):
+    def split_data(self, test_days=None):
         """
         Splits data into train and test sets.
+        test_days: Number of days to use for testing (last N days).
         """
         if self.cleaned_data is None:
             return False
@@ -671,35 +1026,36 @@ class DataPipeline:
         logger.info(f"Performing Train/Test split ({self.interval})...")
         
         # Determine split point
-        # For Daily: Last 2 years for test
-        # For Intraday: Last 2 days for test (since we have ~7 days total)
         if self.interval == "1d":
-            split_date = self.cleaned_data.index[-1] - timedelta(days=2*365)
+            days = test_days if test_days else 3*365
+            split_date = self.cleaned_data.index[-1] - timedelta(days=days)
         else:
-            split_date = self.cleaned_data.index[-1] - timedelta(days=2)
+            # Intraday
+            days = test_days if test_days else 2
+            split_date = self.cleaned_data.index[-1] - timedelta(days=days)
         
         self.train_data = self.cleaned_data[self.cleaned_data.index < split_date]
         self.test_data = self.cleaned_data[self.cleaned_data.index >= split_date]
         
-        # --- Aggressive Noise Filtering for Training ---
-        if self.interval == "1d":
-            # Only filter noise on Daily timeframe. Intraday IS the noise :)
-            # Actually, we might want to filter flat periods in Intraday too.
-            # But let's stick to Daily for now.
-            train_returns = self.train_data['Close'].pct_change().abs()
-            self.train_data = self.train_data[train_returns > 0.003]
-        
+        # Safety check: if train_data is too small, reduce test_days
+        if len(self.train_data) < 100 and len(self.cleaned_data) >= 10:
+             logger.warning("Train set too small. Adjusting split to 50/50.")
+             split_idx = len(self.cleaned_data) // 2
+             self.train_data = self.cleaned_data.iloc[:split_idx]
+             self.test_data = self.cleaned_data.iloc[split_idx:]
+
         logger.info(f"Split complete. Train: {len(self.train_data)} rows, Test: {len(self.test_data)} rows.")
+
         
         quality = self.calculate_quality_metrics()
         
         return {
             "train_size": len(self.train_data),
             "test_size": len(self.test_data),
-            "train_start": self.train_data.index[0].strftime('%Y-%m-%d'),
-            "train_end": self.train_data.index[-1].strftime('%Y-%m-%d'),
-            "test_start": self.test_data.index[0].strftime('%Y-%m-%d'),
-            "test_end": self.test_data.index[-1].strftime('%Y-%m-%d'),
+            "train_start": self.train_data.index[0].strftime('%Y-%m-%d') if len(self.train_data) > 0 else None,
+            "train_end": self.train_data.index[-1].strftime('%Y-%m-%d') if len(self.train_data) > 0 else None,
+            "test_start": self.test_data.index[0].strftime('%Y-%m-%d') if len(self.test_data) > 0 else None,
+            "test_end": self.test_data.index[-1].strftime('%Y-%m-%d') if len(self.test_data) > 0 else None,
             "quality": quality
         }
 
@@ -767,14 +1123,51 @@ class DataPipeline:
             logger.error(f"Broker Fetch Failed: {e}")
             return False
     
-    def run_full_pipeline(self):
+
+    def generate_fallback_dataframe(self):
+        """
+        Generates a realistic fallback DataFrame for historical training if remote APIs are unavailable.
+        """
+        logger.warning(f'Generating synthetic fallback historical dataset for {self.symbol}...')
+        num_rows = 500 if self.interval != "1d" else 1000
+        end_dt = datetime.now()
+        freq = "5min" if self.interval != "1d" else "D"
+        dates = pd.date_range(end=end_dt, periods=num_rows, freq=freq)
+        
+        base_p = 57500.0 if "BANK" in self.symbol.upper() else 24200.0
+        returns = np.random.normal(0.0001, 0.005, size=num_rows)
+        price_series = base_p * np.exp(np.cumsum(returns))
+        
+        df = pd.DataFrame({
+            'Open': price_series * (1 + np.random.uniform(-0.001, 0.001, num_rows)),
+            'High': price_series * (1 + np.abs(np.random.normal(0.002, 0.001, num_rows))),
+            'Low': price_series * (1 - np.abs(np.random.normal(0.002, 0.001, num_rows))),
+            'Close': price_series,
+            'Volume': np.random.randint(1000, 50000, size=num_rows)
+        }, index=dates)
+        
+        self.raw_data = df
+        return True
+
+    def run_full_pipeline(self, test_days=None):
         """
         One-stop shop for ingestion.
         """
-        if self.fetch_data():
-            if self.clean_and_prepare():
-                return self.split_data()
+        success = False
+        try:
+            success = self.fetch_data()
+        except Exception as e:
+            logger.error(f'fetch_data exception: {e}')
+            
+        if not success or self.raw_data is None or self.raw_data.empty:
+            logger.warning(f'Data fetch failed or returned empty for {self.symbol}. Using fallback dataset...')
+            self.generate_fallback_dataframe()
+
+        if self.clean_and_prepare():
+            return self.split_data(test_days=test_days)
         return None
+
+
 
 if __name__ == "__main__":
     pipeline = DataPipeline()

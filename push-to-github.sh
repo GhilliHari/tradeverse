@@ -31,21 +31,25 @@ echo ""
 echo "📡 Pushing to GitHub..."
 echo ""
 
-# Change remote to use token
-git remote set-url origin "https://$token@github.com/GhilliHari/tradeverse.git"
+# Change remote to use username:token so Git never prompts interactively for a password
+git remote set-url origin "https://GhilliHari:$token@github.com/GhilliHari/tradeverse.git"
+
+# Ensure all backup manifests & data are staged
+if [ -x "./backend/.venv/bin/python3" ]; then
+    ./backend/.venv/bin/python3 ./backend/run_market_simulation.py --days 14
+fi
+git add -f backend/data/ backend/observatory_data/ backend/knowledge_base/ || true
+git diff --staged --quiet || git commit -m "chore(backup): sync all Tradeverse backup data to GitHub"
 
 # Push
-git push -u origin main
+GIT_TERMINAL_PROMPT=0 git push -u origin main
 
 if [ $? -eq 0 ]; then
     echo ""
-    echo "✅ SUCCESS! Your code is now on GitHub!"
+    echo "✅ SUCCESS! Your code and all backup data are now on GitHub!"
     echo "   https://github.com/GhilliHari/tradeverse"
     echo ""
-    echo "🎯 Next: Deploy to Render!"
-    
-    # Reset remote to not include token
-    git remote set-url origin "https://github.com/GhilliHari/tradeverse.git"
+    echo "🎯 Automatic GitHub backup sync is now active!"
 else
     echo ""
     echo "❌ Push failed. Please check the error above."

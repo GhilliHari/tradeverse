@@ -16,15 +16,16 @@ def calculate_success_rate(symbol="^NSEBANK"):
     
     # 1. Fetch Data
     end_date = datetime.now()
-    start_date = end_date - timedelta(days=7)
+    start_date = end_date - timedelta(days=30) # Need more days for SMA_200 on 5m chart
     
-    dp = DataPipeline(symbol, interval="1m")
-    # fetch_data already calls clean_and_prepare
-    if not dp.fetch_data():
-         print("Failed to fetch data.")
+    dp = DataPipeline(symbol, interval="5m")
+    dp.run_full_pipeline()
+    
+    if dp.cleaned_data is None or dp.cleaned_data.empty:
+         print("Failed to fetch data or all dropped by NaNs.")
          return
     
-    # Focus on the most recent 1000 candles (~2 trading days)
+    # Focus on the most recent 1000 candles (~2.5 trading days)
     df = dp.cleaned_data.tail(1000)
     
     # 2. Setup Intelligence Layer
@@ -69,17 +70,19 @@ def calculate_success_rate(symbol="^NSEBANK"):
         # 3. Decision Logic
         if aligned_count >= required_alignment:
             entry_price = window['Close'].values[0]
+            atr_val = window['ATR_14'].values[0] if 'ATR_14' in window.columns else 150
+            
             if prob > 0.5: # BUY
-                tp = entry_price * 1.002 
-                sl = entry_price * 0.999
+                tp = entry_price + (atr_val * 2.0) # 2x ATR Take Profit
+                sl = entry_price - (atr_val * 1.5) # 1.5x ATR Stop Loss
                 side = "BUY"
             else: # SELL
-                tp = entry_price * 0.998
-                sl = entry_price * 1.001
+                tp = entry_price - (atr_val * 2.0)
+                sl = entry_price + (atr_val * 1.5)
                 side = "SELL"
                 
             result = "STALE"
-            for j in range(1, 15):
+            for j in range(1, 12): # Allow 1 hour (12 * 5m) to play out
                 if i + j >= len(df): break
                 future_price = df.iloc[i+j]['Close']
                 if side == "BUY":

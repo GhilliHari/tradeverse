@@ -18,7 +18,7 @@ Author: Tradeverse AI
 import numpy as np
 import pandas as pd
 from datetime import datetime, time
-from hmmlearn.hmm import GaussianHMM
+from sklearn.mixture import GaussianMixture
 import logging
 from typing import Dict, Tuple, Optional
 import joblib
@@ -46,10 +46,11 @@ class IntradayRegimeEngine:
             n_regimes: Number of regimes to detect (default 6)
         """
         self.n_regimes = n_regimes
-        self.hmm = GaussianHMM(
+        self.gmm = GaussianMixture(
             n_components=n_regimes, 
             covariance_type="full", 
-            n_iter=100,
+            max_iter=200,
+            n_init=3,
             random_state=42
         )
         self.is_trained = False
@@ -115,18 +116,18 @@ class IntradayRegimeEngine:
             return False
         
         try:
-            logger.info(f"Training HMM with {len(features_normalized)} samples...")
-            self.hmm.fit(features_normalized.values)
+            logger.info(f"Training GMM with {len(features_normalized)} samples...")
+            self.gmm.fit(features_normalized.values)
             self.is_trained = True
             
             # Store normalization stats
             self.means = features.mean().to_dict()
             self.stds = features.std().to_dict()
             
-            logger.info("✅ HMM training complete")
+            logger.info("✅ GMM training complete")
             return True
         except Exception as e:
-            logger.error(f"HMM training failed: {e}")
+            logger.error(f"GMM training failed: {e}")
             return False
 
     def save_model(self):
@@ -137,7 +138,7 @@ class IntradayRegimeEngine:
             
         try:
             model_data = {
-                "hmm": self.hmm,
+                "gmm": self.gmm,
                 "means": self.means,
                 "stds": self.stds,
                 "n_regimes": self.n_regimes
@@ -157,7 +158,7 @@ class IntradayRegimeEngine:
             
         try:
             model_data = joblib.load(self.model_path)
-            self.hmm = model_data["hmm"]
+            self.gmm = model_data["gmm"]
             self.means = model_data["means"]
             self.stds = model_data["stds"]
             self.n_regimes = model_data.get("n_regimes", 6)
@@ -235,9 +236,17 @@ class IntradayRegimeEngine:
                 feature_values = (feature_values - np.mean(feature_values)) / (np.std(feature_values) + 1e-8)
             
             # Predict regime
-            regime_id = self.hmm.predict(feature_values)[0]
+            regime_id = self.gmm.predict(feature_values)[0]
             regime_name = self.regime_map.get(regime_id, "RANGE_BOUND")
             
+            # GMM Confidence parsing
+            probs = self.gmm.predict_proba(feature_values)[0]
+            confidence = float(np.max(probs))
+            
+            # Phase 8: If GMM is not deeply confident it's a trend, default to Range Bound
+            if regime_name == "TRENDING_INTRADAY" and confidence < 0.75:
+                regime_name = "RANGE_BOUND"
+                
             return regime_name
             
         except Exception as e:
@@ -262,12 +271,8 @@ class IntradayRegimeEngine:
             feature_values = features[required_cols].values.reshape(1, -1)
             feature_values = (feature_values - np.mean(feature_values)) / (np.std(feature_values) + 1e-8)
             
-            # Get log probabilities
-            log_probs = self.hmm.score_samples(feature_values)[0]
-            
-            # Convert to probabilities
-            probs = np.exp(log_probs)
-            probs = probs / probs.sum()
+            # Get probabilities directly from GMM
+            probs = self.gmm.predict_proba(feature_values)[0]
             
             return {self.regime_map[i]: float(probs[i]) for i in range(self.n_regimes)}
             
@@ -283,10 +288,12 @@ class IntradayRegimeEngine:
             NxN matrix where element [i,j] is P(regime_j | regime_i)
         """
         if not self.is_trained:
-            logger.warning("HMM not trained. Returning uniform transition matrix.")
+            logger.warning("GMM not trained. Returning uniform transition matrix.")
             return np.ones((self.n_regimes, self.n_regimes)) / self.n_regimes
         
-        return self.hmm.transmat_
+        # GMMs don't have built-in transition matrices like HMMs, so we return a dummy matrix
+        # Or you could estimate it empirically from the training sequence.
+        return np.ones((self.n_regimes, self.n_regimes)) / self.n_regimes
     
     def get_regime_characteristics(self, regime: str) -> Dict:
         """

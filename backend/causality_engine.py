@@ -139,15 +139,13 @@ class BankNiftyCausalityEngine:
     
     def detect_causal_relationships(self, data: pd.DataFrame) -> Dict[str, Dict]:
         """
-        Detect all causal relationships in Bank Nifty data.
-        
-        Args:
-            data: DataFrame with columns: Close, Futures_Close, VIX, Volume, etc.
-            
-        Returns:
-            Dictionary of causal relationships with strengths
+        Detect causal relationships in market data.
+        Reset state before each analysis to avoid cross-contamination between symbols.
         """
+        self.causal_graph = nx.DiGraph()
+        self.causal_strengths = {}
         causal_results = {}
+
         
         # 1. Futures → Spot causality
         if 'Futures_Close' in data.columns and 'Close' in data.columns:

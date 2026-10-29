@@ -1,0 +1,46 @@
+name: 24/7 Market-Hours Cloud Simulation
+
+on:
+  schedule:
+    # Runs every 15 minutes during Indian Market Hours (09:15 - 15:30 IST = 03:45 - 10:00 UTC, Mon-Fri)
+    - cron: '*/15 3-10 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  simulate-market-hours:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Kolkata
+    steps:
+      - name: Checkout Tradeverse Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Execute Market-Hours Simulation & Catch-Up
+        working-directory: ./backend
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python3 run_market_simulation.py --days 14
+
+      - name: Commit & Persist All Backup Data to GitHub
+        run: |
+          git config --local user.email "bot@tradeverse.ai"
+          git config --local user.name "Tradeverse Cloud Simulator"
+          git add -f backend/observatory_data/ backend/data/ backend/knowledge_base/ || true
+          git diff --staged --quiet || (git commit -m "chore(backup): auto-sync market-hours simulation & backup data [skip ci]" && git push)
+

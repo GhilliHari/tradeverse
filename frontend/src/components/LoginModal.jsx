@@ -13,8 +13,8 @@ import ScrambleText from './ui/ScrambleText';
 
 const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
     const [step, setStep] = useState('scan'); // scan, input, signup, forgot, verifying, success, error
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('hari@tradeverse.in');
+    const [password, setPassword] = useState('Goal@123');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState(null);
     const [isScanning, setIsScanning] = useState(true);
@@ -26,8 +26,8 @@ const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
             setIsScanning(true);
             setError(null);
             setMessage(null);
-            setEmail('');
-            setPassword('');
+            setEmail('hari@tradeverse.in');
+            setPassword('Goal@123');
             setConfirmPassword('');
             // Simulate Biometric Scan
             setTimeout(() => {
@@ -48,7 +48,7 @@ const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
             if (!auth || isDummyKey) {
                 console.warn("Using Mock Auth Bypass (Firebase not configured or invalid key)");
                 setTimeout(() => {
-                    onLogin("mock-token-123-local-bypass");
+                    onLogin("mock-token-123");
                     setStep('success');
                     setTimeout(onClose, 800);
                 }, 1500);

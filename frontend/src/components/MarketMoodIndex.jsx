@@ -54,14 +54,14 @@ const MarketMoodIndex = () => {
                     value < 80 ? 'greed' : 'extremeGreed';
 
     return (
-        <HUDCard title="MARKET MOOD INDEX (MMI)" neonColor="purple" className="h-[500px]">
-            <div className="p-8 flex flex-col items-center justify-center h-full bg-black/20 rounded-lg backdrop-blur-sm">
+        <HUDCard title="MARKET MOOD INDEX (MMI)" neonColor="purple" className="h-[420px] relative">
+            <div className="pt-8 p-4 flex flex-col items-center justify-center h-full">
 
                 {/* Gauge Container */}
-                <div className="relative w-96 h-96 mb-8 group">
+                <div className="relative w-72 h-72 mb-4 group scale-110">
                     {/* Ambient Glow behind the gauge */}
                     <div
-                        className="absolute inset-0 rounded-full blur-[100px] opacity-20 transition-colors duration-1000"
+                        className="absolute inset-0 rounded-full blur-[80px] opacity-10 transition-colors duration-1000 animate-pulse"
                         style={{ backgroundColor: activeColor }}
                     />
 
@@ -146,27 +146,27 @@ const MarketMoodIndex = () => {
                         </g>
 
                         {/* Curved Zone Labels - 5 zones */}
-                        <text fontSize="10" fontWeight="900" fill="#ffffff" letterSpacing="1" filter="url(#soft-glow)" opacity={activeZone === 'extremeFear' ? 1 : 0.7}>
+                        <text fontSize="10" fontVariant="all-small-caps" fontWeight="900" fill="#ffffff" letterSpacing="1" filter="url(#soft-glow)" opacity={activeZone === 'extremeFear' ? 1 : 0.7}>
                             <textPath href="#pathExtFear" startOffset="50%" textAnchor="middle">EXTREME FEAR</textPath>
                         </text>
-                        <text fontSize="11" fontWeight="900" fill="#ffffff" letterSpacing="1" filter="url(#soft-glow)" opacity={activeZone === 'fear' ? 1 : 0.7}>
+                        <text fontSize="11" fontVariant="all-small-caps" fontWeight="900" fill="#ffffff" letterSpacing="1" filter="url(#soft-glow)" opacity={activeZone === 'fear' ? 1 : 0.7}>
                             <textPath href="#pathFear" startOffset="50%" textAnchor="middle">FEAR</textPath>
                         </text>
-                        <text fontSize="11" fontWeight="900" fill="#ffffff" letterSpacing="1" filter="url(#soft-glow)" opacity={activeZone === 'neutral' ? 1 : 0.7}>
+                        <text fontSize="11" fontVariant="all-small-caps" fontWeight="900" fill="#ffffff" letterSpacing="1" filter="url(#soft-glow)" opacity={activeZone === 'neutral' ? 1 : 0.7}>
                             <textPath href="#pathNeutral" startOffset="50%" textAnchor="middle">NEUTRAL</textPath>
                         </text>
-                        <text fontSize="11" fontWeight="900" fill="#ffffff" letterSpacing="1" filter="url(#soft-glow)" opacity={activeZone === 'greed' ? 1 : 0.7}>
+                        <text fontSize="11" fontVariant="all-small-caps" fontWeight="900" fill="#ffffff" letterSpacing="1" filter="url(#soft-glow)" opacity={activeZone === 'greed' ? 1 : 0.7}>
                             <textPath href="#pathGreed" startOffset="50%" textAnchor="middle">GREED</textPath>
                         </text>
-                        <text fontSize="10" fontWeight="900" fill="#ffffff" letterSpacing="1" filter="url(#soft-glow)" opacity={activeZone === 'extremeGreed' ? 1 : 0.7}>
+                        <text fontSize="10" fontVariant="all-small-caps" fontWeight="900" fill="#ffffff" letterSpacing="1" filter="url(#soft-glow)" opacity={activeZone === 'extremeGreed' ? 1 : 0.7}>
                             <textPath href="#pathExtGreed" startOffset="50%" textAnchor="middle">EXTREME GREED</textPath>
                         </text>
                     </svg>
 
                     {/* Dynamic Value Readout */}
-                    <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none mt-16">
+                    <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none mt-12">
                         <div
-                            className="text-7xl font-black tabular-nums tracking-tighter drop-shadow-2xl transition-colors duration-500"
+                            className="text-6xl font-black tabular-nums tracking-tighter drop-shadow-2xl transition-colors duration-500"
                             style={{
                                 color: activeColor,
                                 textShadow: `0 0 30px ${activeColor}40`
@@ -175,11 +175,17 @@ const MarketMoodIndex = () => {
                             {Math.round(value)}
                         </div>
                         <div
-                            className="text-sm font-bold tracking-[0.4em] uppercase opacity-90 transition-colors duration-500 mt-2"
+                            className="text-[10px] font-black tracking-[0.4em] uppercase opacity-90 transition-colors duration-500 mt-1"
                             style={{ color: activeColor }}
                         >
                             {mmiData.label}
                         </div>
+                        {mmiData.status === 'live' && (
+                            <div className="flex items-center justify-center gap-1.5 mt-2">
+                                <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-emerald-500/60">LIVE FEED</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

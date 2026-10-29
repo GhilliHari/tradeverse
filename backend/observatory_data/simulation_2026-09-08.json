@@ -1,0 +1,80 @@
+{
+  "date": "2026-09-08",
+  "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+  "predictions": [
+    {
+      "id": "SIM_ICICIBANK_13:45",
+      "symbol": "ICICIBANK",
+      "timestamp": "2026-09-08T13:45:00+05:30",
+      "prediction": {
+        "signal": "BUY_PE",
+        "symbol": "NSE:ICICIBANK",
+        "strike": "1410 PE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 26.02,
+        "stop_loss_price": 24.39,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 1400.5,
+        "gann_angle": "-45\u00b0 Lower Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 1405.2,
+        "rsi_14": 40.9,
+        "atr_14": 1.76
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-08T13:50:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 5
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SIM_ICICIBANK_15:00",
+      "symbol": "ICICIBANK",
+      "timestamp": "2026-09-08T15:00:00+05:30",
+      "prediction": {
+        "signal": "BUY_PE",
+        "symbol": "NSE:ICICIBANK",
+        "strike": "1410 PE (ITM)",
+        "confidence": 0.96,
+        "technique": "Optimized Gann Sq9 + Astro + ATR Trailing SL (80%+ Win Rate)",
+        "entry_price": 25.0,
+        "target_1_price": 25.87,
+        "stop_loss_price": 24.48,
+        "model_scores": {
+          "gann_sq9": 0.96,
+          "astro_aspect": 0.95,
+          "vwap_trend": 0.94,
+          "rsi_momentum": 0.92
+        }
+      },
+      "market_context": {
+        "spot_price": 1399.6,
+        "gann_angle": "-45\u00b0 Lower Cross",
+        "astro_window": "High Confluence Astro Window",
+        "vwap": 1403.43,
+        "rsi_14": 44.9,
+        "atr_14": 1.5
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-08T15:10:00+05:30",
+        "exit_price": 25.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "holding_period_minutes": 10
+      },
+      "status": "COMPLETED"
+    }
+  ]
+}

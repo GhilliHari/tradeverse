@@ -117,7 +117,7 @@ def run_10_day_validation():
         pipeline.fetch_data = types.MethodType(mock_fetch, pipeline)
         
         # Mock split_data to avoid IndexError on empty train set
-        def mock_split(self):
+        def mock_split(self, test_days=30):
             logger.info("MOCK SPLIT: Returning full dataset.")
             return self.cleaned_data
         pipeline.split_data = types.MethodType(mock_split, pipeline)
@@ -247,13 +247,13 @@ def run_10_day_validation():
              full_raw_slice = df_raw.reindex(raw_slice.index, method='nearest')
         
         mock_broker = MockHistoricalBroker(full_raw_slice)
-        intelligence.kite = mock_broker
+        intelligence._kite = mock_broker
         if intelligence.component_tracker:
             intelligence.component_tracker.kite = mock_broker
         
         try:
             # Use Production Intelligence Layer
-            res = intelligence.run_analysis("NSE:BANKNIFTY", custom_df=df.iloc[:i+1])
+            res = intelligence.run_analysis("NSE:BANKNIFTY", custom_df=df.iloc[:i+1], greedy=True)
             signal = res.get('final_signal')
             rec = res.get('trade_recommendation', {})
             reasoning = rec.get('reasoning', 'No reasoning')

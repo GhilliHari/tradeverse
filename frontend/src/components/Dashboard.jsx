@@ -13,10 +13,12 @@ import {
     Tooltip, ResponsiveContainer, LineChart, Line
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
+import { workerSetInterval, workerClearInterval } from '../utils/workerTimer';
 import HUDCard from './ui/HUDCard';
+import BrainVisualizer from './BrainVisualizer';
+import ConfidenceGauge from './ConfidenceGauge';
 import ScrambleText from './ui/ScrambleText';
 import StatusBadge from './StatusBadge';
-import ConfidenceGauge from './ConfidenceGauge';
 import LoginModal from './LoginModal';
 import Backtest from './Backtest';
 
@@ -31,8 +33,11 @@ import Strategies from './Strategies';
 import Analytics from './Analytics';
 import PaperTrade from './PaperTrade';
 import Observatory from './Observatory';
+import OptionChainGEX from './OptionChainGEX';
+import TradeChecklist from './TradeChecklist';
+import GreeksCheatSheet from './GreeksCheatSheet';
 import LessonsLearned from './LessonsLearned';
-import { Telescope, ScrollText, BookOpen } from 'lucide-react';
+import { Telescope, ScrollText, BookOpen, Layers, ShieldCheck, Clock } from 'lucide-react';
 import MarketClock from './MarketClock';
 import { auth } from '../firebase';
 
@@ -50,13 +55,13 @@ const API_URL = getApiUrl();
 const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
     <button
         onClick={onClick}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group ${active
+        className={`w-full flex items-center gap-1.5 px-1.5 py-1 rounded-lg transition-all duration-300 group ${active
             ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-lg shadow-indigo-500/5'
             : 'text-slate-500 hover:text-slate-300 hover:bg-white/5 border border-transparent'
             }`}
     >
-        <Icon className={`w-5 h-5 ${active ? 'text-indigo-400' : 'text-slate-600 group-hover:text-slate-400'}`} />
-        <span className="text-xs font-bold uppercase tracking-widest">{label}</span>
+        <Icon className={`w-3.5 h-3.5 ${active ? 'text-indigo-400' : 'text-slate-600 group-hover:text-slate-400'}`} />
+        <span className="text-[9px] font-bold uppercase tracking-wider truncate">{label}</span>
         {active && <motion.div layoutId="activeInd" className="ml-auto w-1 h-4 bg-indigo-500 rounded-full" />}
     </button>
 );
@@ -77,13 +82,44 @@ const ControlToggle = ({ label, active, onClick, color = 'emerald' }) => (
 );
 
 // Agent Alignment Component
-const AgentStatus = ({ label, status, icon: Icon, colorClass }) => (
-    <div className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all duration-500 ${status === 'SYNC' ? 'bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'bg-white/5 border-white/5 opacity-40'}`}>
-        <Icon className={`w-4 h-4 ${status === 'SYNC' ? colorClass : 'text-slate-600'}`} />
-        <span className={`text-[8px] font-black uppercase tracking-widest ${status === 'SYNC' ? 'text-white' : 'text-slate-600'}`}>{label}</span>
-        <div className={`w-1 h-1 rounded-full ${status === 'SYNC' ? 'bg-emerald-400' : 'bg-slate-700'}`} />
-    </div>
-);
+const AgentStatus = ({ label, status, icon: Icon, colorClass }) => {
+    let containerClass = 'bg-white/2 border-white/5 opacity-40';
+    let iconClass = 'text-slate-600';
+    let textClass = 'text-slate-600';
+    let dotClass = 'bg-slate-700';
+    let glowStyle = {};
+
+    if (status === 'AGREE') {
+        containerClass = 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500/20';
+        iconClass = 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]';
+        textClass = 'text-emerald-400 font-black';
+        dotClass = 'bg-emerald-400 animate-pulse-fast shadow-[0_0_10px_#10b981]';
+        glowStyle = { textShadow: '0 0 10px rgba(16,185,129,0.3)' };
+    } else if (status === 'DISAGREE') {
+        containerClass = 'bg-red-500/10 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.15)] ring-1 ring-red-500/20';
+        iconClass = 'text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]';
+        textClass = 'text-red-500 font-black';
+        dotClass = 'bg-red-500 animate-pulse-fast shadow-[0_0_10px_#ef4444]';
+        glowStyle = { textShadow: '0 0 10px rgba(239,68,68,0.3)' };
+    } else if (status === 'NEUTRAL') {
+        containerClass = 'bg-slate-500/10 border-slate-500/30 shadow-[0_0_10px_rgba(100,116,139,0.1)] ring-1 ring-slate-500/20';
+        iconClass = 'text-slate-400 drop-shadow-[0_0_5px_rgba(100,116,139,0.3)]';
+        textClass = 'text-slate-400 font-black';
+        dotClass = 'bg-slate-400 animate-pulse-slow shadow-[0_0_8px_#94a3b8]';
+        glowStyle = { textShadow: '0 0 8px rgba(100,116,139,0.2)' };
+    }
+
+    return (
+        <div
+            className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl border transition-all duration-700 min-h-[64px] ${containerClass}`}
+            style={glowStyle}
+        >
+            <Icon className={`w-4 h-4 transition-all duration-500 ${iconClass}`} />
+            <span className={`text-[9px] uppercase tracking-widest transition-all duration-500 ${textClass}`}>{label}</span>
+            <div className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${dotClass}`} />
+        </div>
+    );
+};
 
 const DashboardWithLogic = () => {
     const [activeTab, setActiveTab] = useState('Live Terminal');
@@ -103,19 +139,32 @@ const DashboardWithLogic = () => {
     const [showEmergencyConfirm, setShowEmergencyConfirm] = useState(false);
     const [showTrainingConfirm, setShowTrainingConfirm] = useState(false);
     const [showModeConfirm, setShowModeConfirm] = useState(false);
+    const [dailyBias, setDailyBias] = useState({ bias: 'NEUTRAL', recommendation: 'Calibrating Strategist...', confidence: 0 });
+    const [isBiasLoading, setIsBiasLoading] = useState(false);
     const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [terminalMode, setTerminalMode] = useState('TACTICAL'); // 'TACTICAL' or 'SWARM'
     const [toast, setToast] = useState(null);
     const [emergencyResult, setEmergencyResult] = useState(null);
     const [isLiquidating, setIsLiquidating] = useState(false);
     const isConfirmingRef = useRef(false);
 
+    // Live Terminal Logging System
+    const [terminalLogs, setTerminalLogs] = useState([
+        { timestamp: new Date().toLocaleTimeString(), message: "Neural Command Center Online. V9.0 initializing...", type: 'system' }
+    ]);
+
+    const addTerminalLog = useCallback((message, type = 'system') => {
+        const timestamp = new Date().toLocaleTimeString();
+        setTerminalLogs(prev => [{ timestamp, message, type }, ...prev].slice(0, 50));
+    }, []);
+
     const OWNER_EMAIL = "hari@tradeverse.ai";
     const [isOwner, setIsOwner] = useState(false);
 
     const [user, setUser] = useState({ name: 'Guest', initials: 'G', status: 'OFFLINE' });
-    const [marketStatus, setMarketStatus] = useState({ isOpen: false, countdown: '00:00:00' });
+    const [marketStatus, setMarketStatus] = useState({ isOpen: false, isHoliday: false, countdown: '00:00:00' });
     const [pipelineStats, setPipelineStats] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isTraining, setIsTraining] = useState(false);
@@ -155,7 +204,68 @@ const DashboardWithLogic = () => {
     const [systemStatus, setSystemStatus] = useState({ backend: false, intelligence: false });
     const [connCountdown, setConnCountdown] = useState(0);
     const [serverLatency, setServerLatency] = useState(null);
+    const [isScanning, setIsScanning] = useState(false);
+    const [scanProgress, setScanProgress] = useState(0);
     const abortControllerRef = useRef(null);
+
+    const runSystemScan = () => {
+        if (isScanning) return;
+        setIsScanning(true);
+        setScanProgress(0);
+
+        let progress = 0;
+        const interval = workerSetInterval(() => {
+            progress += Math.floor(Math.random() * 15) + 5;
+            if (progress >= 100) {
+                progress = 100;
+                workerClearInterval(interval);
+                setTimeout(() => {
+                    setIsScanning(false);
+                    setScanProgress(0);
+                }, 2000);
+            }
+            setScanProgress(progress);
+        }, 300);
+    };
+
+    // --- GLOBAL API FETCH WRAPPER ---
+    // Automatically handles 401 Unauthorized errors by forcefully refreshing the Firebase token
+    // and retrying the request once. This prevents session expiry bugs.
+    const apiFetch = async (url, options = {}) => {
+        let currentToken = options.headers?.Authorization?.split(' ')[1] || token;
+
+        let response = await fetch(url, options);
+
+        if (response.status === 401 && auth?.currentUser) {
+            console.warn(`[apiFetch] 401 Unauthorized on ${url}. Attempting to force-refresh Firebase token...`);
+            try {
+                // FORCE a refresh of the token
+                const freshToken = await auth?.currentUser?.getIdToken(true);
+
+                if (freshToken) {
+                    console.log(`[apiFetch] Token refreshed successfully. Retrying request...`);
+                    // Update React state and LocalStorage so subsequent calls use the new token
+                    setToken(freshToken);
+                    localStorage.setItem('authToken', freshToken);
+
+                    // Update the headers for the retry
+                    const newOptions = { ...options };
+                    newOptions.headers = {
+                        ...newOptions.headers,
+                        'Authorization': `Bearer ${freshToken}`
+                    };
+
+                    // Retry the request
+                    response = await fetch(url, newOptions);
+                }
+            } catch (refreshError) {
+                console.error("[apiFetch] Token refresh failed:", refreshError);
+                // The onIdTokenChanged listener or confirmLogout will handle kicking the user out
+            }
+        }
+
+        return response;
+    };
 
     // Save credentials to localStorage whenever they change
     useEffect(() => {
@@ -193,12 +303,19 @@ const DashboardWithLogic = () => {
         setServerLatency("PINGING...");
         const start = Date.now();
         try {
-            const res = await fetch(`${API_URL}/`, { method: 'GET', cache: 'no-store' });
+            const res = await fetch(`${API_URL || '/backend-status'}/`, { method: 'GET', cache: 'no-store' });
             const latency = Date.now() - start;
 
             if (res.ok) {
+                const data = await res.json();
+                const intelligenceReady = data?.initialization?.ready || false;
+
                 setServerLatency(`${latency}ms (ONLINE)`);
-                setSystemStatus(prev => ({ ...prev, backend: true }));
+                setSystemStatus(prev => ({
+                    ...prev,
+                    backend: true,
+                    intelligence: intelligenceReady
+                }));
             } else if ((res.status === 502 || res.status === 503) && retryCount < 3) {
                 // Render Hibernation / Startup Handshake phase
                 setServerLatency(`WAKING UP (${retryCount + 1})...`);
@@ -239,12 +356,40 @@ const DashboardWithLogic = () => {
 
     const getAgentStatus = (agent) => {
         if (!analysis) return 'IDLE';
-        const signal = data.signal;
-        if (agent === 'TECH') return analysis.ai_prediction === (signal === 'BUY' ? 'UP' : 'DOWN') ? 'SYNC' : 'IDLE';
-        if (agent === 'TFT') return analysis.tft_prediction === (signal === 'BUY' ? 'UP' : 'DOWN') ? 'SYNC' : 'IDLE';
-        if (agent === 'RL') return analysis.rl_action === (signal === 'BUY' ? 1 : 2) ? 'SYNC' : 'IDLE';
-        if (agent === 'SENT') return analysis.sentiment_label === (signal === 'BUY' ? 'POSITIVE' : 'NEGATIVE') ? 'SYNC' : 'IDLE';
-        if (agent === 'OPT') return (signal === 'BUY' ? analysis.pcr < 0.9 : analysis.pcr > 1.1) ? 'SYNC' : 'IDLE';
+
+        // Map individual agent recommendations to lights:
+        // AGREE = Bullish (Green), DISAGREE = Bearish (Red), NEUTRAL = Idle (Grey)
+
+        if (agent === 'TECH') {
+            const pred = analysis.ai_prediction || 'NEUTRAL';
+            if (pred === 'UP') return 'AGREE';
+            if (pred === 'DOWN') return 'DISAGREE';
+            return 'NEUTRAL';
+        }
+        if (agent === 'TFT') {
+            const pred = analysis.tft_prediction || 'NEUTRAL';
+            if (pred === 'UP') return 'AGREE';
+            if (pred === 'DOWN') return 'DISAGREE';
+            return 'NEUTRAL';
+        }
+        if (agent === 'RL') {
+            const action = analysis.rl_action; // 1: BUY, 2: SELL, 0: HOLD
+            if (action === 1) return 'AGREE';
+            if (action === 2) return 'DISAGREE';
+            return 'NEUTRAL';
+        }
+        if (agent === 'SENT') {
+            const label = analysis.sentiment_label || 'NEUTRAL';
+            if (label === 'POSITIVE') return 'AGREE';
+            if (label === 'NEGATIVE') return 'DISAGREE';
+            return 'NEUTRAL';
+        }
+        if (agent === 'OPT') {
+            const pcr = analysis.pcr;
+            if (pcr === undefined || (pcr >= 0.9 && pcr <= 1.1)) return 'NEUTRAL';
+            return (pcr < 0.9) ? 'AGREE' : 'DISAGREE'; // PCR <0.9 is Bullish
+        }
+
         return 'IDLE';
     };
 
@@ -257,10 +402,10 @@ const DashboardWithLogic = () => {
         const timeoutId = setTimeout(() => controller.abort(), 90000); // Unified 90s timeout
 
         // Countdown interval
-        const timerId = setInterval(() => {
+        const timerId = workerSetInterval(() => {
             setConnCountdown(prev => {
                 if (prev <= 1) {
-                    clearInterval(timerId);
+                    workerClearInterval(timerId);
                     return 0;
                 }
                 return prev - 1;
@@ -275,7 +420,7 @@ const DashboardWithLogic = () => {
 
         try {
             const payload = { ...credentials, active_broker: 'ANGEL' };
-            const res = await fetch(`${API_URL}/api/settings/update`, {
+            const res = await apiFetch(`${API_URL}/api/settings/update`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -287,7 +432,7 @@ const DashboardWithLogic = () => {
                 signal: controller.signal
             });
 
-            clearInterval(timerId);
+            workerClearInterval(timerId);
             clearTimeout(timeoutId);
             clearTimeout(wakeUpToastId);
 
@@ -297,6 +442,7 @@ const DashboardWithLogic = () => {
             if (data.status === 'success') {
                 if (data.broker_connected) {
                     showToast("Credentials Updated & Connected to Angel One!", "success");
+                    addTerminalLog("CONNECTION: Angel One API handshake successful. Live stream established.", "system");
                     // Auto-switch to LIVE mode
                     setSettings(prev => ({
                         ...prev,
@@ -319,25 +465,29 @@ const DashboardWithLogic = () => {
                 } else {
                     const eMsg = data.error || "Check logs";
                     showToast(`Connection Failed: ${eMsg}`, "error");
+                    addTerminalLog(`CONNECTION ERROR: ${eMsg}`, "error");
                 }
             } else {
                 showToast(data.message || "Update Failed", "error");
+                addTerminalLog("SYSTEM: API configuration update failed.", "error");
             }
         } catch (e) {
-            clearInterval(timerId);
+            workerClearInterval(timerId);
             clearTimeout(wakeUpToastId); // Ensure wake toast timer is cleared on error
             if (e.name === 'AbortError') {
                 showToast(connCountdown > 0 ? "Connection Cancelled" : "Connection Timed Out (90s)", "error");
+                addTerminalLog("SYSTEM: Connection attempt timed out.", "error");
             } else {
                 console.error("Credential Update Error:", e);
                 showToast(`Network Error: ${e.message}`, "error");
+                addTerminalLog(`NETWORK: ${e.message}`, "error");
             }
         } finally {
             setIsConnecting(false);
             setConnCountdown(0);
             clearTimeout(timeoutId);
             clearTimeout(wakeUpToastId);
-            clearInterval(timerId);
+            workerClearInterval(timerId);
             abortControllerRef.current = null;
         }
     };
@@ -389,12 +539,15 @@ const DashboardWithLogic = () => {
                 console.log("Dashboard: Emergency Protocol Success");
                 setEmergencyResult({ success: true, message: data.message });
                 setIsAutoMode(false);
+                addTerminalLog(`PROTOCOL DELTA: ${data.message}`, "error");
             } else {
                 console.error("Dashboard: Emergency Protocol Failed", data);
+                const eMsg = data.detail || data.message || "Liquidation Failed";
                 setEmergencyResult({
                     success: false,
-                    message: data.detail || data.message || "Liquidation Failed"
+                    message: eMsg
                 });
+                addTerminalLog(`CRITICAL FAILURE: Emergency Protocol - ${eMsg}`, "error");
             }
         } catch (e) {
             console.error("Dashboard: Emergency Protocol Connection Error", e);
@@ -402,6 +555,7 @@ const DashboardWithLogic = () => {
                 success: false,
                 message: "CRITICAL CONNECTION ERROR during Emergency Stop"
             });
+            addTerminalLog("CRITICAL: Network failure during emergency protocol execution!", "error");
         } finally {
             setIsLiquidating(false);
         }
@@ -414,7 +568,13 @@ const DashboardWithLogic = () => {
             if (activeToken) {
                 headers['Authorization'] = `Bearer ${activeToken}`;
             }
-            const res = await fetch(`${API_URL}/api/settings`, { headers });
+            const res = await apiFetch(`${API_URL}/api/settings`, { headers });
+
+            if (res.status === 401) {
+                console.warn("fetchSettings: Unauthorized after retry. Logging out.");
+                return;
+            }
+
             const data = await res.json();
             setSettings(prev => ({
                 ...prev,
@@ -439,7 +599,7 @@ const DashboardWithLogic = () => {
 
     const fetchTrustedIPs = async () => {
         try {
-            const res = await fetch(`${API_URL}/api/settings/trusted-ips`, {
+            const res = await apiFetch(`${API_URL}/api/settings/trusted-ips`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -466,7 +626,7 @@ const DashboardWithLogic = () => {
     const handleAddTrustedIP = async () => {
         if (!newIP.trim()) return;
         try {
-            const res = await fetch(`${API_URL}/api/settings/trusted-ips/add`, {
+            const res = await apiFetch(`${API_URL}/api/settings/trusted-ips/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -489,7 +649,7 @@ const DashboardWithLogic = () => {
 
     const handleRemoveTrustedIP = async (ip) => {
         try {
-            const res = await fetch(`${API_URL}/api/settings/trusted-ips/remove`, {
+            const res = await apiFetch(`${API_URL}/api/settings/trusted-ips/remove`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -509,7 +669,7 @@ const DashboardWithLogic = () => {
 
     const handleBrokerSwitch = async (broker) => {
         try {
-            const res = await fetch(`${API_URL}/api/settings/update`, {
+            const res = await apiFetch(`${API_URL}/api/settings/update`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -552,7 +712,7 @@ const DashboardWithLogic = () => {
                 const shouldLogin = window.confirm("Live Trading requires an active Angel One connection.\n\nClick OK to go to Settings and login.");
 
                 if (shouldLogin) {
-                    console.log("[HANDLE_ENV_SWITCH] Redirecting to Settings > API Keys");
+                    console.log("[HANDLE_ENV_SWITCH] Redirecting to Settings> API Keys");
                     setActiveTab('Settings');
                     setActiveSettingsTab('API Keys');
                 }
@@ -561,7 +721,7 @@ const DashboardWithLogic = () => {
         }
 
         try {
-            const res = await fetch(`${API_URL}/api/settings/update`, {
+            const res = await apiFetch(`${API_URL}/api/settings/update`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -608,7 +768,7 @@ const DashboardWithLogic = () => {
     const handleUpdateWhatsAppSettings = async () => {
         setIsConnecting(true);
         try {
-            const res = await fetch(`${API_URL}/api/settings/update`, {
+            const res = await apiFetch(`${API_URL}/api/settings/update`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -632,7 +792,7 @@ const DashboardWithLogic = () => {
     const handleUpdateTelegramSettings = async () => {
         setIsConnecting(true);
         try {
-            const res = await fetch(`${API_URL}/api/settings/update`, {
+            const res = await apiFetch(`${API_URL}/api/settings/update`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -656,7 +816,7 @@ const DashboardWithLogic = () => {
     const handleSendTestWhatsApp = async () => {
         setIsConnecting(true);
         try {
-            const res = await fetch(`${API_URL}/api/settings/whatsapp/test`, {
+            const res = await apiFetch(`${API_URL}/api/settings/whatsapp/test`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -675,7 +835,7 @@ const DashboardWithLogic = () => {
     const handleSendTestTelegram = async () => {
         setIsConnecting(true);
         try {
-            const res = await fetch(`${API_URL}/api/settings/telegram/test`, {
+            const res = await apiFetch(`${API_URL}/api/settings/telegram/test`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -699,7 +859,7 @@ const DashboardWithLogic = () => {
         setShowModeConfirm(false);
 
         try {
-            const res = await fetch(`${API_URL}/api/settings/mode`, {
+            const res = await apiFetch(`${API_URL}/api/settings/mode`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -732,6 +892,11 @@ const DashboardWithLogic = () => {
         target: 0.3
     });
 
+    // Sub-Interval Timestamp Tracker Updates
+    const [lastPriceUpdate, setLastPriceUpdate] = useState(new Date());
+    const [lastOptionUpdate, setLastOptionUpdate] = useState(new Date());
+    const [lastAnalysisUpdate, setLastAnalysisUpdate] = useState(new Date());
+
     const [searchResults, setSearchResults] = useState([]);
     const [showResults, setShowResults] = useState(false);
 
@@ -751,11 +916,27 @@ const DashboardWithLogic = () => {
         }
     }, []);
 
-    // Also watch auth state for changes
+    // Also watch auth state for changes and auto-refresh token
     useEffect(() => {
-        const unsubscribe = auth?.onAuthStateChanged(user => {
-            if (user?.email?.toLowerCase() === OWNER_EMAIL) {
-                setIsOwner(true);
+        const unsubscribe = auth?.onIdTokenChanged(async (user) => {
+            if (user) {
+                if (user.email?.toLowerCase() === OWNER_EMAIL) {
+                    setIsOwner(true);
+                } else {
+                    setIsOwner(false);
+                }
+
+                try {
+                    // Firebase automatically refreshes the token behind the scenes.
+                    // This listener fires whenever the token changes (or auth state changes).
+                    const freshToken = await user.getIdToken();
+                    if (freshToken) {
+                        setToken(freshToken);
+                        localStorage.setItem('authToken', freshToken);
+                    }
+                } catch (err) {
+                    console.error("Error refreshing Firebase token:", err);
+                }
             } else {
                 setIsOwner(false);
             }
@@ -788,11 +969,34 @@ const DashboardWithLogic = () => {
             };
 
             sendHeartbeat();
-            intervalId = setInterval(sendHeartbeat, 5000);
+            intervalId = workerSetInterval(sendHeartbeat, 5000);
+            addTerminalLog("Autopilot Heartbeat Active. System synced with cloud sentinel.", "system");
+        } else if (token) {
+            addTerminalLog("Manual Control Mode Engage.", "system");
         }
 
-        return () => clearInterval(intervalId);
+        return () => workerClearInterval(intervalId);
     }, [isAutoMode, token]);
+
+    // System Event Observers
+    useEffect(() => {
+        if (data.regime && data.regime !== 'NOMINAL') {
+            addTerminalLog(`MARKET ALERT: Structural Regime Shift -> ${data.regime}`, 'error');
+        }
+    }, [data.regime]);
+
+    useEffect(() => {
+        if (analysis?.sentiment_label) {
+            const color = analysis.sentiment_label === 'POSITIVE' ? 'text-emerald-400' : analysis.sentiment_label === 'NEGATIVE' ? 'text-rose-400' : 'text-slate-400';
+            addTerminalLog(`SENTIMENT: News & Social Media analysis detected ${analysis.sentiment_label} mood.`, 'sentiment');
+        }
+    }, [analysis?.sentiment_label]);
+
+    useEffect(() => {
+        if (data.signal !== 'HOLD') {
+            addTerminalLog(`SIGNAL UPDATE: Neural consensus favors ${data.signal} for ${symbol}.`, 'signal');
+        }
+    }, [data.signal, symbol]);
 
     useEffect(() => {
         const timer = setTimeout(async () => {
@@ -823,6 +1027,7 @@ const DashboardWithLogic = () => {
 
     const navItems = [
         { icon: Terminal, label: 'Live Terminal' },
+        { icon: Layers, label: 'Option Chain & GEX' },
         { icon: ListOrdered, label: 'Orders' },
         { icon: ScrollText, label: 'Simulations' },
         { icon: Telescope, label: 'Observatory' },
@@ -844,34 +1049,37 @@ const DashboardWithLogic = () => {
     }, []);
 
     useEffect(() => {
-        let priceInterval, optionsInterval, timerInterval;
+        let priceInterval, optionsInterval, timerInterval, biasInterval;
         if (isLoggedIn) {
             fetchStatus();
             fetchSettings();
             calculateMarketStatus();
+            fetchDailyBias();
 
             // Immediate fetch on symbol change
             fetchPrice();
             fetchOptionChain();
 
-            priceInterval = setInterval(fetchPrice, 3000);
-            optionsInterval = setInterval(fetchOptionChain, 5000);
-            timerInterval = setInterval(calculateMarketStatus, 1000);
+            priceInterval = workerSetInterval(fetchPrice, 3000);
+            optionsInterval = workerSetInterval(fetchOptionChain, 5000);
+            timerInterval = workerSetInterval(calculateMarketStatus, 1000);
+            biasInterval = workerSetInterval(fetchDailyBias, 3600000); // Hourly refresh
         }
 
         return () => {
-            if (priceInterval) clearInterval(priceInterval);
-            if (optionsInterval) clearInterval(optionsInterval);
+            if (priceInterval) workerClearInterval(priceInterval);
+            if (optionsInterval) workerClearInterval(optionsInterval);
             if (timerInterval) clearInterval(timerInterval);
+            if (biasInterval) workerClearInterval(biasInterval);
         };
     }, [symbol, isLoggedIn]);
 
     useEffect(() => {
         let autoInterval;
         if (isLoggedIn && isAutoMode) {
-            autoInterval = setInterval(executeAutoPilot, 30000);
+            autoInterval = workerSetInterval(executeAutoPilot, 30000);
         } return () => {
-            if (autoInterval) clearInterval(autoInterval);
+            if (autoInterval) workerClearInterval(autoInterval);
         };
     }, [isAutoMode, isLoggedIn, symbol]);
 
@@ -880,24 +1088,51 @@ const DashboardWithLogic = () => {
         const day = now.getDay();
         const isWeekend = day === 0 || day === 6;
 
+        const holidays = [
+            '2026-01-26', // Republic Day
+            '2026-03-03', // Holi
+            '2026-03-17', // Mahashivratri
+            '2026-04-02', // Mahavir Jayanti
+            '2026-04-03', // Good Friday
+            '2026-04-14', // Ambedkar Jayanti
+            '2026-05-01', // Maharashtra Day
+            '2026-08-15', // Independence Day
+            '2026-10-02', // Gandhi Jayanti
+            '2026-12-25'  // Christmas
+        ];
+        const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const isHoliday = holidays.includes(localDate);
+
         const openTime = new Date(now);
         openTime.setHours(9, 15, 0, 0);
 
         const closeTime = new Date(now);
         closeTime.setHours(15, 30, 0, 0);
 
-        let isOpen = !isWeekend && now >= openTime && now <= closeTime;
+        let isOpen = !isWeekend && !isHoliday && now >= openTime && now <= closeTime;
 
         let target;
         if (isOpen) {
             target = closeTime;
         } else {
             target = new Date(now);
-            // If after 3:30 or weekend, next open is tomorrow or Monday
-            if (now > closeTime || isWeekend) {
-                const daysToAdd = day === 5 ? 3 : day === 6 ? 2 : 1;
-                target.setDate(now.getDate() + (now > closeTime ? daysToAdd : (day === 6 ? 2 : 1)));
+            // If holiday or weekend or after 3:30, find next open
+            let checkDate = new Date(now);
+            if (now > closeTime || isWeekend || isHoliday) {
+                // Find nearest working day
+                let found = false;
+                let safety = 0;
+                while (!found && safety < 10) {
+                    checkDate.setDate(checkDate.getDate() + 1);
+                    const checkDay = checkDate.getDay();
+                    const checkDateStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+                    if (checkDay !== 0 && checkDay !== 6 && !holidays.includes(checkDateStr)) {
+                        found = true;
+                    }
+                    safety++;
+                }
             }
+            target = new Date(checkDate);
             target.setHours(9, 15, 0, 0);
         }
 
@@ -908,6 +1143,7 @@ const DashboardWithLogic = () => {
 
         setMarketStatus({
             isOpen,
+            isHoliday,
             countdown: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
         });
     };
@@ -953,6 +1189,7 @@ const DashboardWithLogic = () => {
                     if (newData.length > 50) return newData.slice(-50);
                     return newData;
                 });
+                setLastPriceUpdate(new Date());
             }
         } catch (e) {
             // Silent fail for polling errors to prevent UI crash
@@ -968,6 +1205,7 @@ const DashboardWithLogic = () => {
             // Ensure info is an array
             if (Array.isArray(info)) {
                 setOptionChain(info);
+                setLastOptionUpdate(new Date());
             }
         } catch (e) {
             // console.warn("Options Fetch Failed");
@@ -977,29 +1215,82 @@ const DashboardWithLogic = () => {
     const runAgentAnalysis = async () => {
         if (!isLoggedIn) return;
         setIsAnalyzing(true);
+        addTerminalLog(`Initiating Swarm Intelligence scan for ${symbol}...`, 'ai');
         try {
-            const res = await fetch(`${API_URL}/api/intelligence/analyze/${symbol}`);
+            const res = await apiFetch(`${API_URL}/api/intelligence/analyze/${symbol}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ positions: [] })
+            });
             const result = await res.json();
             setAnalysis(result);
+            // Extract Greeks from technical context
+            const techCtx = result.technical_context || {};
+            const rawGreeks = techCtx.greeks || {};
+
+            // Map directional delta (CE vs PE)
+            const isPut = result.final_signal === 'SELL';
+            const directionalDelta = isPut ? Math.abs(rawGreeks.pe_delta || 0) : (rawGreeks.ce_delta || 0);
+
             setData(prev => ({
                 ...prev,
                 signal: result.final_signal,
                 confidence: result.confidence,
                 regime: result.regime || 'NOMINAL',
-                trade_recommendation: result.trade_recommendation
+                trade_recommendation: result.trade_recommendation,
+                greeks: {
+                    delta: directionalDelta || 0.5,
+                    gamma: rawGreeks.gamma || 0.004,
+                    theta: rawGreeks.theta || -12,
+                    vega: rawGreeks.vega || 40,
+                    iv: rawGreeks.iv || 15
+                }
             }));
-        } catch (e) { console.error("Analysis Failed", e); }
+            
+            setLastAnalysisUpdate(new Date());
+
+            if (result.final_signal !== 'HOLD') {
+                addTerminalLog(`CRITICAL: Signal generated -> ${result.final_signal} (${result.confidence}%)`, 'signal');
+                addTerminalLog(`Reasoning: ${result.trade_recommendation?.reasoning || 'Alpha alignment confirmed.'}`, 'ai');
+            } else {
+                addTerminalLog(`Scan complete: No actionable divergence detected.`, 'system');
+            }
+
+        } catch (e) {
+            console.error("Analysis Failed", e);
+            addTerminalLog(`ERROR: Intelligence scan aborted. Check backend latency.`, 'error');
+        }
         setIsAnalyzing(false);
     };
 
+    const fetchDailyBias = async () => {
+        setIsBiasLoading(true);
+        try {
+            const res = await apiFetch(`${API_URL}/api/intelligence/daily-bias`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const result = await res.json();
+            setDailyBias(result);
+        } catch (e) {
+            console.error("Daily Bias Fetch Failed", e);
+        }
+        setIsBiasLoading(false);
+    };
+
     const executeAutoPilot = async () => {
-        if (!isLoggedIn) return;
+        if (!isLoggedIn || !marketStatus.isOpen) return;
         setIsAnalyzing(true);
         console.log("AUTO-PILOT: Initiating Analysis & Execution Cycle...");
         try {
-            const res = await fetch(`${API_URL}/api/trading/autopilot`, {
+            const res = await apiFetch(`${API_URL}/api/trading/autopilot`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ symbol: symbol, quantity: 1 })
             });
             const result = await res.json();
@@ -1019,11 +1310,17 @@ const DashboardWithLogic = () => {
 
             if (result.status === 'EXECUTED') {
                 console.log(`AUTO-PILOT: Order Executed! ID: ${result.order_id}`);
-                // Refresh orders to show the new trade
-                fetchOrders();
+                addTerminalLog(`EXECUTION: Order ${result.order_id} filled successfully.`, 'signal');
+            } else if (result.status === 'IGNORED') {
+                addTerminalLog(`PILOT: Opportunity bypassed - filter criteria not met.`, 'system');
+            } else if (result.status === 'ERROR') {
+                addTerminalLog(`EXECUTION ERROR: ${result.reason || 'Unknown error'}`, 'error');
             } else if (result.status === 'HOLD') {
                 console.log(`AUTO-PILOT: Hold Signal. Reason: ${result.reason}`);
+                addTerminalLog(`PILOT: Hold Signal. Reason: ${result.reason}`, 'system');
             }
+            // Refresh orders to show the new trade, regardless of execution status
+            fetchOrders();
 
         } catch (e) {
             console.error("AutoPilot Execution Failed", e);
@@ -1036,13 +1333,18 @@ const DashboardWithLogic = () => {
         setIsLoggedIn(true);
         setShowLogin(false);
         setUser({ name: 'Pro Trader', initials: 'P', status: 'ONLINE' });
+        // Ensure token persistence safely handles fallback events
+        if (token) localStorage.setItem('authToken', token);
     };
 
     const confirmLogout = async () => {
         setShowLogoutConfirm(false);
         try {
             console.log("Dashboard: Calling logout API...");
-            await fetch(`${API_URL}/api/auth/logout`, { method: 'POST' });
+            await apiFetch(`${API_URL}/api/auth/logout`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
         } catch (e) {
             console.error("Dashboard: Logout API failed", e);
         }
@@ -1067,7 +1369,7 @@ const DashboardWithLogic = () => {
 
         const fetchSettingsLocal = async (overrideToken = null) => {
             try {
-                const res = await fetch(`${API_URL}/api/settings`, {
+                const res = await apiFetch(`${API_URL}/api/settings`, {
                     headers: { 'Authorization': `Bearer ${overrideToken || token}` }
                 });
                 const data = await res.json();
@@ -1080,7 +1382,7 @@ const DashboardWithLogic = () => {
                     effectiveEnv = 'MOCK';
 
                     // Sync backend asynchronously
-                    fetch(`${API_URL}/api/settings/update`, {
+                    apiFetch(`${API_URL}/api/settings/update`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1106,14 +1408,14 @@ const DashboardWithLogic = () => {
             } catch (e) { console.error("Settings Fetch Failed", e); }
         };
 
-        fetchSettings(mockToken);
+        fetchSettingsLocal(mockToken);
     };
 
     const handleTriggerTraining = async () => {
         setShowTrainingConfirm(false);
         setIsTraining(true); // Immediate feedback
         try {
-            const res = await fetch(`${API_URL}/api/ai/train`, {
+            const res = await apiFetch(`${API_URL}/api/ai/train`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1146,10 +1448,10 @@ const DashboardWithLogic = () => {
         let attempts = 0;
         const maxAttempts = 450; // ~15 minutes at 2s interval
 
-        const interval = setInterval(async () => {
+        const interval = workerSetInterval(async () => {
             attempts++;
             try {
-                const res = await fetch(`${API_URL}/api/ai/train/status`, {
+                const res = await apiFetch(`${API_URL}/api/ai/train/status`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
@@ -1160,7 +1462,7 @@ const DashboardWithLogic = () => {
                 errorCount = 0; // Reset on success
 
                 if (!status.is_training) {
-                    clearInterval(interval);
+                    workerClearInterval(interval);
                     setIsTraining(false);
 
                     if (status.stage === 'COMPLETE') {
@@ -1174,7 +1476,7 @@ const DashboardWithLogic = () => {
                 console.error("Status Poll Failed", e);
                 errorCount++;
                 if (errorCount >= 5) {
-                    clearInterval(interval);
+                    workerClearInterval(interval);
                     setIsTraining(false);
                     setTrainingStatus(prev => ({ ...prev, stage: 'ERROR', message: 'Connection lost during training' }));
                     showToast("❌ Training Status Connection Lost", "error");
@@ -1182,7 +1484,7 @@ const DashboardWithLogic = () => {
             }
 
             if (attempts >= maxAttempts) {
-                clearInterval(interval);
+                workerClearInterval(interval);
                 setIsTraining(false);
                 setTrainingStatus(prev => ({ ...prev, stage: 'ERROR', message: 'Training timed out' }));
                 showToast("❌ Training Timed Out", "error");
@@ -1239,8 +1541,8 @@ const DashboardWithLogic = () => {
     useEffect(() => {
         if (activeTab === 'Orders') {
             fetchOrders();
-            const interval = setInterval(fetchOrders, 5000);
-            return () => clearInterval(interval);
+            const interval = workerSetInterval(fetchOrders, 5000);
+            return () => workerClearInterval(interval);
         }
     }, [activeTab]);
 
@@ -1351,24 +1653,26 @@ const DashboardWithLogic = () => {
                 )}
             </AnimatePresence>
             {/* Sidebar Pane */}
-            <aside className="w-72 glass-panel border-r border-white/10 flex flex-col p-6 hidden lg:flex shadow-[20px_0_50px_rgba(0,0,0,0.3)]">
-                <div className="mb-10">
+            <aside className="w-44 glass-panel border-r border-white/10 flex flex-col p-2 hidden lg:flex shadow-[20px_0_50px_rgba(0,0,0,0.3)]">
+                <div className="mb-4">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent italic">
+                        <h1 className="text-xl font-black tracking-tighter bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent italic px-2">
                             TRADEVERSE
                         </h1>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2 mt-1 px-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_#10b981]" />
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">TERMINAL ACTIVE</p>
+                    <span className={`w-1.5 h-1.5 rounded-full ${marketStatus.isOpen ? 'bg-emerald-500 shadow-[0_0_5px_#10b981]' : 'bg-amber-500 shadow-[0_0_5px_#f59e0b]'}`} />
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">
+                        {marketStatus.isOpen ? 'TERMINAL ACTIVE' : marketStatus.isHoliday ? 'MARKET HOLIDAY' : 'MARKET CLOSED'}
+                    </p>
                 </div>
 
-                {/* System Health Panel */}
-                <div className="mb-6 space-y-3 px-4 py-4 rounded-xl bg-white/5 border border-white/5 mx-1">
+                {/* Health Status Panel */}
+                <div className="mb-2 space-y-1.5 px-2 py-2 rounded-lg bg-white/5 border border-white/5">
                     <div className="flex items-center justify-between">
-                        <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">System Status</span>
+                        <span className="text-[8px] uppercase font-bold text-slate-500 tracking-wider">Health</span>
                     </div>
 
                     {/* Backend Status */}
@@ -1400,7 +1704,7 @@ const DashboardWithLogic = () => {
                     </div>
 
                     {/* AI / Intelligence Status */}
-                    <div className="flex items-center justify-between cursor-pointer group" onClick={() => handleTabChange('Live Terminal')}>
+                    <div className="flex items-center justify-between cursor-pointer group" onClick={() => { setActiveTab('Live Terminal'); setTerminalMode('SWARM'); }}>
                         <div className="flex items-center gap-2">
                             <Zap className="w-3 h-3 text-slate-400 group-hover:text-indigo-400 transition-colors" />
                             <span className="text-xs font-medium text-slate-300 group-hover:text-white transition-colors">Intelligence</span>
@@ -1435,18 +1739,16 @@ const DashboardWithLogic = () => {
                             <span className="text-xs font-bold uppercase tracking-widest">Disconnect</span>
                         </button>
                     </div>
-                </nav >
-            </aside >
+                </nav>
+            </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 overflow-y-auto custom-scrollbar pb-32 lg:pb-8">
-                <div className="p-4 md:p-8 space-y-8">
+            <main className="flex-1 overflow-y-auto custom-scrollbar pb-8 lg:pb-2">
+                <div className="p-1.5 md:p-2 space-y-1">
                     {/* Top Bar */}
                     {/* Top Bar - Floating HUD */}
-                    <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sticky top-0 z-50 py-4 lg:py-2 -mx-2 px-2 bg-[#0c0d12]/80 lg:bg-transparent backdrop-blur-lg lg:backdrop-blur-none transition-all">
-                        <div className="glass-premium px-4 lg:px-6 py-2 rounded-full border border-white/15 shadow-2xl flex items-center gap-3 lg:gap-4 backdrop-blur-xl w-full md:w-auto">
-                            <h2 className="text-lg lg:text-xl font-black text-white tracking-widest uppercase truncate max-w-[120px] lg:max-w-none">{activeTab}</h2>
-                            <div className="h-4 w-[1px] bg-white/10" />
+                    <header className="flex flex-row flex-nowrap justify-between items-center gap-2 sticky top-0 z-50 py-1 -mx-2 px-2 bg-[#0c0d12]/80 lg:bg-transparent backdrop-blur-lg lg:backdrop-blur-none transition-all overflow-x-auto no-scrollbar">
+                        <div className="glass-premium px-3 py-1.5 rounded-full border border-white/15 shadow-2xl flex items-center gap-2 backdrop-blur-xl shrink-0">
                             <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest group relative">
                                 <input
                                     type="text"
@@ -1464,30 +1766,20 @@ const DashboardWithLogic = () => {
                                         }
                                     }}
                                     onFocus={() => {
-                                        setSearchInput(''); // Auto-clear on focus for better UX
+                                        setSearchInput('');
                                         if (searchResults.length > 0) setShowResults(true);
                                     }}
                                     onBlur={() => {
-                                        // Delay hiding to allow click
                                         setTimeout(() => {
-                                            if (!searchInput) setSearchInput(symbol); // Revert to current symbol if empty
+                                            if (!searchInput) setSearchInput(symbol);
                                             setShowResults(false);
                                         }, 200);
                                     }}
-                                    placeholder="SEARCH NSE..."
-                                    className="bg-transparent border-none outline-none text-white font-black w-24 lg:w-32 focus:ring-0 placeholder:text-slate-700 text-xs lg:text-sm"
+                                    placeholder="SEARCH..."
+                                    className="bg-transparent border-none outline-none text-white font-black w-16 lg:w-22 focus:ring-0 placeholder:text-slate-700 text-[10px] lg:text-xs"
                                 />
-                                {searchInput && searchInput !== symbol && (
-                                    <button
-                                        onClick={() => { setSearchInput(''); setShowResults(false); }}
-                                        className="absolute right-8 text-slate-500 hover:text-white transition-colors"
-                                    >
-                                        <LogOut className="w-3 h-3 rotate-90" /> {/* Using a simple icon as clear */}
-                                    </button>
-                                )}
                                 <Search className="w-3 h-3 text-slate-600 group-focus-within:text-indigo-400 transition-colors" />
 
-                                {/* Search Results Dropdown */}
                                 {showResults && searchResults.length > 0 && (
                                     <div className="absolute top-full left-0 mt-2 w-64 bg-black/90 border border-white/10 rounded-xl backdrop-blur-xl shadow-2xl z-50 overflow-hidden">
                                         {searchResults.map((res) => (
@@ -1508,480 +1800,390 @@ const DashboardWithLogic = () => {
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap items-center justify-start md:justify-end gap-3 lg:gap-4 w-full md:w-auto md:ml-auto">
-                            {/* Controls Group */}
-                            <div className="flex items-center gap-2">
-                                {/* Auto Pilot Switch */}
-                                <ControlToggle
-                                    label={isAutoMode ? "AUTO" : "MANUAL"}
-                                    active={isAutoMode}
-                                    onClick={handleModeToggle}
-                                    color="emerald"
-                                />
+                        <div className="flex flex-nowrap items-center gap-2 lg:gap-3 shrink-0 ml-auto">
+                            {/* Unified Tactical HUD Group */}
+                            <ControlToggle
+                                label={isAutoMode ? "AUTO" : "MANUAL"}
+                                active={isAutoMode}
+                                onClick={handleModeToggle}
+                                color="emerald"
+                            />
 
-                                {/* Emergency Kill Switch */}
-                                <button
-                                    onClick={handleEmergencyStop}
-                                    className="flex-shrink-0 px-3 lg:px-4 py-1.5 h-[38px] rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 hover:border-red-500/40 transition-all flex items-center gap-2 lg:gap-3 hover:scale-105 active:scale-95 cursor-pointer z-50 group"
-                                    title="CRITICAL EMERGENCY STOP"
-                                >
-                                    <AlertTriangle className="w-3 h-3 lg:w-4 lg:h-4 text-red-500/60 group-hover:text-red-500" />
-                                    <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.15em] lg:tracking-[0.2em] text-red-500/60 group-hover:text-red-500">KILL SWITCH</span>
-                                </button>
-                            </div>
+                            <button
+                                onClick={handleEmergencyStop}
+                                className="px-2 py-1 h-[32px] rounded-lg border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 transition-all flex items-center gap-1.5 hover:scale-105 active:scale-95 cursor-pointer z-50 group shrink-0"
+                                title="KILL SWITCH"
+                            >
+                                <AlertTriangle className="w-2.5 h-2.5 text-red-500/60 group-hover:text-red-500" />
+                                <span className="hidden xl:block text-[8px] font-black uppercase tracking-widest text-red-500/60 group-hover:text-red-500">KILL</span>
+                            </button>
 
-                            {/* Market Clock & Status Integration */}
-                            <div className="flex items-center gap-2">
-                                <MarketClock isOpen={marketStatus.isOpen} />
-                            </div>
+                            <MarketClock isOpen={marketStatus.isOpen} />
 
-                            {/* System Status Badges */}
-                            <div className="flex items-center gap-2">
-                                <StatusBadge
-                                    label="SYSTEM"
-                                    status={riskStatus.circuit_breaker_status === 'NOMINAL' ? 'NOMINAL' : 'HALTED'}
-                                    color={riskStatus.circuit_breaker_status === 'NOMINAL' ? 'emerald' : 'red'}
-                                    pulse={riskStatus.circuit_breaker_status !== 'NOMINAL'}
-                                />
+                            <StatusBadge
+                                label="SYSTEM"
+                                status={riskStatus.circuit_breaker_status === 'NOMINAL' ? 'NOMINAL' : 'HALTED'}
+                                color={riskStatus.circuit_breaker_status === 'NOMINAL' ? 'emerald' : 'red'}
+                                pulse={riskStatus.circuit_breaker_status !== 'NOMINAL'}
+                            />
 
-
-                                {/* User Profile Badge */}
-                                <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/10 h-[38px]">
-                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center font-black text-[9px] border ${user.status === 'ONLINE' ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30' : 'bg-slate-700/50 text-slate-400 border-white/5'}`}>
-                                        {user.initials}
-                                    </div>
-                                    <div className="flex flex-col justify-center">
-                                        <span className={`text-[10px] font-black uppercase tracking-wider ${user.status === 'ONLINE' ? 'text-indigo-400' : 'text-slate-500'}`}>
-                                            {user.name}
-                                        </span>
-                                    </div>
+                            <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/10 h-[38px] shrink-0">
+                                <div className={`w-6 h-6 rounded-full flex items-center justify-center font-black text-[9px] border ${user.status === 'ONLINE' ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30' : 'bg-slate-700/50 text-slate-400 border-white/5'}`}>
+                                    {user.initials}
                                 </div>
-
-                                {settings.angel_connected && (
-                                    <StatusBadge
-                                        label="BROKER"
-                                        status="CONNECTED"
-                                        color="emerald"
-                                        pulse={true}
-                                    />
-                                )}
-
-                                <StatusBadge
-                                    label="REGIME"
-                                    status={data.regime}
-                                    color={data.regime === 'NOMINAL' ? 'emerald' : data.regime === 'VOLATILE' ? 'amber' : 'red'}
-                                />
+                                <span className={`hidden md:block text-[10px] font-black uppercase tracking-wider ${user.status === 'ONLINE' ? 'text-indigo-400' : 'text-slate-500'}`}>
+                                    {user.name}
+                                </span>
                             </div>
+
+                            {settings.angel_connected && (
+                                <StatusBadge
+                                    label="BROKER"
+                                    status="CONNECTED"
+                                    color="emerald"
+                                    pulse={true}
+                                />
+                            )}
+
+                            <StatusBadge
+                                label="REGIME"
+                                status={data.regime}
+                                color={data.regime === 'NOMINAL' ? 'emerald' : data.regime === 'VOLATILE' ? 'amber' : 'red'}
+                            />
                         </div>
                     </header>
 
+                    {activeTab === 'Live Terminal' && dailyBias && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.98, y: -10 }}
+                            animate={{
+                                opacity: 1, scale: 1, y: 0,
+                                boxShadow: [`0 0 15px ${dailyBias.bias === 'BULLISH' ? 'rgba(16,185,129,0.15)' : dailyBias.bias === 'BEARISH' ? 'rgba(239,68,68,0.15)' : 'rgba(99,102,241,0.15)'}`, `0 0 25px ${dailyBias.bias === 'BULLISH' ? 'rgba(16,185,129,0.3)' : dailyBias.bias === 'BEARISH' ? 'rgba(239,68,68,0.3)' : 'rgba(99,102,241,0.3)'}`],
+                            }}
+                            transition={{ duration: 3, repeat: Infinity, repeatType: 'reverse' }}
+                            className={`p-3 rounded-xl bg-gradient-to-r ${dailyBias.bias === 'BULLISH' ? 'from-emerald-900/40 to-black/60 border-emerald-500/50' : dailyBias.bias === 'BEARISH' ? 'from-red-900/40 to-black/60 border-red-500/50' : 'from-indigo-900/40 to-black/60 border-indigo-500/50'} border backdrop-blur-xl mb-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden`}
+                        >
+                            {/* Decorative Background Glow */}
+                            <div className={`absolute top-0 right-0 w-32 h-32 blur-3xl rounded-full opacity-20 pointer-events-none ${dailyBias.bias === 'BULLISH' ? 'bg-emerald-500' : dailyBias.bias === 'BEARISH' ? 'bg-red-500' : 'bg-indigo-500'}`} />
+
+                            <div className="flex flex-col gap-1 z-10 w-full md:w-auto flex-1">
+                                <div className="flex items-center gap-2">
+                                    <div className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${dailyBias.bias === 'BULLISH' ? 'bg-emerald-500/20 text-emerald-400' : dailyBias.bias === 'BEARISH' ? 'bg-red-500/20 text-red-400' : 'bg-indigo-500/20 text-indigo-400'}`}>
+                                        DAILY STRATEGIST RECOMMENDATION: {dailyBias.bias}
+                                    </div>
+                                    <span className="text-[10px] text-white/40 font-mono flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
+                                        {dailyBias.timestamp ? new Date(dailyBias.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'CALIBRATING'}
+                                    </span>
+                                </div>
+                                <p className="text-sm font-bold text-white tracking-wide leading-relaxed mt-1">{dailyBias.recommendation}</p>
+                            </div>
+
+                            <div className="flex items-center gap-4 shrink-0 border-t md:border-t-0 md:border-l border-white/10 pt-3 md:pt-0 md:pl-4 z-10 w-full md:w-auto justify-between md:justify-end">
+                                <div className="flex flex-col items-start md:items-end">
+                                    <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-0.5">Confidence</span>
+                                    <span className={`text-xl font-black tabular-nums ${dailyBias.bias === 'BULLISH' ? 'text-emerald-400' : dailyBias.bias === 'BEARISH' ? 'text-red-400' : 'text-indigo-400'}`}>{dailyBias.confidence}%</span>
+                                </div>
+                                <button onClick={fetchDailyBias} className="p-2 hover:bg-white/10 rounded-lg text-white/50 hover:text-white transition-all bg-black/20 border border-white/5 group">
+                                    <RefreshCw className={`w-4 h-4 group-hover:rotate-180 transition-transform duration-500 ${isBiasLoading ? 'animate-spin' : ''}`} />
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+
                     {activeTab === 'Live Terminal' ? (
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                            {/* Tactical Monitor Box (Side-by-Side) */}
+                        <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            {/* Inner Tab Toggle */}
+                            <div className="flex items-center gap-2 mb-2">
+                                <button
+                                    onClick={() => setTerminalMode('TACTICAL')}
+                                    className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border ${terminalMode === 'TACTICAL'
+                                        ? 'bg-indigo-500 text-white border-indigo-500 shadow-lg shadow-indigo-500/20'
+                                        : 'bg-white/5 text-slate-500 border-white/10 hover:bg-white/10'
+                                        }`}
+                                >
+                                    Tactical HUD
+                                </button>
+                                <button
+                                    onClick={() => setTerminalMode('SWARM')}
+                                    className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border ${terminalMode === 'SWARM'
+                                        ? 'bg-purple-500 text-white border-purple-500 shadow-lg shadow-purple-500/20'
+                                        : 'bg-white/5 text-slate-500 border-white/10 hover:bg-white/10'
+                                        }`}
+                                >
+                                    AI Swarm Intelligence
+                                </button>
+                            </div>
+
+                            {terminalMode === 'TACTICAL' ? (
+                                <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
+                            {/* Command Center: Execution + System Stats */}
+                            {/* Command Center: Execution Protocol */}
+                            <div className="lg:col-span-1 flex flex-col">
+                                <HUDCard title="EXECUTION PROTOCOL" neonColor="indigo" className="flex-1">
+                                    <TradeChecklist symbol={symbol} analysis={data} />
+                                </HUDCard>
+                            </div>
+
                             <div className="lg:col-span-3">
-                                <HUDCard title="TACTICAL MONITOR" neonColor="indigo" className="relative">
-
-                                    <div className="pt-10 p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        {/* System Health Path */}
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`p-3 rounded-xl border transition-all duration-500 ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-red-500/10 text-red-400 border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)]'}`}>
-                                                        <Shield className={`w-6 h-6 ${riskStatus.circuit_breaker_status !== 'NOMINAL' ? 'animate-pulse' : ''}`} />
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-sm font-black text-white uppercase tracking-wider italic">System Integrity</h3>
-                                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Risk Guardrail Status</p>
-                                                    </div>
+                                <HUDCard
+                                    title="TACTICAL COMMAND CENTER"
+                                    neonColor="indigo"
+                                    className="relative"
+                                    action={
+                                        <button onClick={runSystemScan} disabled={isScanning} className="flex items-center gap-1 px-1.5 py-0.5 bg-white/5 hover:bg-white/10 rounded border border-white/10 text-[6px] font-black tracking-widest uppercase transition-all">
+                                            {isScanning ? <RefreshCw className="w-2 h-2 animate-spin" /> : <Activity className="w-2 h-2" />}
+                                            SCAN
+                                        </button>
+                                    }
+                                >
+                                    <div className="pt-3 p-1.5 flex flex-col md:flex-row items-center gap-1.5 relative z-20">
+                                        {/* Status Indicators Group */}
+                                        <div className="flex gap-1.5 shrink-0">
+                                            <div className="bg-white/[0.02] p-1 rounded-lg border border-white/10 flex flex-col justify-between w-[70px] h-[45px]">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[5px] font-black text-slate-500 uppercase tracking-widest">Health</span>
+                                                    <Shield className={`w-2 h-2 ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'text-emerald-500' : 'text-red-500 animate-pulse'}`} />
                                                 </div>
-                                                <div className={`px-4 py-2 rounded-lg border font-black text-[10px] tracking-widest transition-all duration-500 ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/20 border-red-500/50 text-red-400 animate-pulse'}`}>
-                                                    {riskStatus.circuit_breaker_status === 'NOMINAL' ? 'NOMINAL' : 'HALTED'}
-                                                </div>
-                                            </div>
-
-                                            <div className="bg-white/5 border border-white/5 p-4 rounded-2xl relative">
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Perimeter Breach Check</span>
-                                                    <span className="text-[10px] font-mono text-white italic">₹{riskStatus.current_daily_loss?.toFixed(0)} / ₹{riskStatus.daily_loss_limit}</span>
-                                                </div>
-                                                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                                    <motion.div
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${Math.min(((riskStatus.current_daily_loss || 0) / (riskStatus.daily_loss_limit || 1)) * 100, 100) || 0}%` }}
-                                                        className={`h-full transition-all duration-1000 ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'bg-emerald-500/50' : 'bg-red-500 shadow-[0_0_10px_#ef4444]'}`}
-                                                    />
+                                                <div className={`text-[10px] font-black tracking-tighter ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                    STABLE
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Market Analysis Path */}
-                                        <div className="space-y-4 border-l border-white/5 pl-0 md:pl-8">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`p-3 rounded-xl border transition-all duration-500 ${data.regime === 'NOMINAL' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : data.regime === 'VOLATILE' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 'bg-red-500/10 text-red-500 border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)]'}`}>
-                                                        <Globe className={`w-6 h-6 ${data.regime !== 'NOMINAL' ? 'animate-spin-slow' : ''}`} />
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-sm font-black text-white uppercase tracking-wider italic">Market Regime</h3>
-                                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Structural State Engine</p>
-                                                    </div>
+                                            <div className="bg-white/[0.02] p-1 rounded-lg border border-white/10 flex flex-col justify-between w-[70px] h-[45px]">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[5px] font-black text-slate-500 uppercase tracking-widest">Regime</span>
+                                                    <Globe className="w-2 h-2 text-indigo-400" />
                                                 </div>
-                                                <div className={`px-4 py-2 rounded-lg border font-black text-[10px] tracking-widest transition-all duration-500 ${data.regime === 'NOMINAL' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : data.regime === 'VOLATILE' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-red-500/20 border-red-500/50 text-red-400 animate-pulse'}`}>
+                                                <div className="text-[10px] font-black tracking-tighter text-emerald-400 truncate">
                                                     {data.regime}
                                                 </div>
                                             </div>
 
-                                            <div className="bg-white/5 border border-white/5 p-4 rounded-2xl relative">
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Committee Sync Status</span>
-                                                    <span className="text-[10px] font-mono text-white italic">{data.regime === 'NOMINAL' ? '3/5 REQ' : data.regime === 'VOLATILE' ? '4/5 REQ' : '5/5 REQ'}</span>
+                                            <div className="bg-white/[0.02] p-1 rounded-lg border border-white/10 flex flex-col justify-between w-[90px] h-[45px]">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[5px] font-black text-slate-500 uppercase tracking-widest">Risk</span>
+                                                    <span className="text-[6px] font-black text-white">₹{riskStatus.current_daily_loss?.toFixed(0)}</span>
                                                 </div>
-                                                <div className="grid grid-cols-5 gap-2">
-                                                    <AgentStatus label="TECH" status={getAgentStatus('TECH')} icon={TrendingUp} colorClass="text-emerald-400" />
-                                                    <AgentStatus label="TFT" status={getAgentStatus('TFT')} icon={Activity} colorClass="text-purple-400" />
-                                                    <AgentStatus label="RL" status={getAgentStatus('RL')} icon={Zap} colorClass="text-amber-400" />
-                                                    <AgentStatus label="SENT" status={getAgentStatus('SENT')} icon={Brain} colorClass="text-blue-400" />
-                                                    <AgentStatus label="OPT" status={getAgentStatus('OPT')} icon={ListOrdered} colorClass="text-indigo-400" />
+                                                <div className="h-0.5 w-full bg-white/10 rounded-full mt-0.5">
+                                                    <div className="h-full bg-red-500" style={{ width: `${Math.min(((riskStatus.current_daily_loss || 0) / (riskStatus.daily_loss_limit || 1)) * 100, 100)}%` }} />
                                                 </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Committee Hub: High Visibility */}
+                                        <div className="flex-1 w-full bg-indigo-500/5 p-3 rounded-xl border border-indigo-500/20 flex flex-col justify-center min-w-[280px]">
+                                            <div className="flex items-center justify-between mb-2 px-1">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Zap className="w-3 h-3 text-indigo-400" />
+                                                    <span className="text-[8px] font-black text-indigo-300 uppercase tracking-[0.1em]">Consensus Hub</span>
+                                                </div>
+                                                <span className="text-[9px] font-mono text-indigo-400 italic font-bold">Quorum: {data.regime === 'NOMINAL' ? '3/5' : '5/5'}</span>
+                                            </div>
+                                            <div className="flex gap-4 overflow-x-auto pb-1 custom-scrollbar items-center">
+                                                <AgentStatus label="TECH" status={getAgentStatus('TECH')} icon={TrendingUp} colorClass="text-emerald-400" />
+                                                <AgentStatus label="TFT" status={getAgentStatus('TFT')} icon={Activity} colorClass="text-purple-400" />
+                                                <AgentStatus label="RL" status={getAgentStatus('RL')} icon={Zap} colorClass="text-amber-400" />
+                                                <AgentStatus label="SENT" status={getAgentStatus('SENT')} icon={Brain} colorClass="text-blue-400" />
+                                                <AgentStatus label="OPT" status={getAgentStatus('OPT')} icon={ListOrdered} colorClass="text-indigo-400" />
                                             </div>
                                         </div>
                                     </div>
                                 </HUDCard>
-                            </div>
 
-                            {/* Tactical Command Row (Swarm + Risk) */}
-                            <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                <div className="lg:col-span-2">
-                                    <HUDCard title="AGENT SWARM" neonColor="purple">
-                                        <div className="p-6">
-                                            <div className="flex items-center gap-2 pb-4 border-b border-purple-500/20">
-                                                <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg">
-                                                    <Zap className="w-5 h-5 animate-pulse" />
-                                                </div>
-                                                <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-slate-400 italic">Live Consensus Matrix</h3>
-                                            </div>
-
-                                            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar mt-6">
+                                {/* High-Density Intelligence Row: Nexus Stack */}
+                                <div className="grid grid-cols-1 lg:grid-cols-4 gap-1 mt-1">
+                                    <div className="lg:col-span-3 flex flex-col gap-1 h-full">
+                                        <HUDCard title="SWARM REPORTS" neonColor="purple" className="flex-1 min-h-[60px]" lastUpdated={lastAnalysisUpdate}>
+                                            <div className="p-1 grid grid-cols-2 md:grid-cols-3 gap-1 overflow-y-auto custom-scrollbar h-full">
                                                 <AnimatePresence mode="wait">
                                                     {analysis && analysis.sentiment_analysis ? (
-                                                        <motion.div
-                                                            key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3"
-                                                        >
-                                                            {[
-                                                                { role: "Sentiment", text: analysis.sentiment_analysis, icon: Brain, color: "text-blue-400 border-blue-500/20 bg-blue-500/10" },
-                                                                { role: "Technical", text: analysis.technical_analysis || "Processing technicals...", icon: TrendingUp, color: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" },
-                                                                { role: "Options (OI/PCR)", text: `PCR: ${analysis.pcr?.toFixed(2)} | OI Support: ${analysis.pcr < 0.9 ? 'STRONG' : 'NEUTRAL'}. Institutional positioning detected.`, icon: ListOrdered, color: "text-indigo-400 border-indigo-500/20 bg-indigo-500/10" },
-                                                                { role: "Temporal (TFT)", text: `Prediction: ${analysis.tft_prediction || 'SYNCHRONIZING'}. Deep Sequence Context active.`, icon: Activity, color: "text-purple-400 border-purple-500/20 bg-purple-500/10" },
-                                                                { role: "Sniper (RL)", text: `Action Code: ${analysis.rl_action || 0}. Timing optimizer targeting high-velocity entries.`, icon: Zap, color: "text-amber-400 border-amber-500/20 bg-amber-500/10" },
-                                                                { role: "Risk Guard", text: analysis.risk_approval === undefined ? "Risk scan pending..." : (analysis.risk_approval ? "Risk Parameters Nominal. Trade Authorized." : "CRITICAL RISK DETECTED. HALTING."), icon: Shield, color: analysis.risk_approval ? "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" : "text-red-400 border-red-500/20 bg-red-500/10" },
-                                                            ].map((report, idx) => (
-                                                                <div key={idx} className={`p-5 rounded-2xl border transition-all hover:bg-white/[0.07] shadow-xl ${report.color.split(' ').slice(1).join(' ')}`}>
-                                                                    <div className={`flex items-center justify-between text-[10px] font-black uppercase tracking-widest mb-3 ${report.color.split(' ')[0]}`}>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <report.icon className="w-3.5 h-3.5" /> {report.role}
-                                                                        </div>
-                                                                        <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                                                                    </div>
-                                                                    <div className="bg-black/20 p-3 rounded-lg border border-white/5">
-                                                                        <p className="text-[10px] text-slate-200 leading-relaxed font-mono whitespace-pre-wrap">{report.text}</p>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </motion.div>
-                                                    ) : (
-                                                        <div className="h-40 flex flex-col items-center justify-center text-slate-700">
-                                                            <Activity className="w-10 h-10 opacity-10 mb-2 animate-pulse" />
-                                                            <p className="text-[10px] font-black tracking-widest text-indigo-500/40">AWAITING FEED</p>
-                                                        </div>
-                                                    )}
-                                                </AnimatePresence>
-
-                                                {/* Disconnect Confirmation Modal */}
-                                                <AnimatePresence>
-                                                    {showDisconnectConfirm && (
-                                                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-                                                            <motion.div
-                                                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                                                onClick={() => setShowDisconnectConfirm(false)}
-                                                                className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
-                                                            />
-                                                            <motion.div
-                                                                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                                                                className="relative w-full max-w-sm glass-panel p-8 rounded-[40px] border-white/10 bg-black/90 shadow-2xl"
-                                                            >
-                                                                <div className="text-center space-y-4 mb-8">
-                                                                    <div className="w-16 h-16 mx-auto mb-4 rounded-3xl flex items-center justify-center bg-red-500/10 text-red-400 border border-red-500/20">
-                                                                        <LogOut className="w-8 h-8" />
-                                                                    </div>
-                                                                    <h3 className="text-2xl font-black tracking-tight text-white">DISCONNECT BROKER?</h3>
-                                                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-relaxed">
-                                                                        This will <span className="text-red-400">CLEAR ALL CREDENTIALS</span> and revert the system to MOCK mode.
-                                                                    </p>
-                                                                </div>
-                                                                <div className="space-y-3">
-                                                                    <button
-                                                                        onClick={handleAngelDisconnect}
-                                                                        className="w-full bg-red-500 hover:bg-red-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95"
-                                                                    >
-                                                                        CONFIRM DISCONNECT
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => setShowDisconnectConfirm(false)}
-                                                                        className="w-full bg-white/5 hover:bg-white/10 text-slate-400 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
-                                                                    >
-                                                                        ABORT
-                                                                    </button>
-                                                                </div>
-                                                            </motion.div>
-                                                        </div>
-                                                    )}
-                                                </AnimatePresence>
-
-                                                {/* Toast Notification */}
-                                                <AnimatePresence>
-                                                    {toast && (
-                                                        <motion.div
-                                                            initial={{ opacity: 0, y: 50, x: '-50%' }}
-                                                            animate={{ opacity: 1, y: 0, x: '-50%' }}
-                                                            exit={{ opacity: 0, y: 20, x: '-50%' }}
-                                                            className="fixed bottom-10 left-1/2 z-[300] px-6 py-4 rounded-2xl border backdrop-blur-xl shadow-2xl flex items-center gap-4 min-w-[300px]"
-                                                            style={{
-                                                                backgroundColor: toast.type === 'error' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
-                                                                borderColor: toast.type === 'error' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)'
-                                                            }}
-                                                        >
-                                                            <div className={`p-2 rounded-lg ${toast.type === 'error' ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
-                                                                {toast.type === 'error' ? <AlertTriangle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                                                        [
+                                                            { role: "Sentiment", text: analysis.sentiment_analysis, icon: Brain, color: "text-blue-400 bg-blue-500/5" },
+                                                            { role: "Technical", text: analysis.technical_analysis || "Processing...", icon: TrendingUp, color: "text-emerald-400 bg-emerald-500/5" },
+                                                            { role: "Options", text: `PCR: ${analysis.pcr?.toFixed(2)}`, icon: ListOrdered, color: "text-indigo-400 bg-indigo-500/5" },
+                                                            { role: "TFT", text: `Pred: ${analysis.tft_prediction || 'UP'}`, icon: Activity, color: "text-purple-400 bg-purple-500/5" },
+                                                            { role: "RL Sniper", text: `Action: ${analysis.rl_action || 0}`, icon: Zap, color: "text-amber-400 bg-amber-500/5" },
+                                                        ].map((report, idx) => (
+                                                            <div key={idx} className={`px-1.5 py-0.5 rounded border border-white/5 flex items-center gap-1.5 ${report.color}`}>
+                                                                <span className="text-[7px] font-black uppercase tracking-tighter opacity-70 truncate min-w-[40px]">{report.role}:</span>
+                                                                <p className="text-[7px] text-slate-300 font-mono truncate">{report.text}</p>
                                                             </div>
-                                                            <div className="space-y-0.5">
-                                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 leading-none">System Notification</p>
-                                                                <p className="text-xs font-bold text-white">{toast.message}</p>
-                                                            </div>
-                                                        </motion.div>
-                                                    )}
+                                                        ))
+                                                    ) : <div className="col-span-3 h-8 flex items-center justify-center text-[7px] uppercase font-black tracking-widest text-slate-700">Calibrating...</div>}
                                                 </AnimatePresence>
                                             </div>
-                                        </div>
-                                    </HUDCard>
-                                </div>
+                                        </HUDCard>
 
-                                <div className="lg:col-span-1">
-                                    <HUDCard title="RISK PERIMETER" neonColor="red" className="bg-red-500/[0.02] border-red-500/10 h-full">
-                                        <div className="p-6">
-                                            <div className="flex items-center gap-3 mb-6">
-                                                <div className="p-3 bg-red-500/10 text-red-500 rounded-2xl shadow-[0_0_15px_rgba(239,68,68,0.2)] border border-red-500/20">
-                                                    <AlertTriangle className="w-6 h-6 animate-pulse" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-black text-xs uppercase tracking-widest text-red-400 neon-text-red">Protocol & Guardrails</h3>
-                                                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-tighter">Active System Defense</p>
-                                                </div>
-                                            </div>
-
-                                            {/* Side-by-Side Mode Matrix */}
-                                            <div className="grid grid-cols-2 gap-3 mb-6">
-                                                <div className={`p-3 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-500 ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'bg-emerald-500/5 border-emerald-500/10' : 'bg-red-500/10 border-red-500/20'}`}>
-                                                    <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">System State</span>
-                                                    <div className={`text-[10px] font-black tracking-tighter ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'text-emerald-400' : 'text-red-400 animate-pulse'}`}>
-                                                        {riskStatus.circuit_breaker_status === 'NOMINAL' ? 'STABLE' : 'HALTED'}
-                                                    </div>
-                                                </div>
-                                                <div className={`p-3 rounded-xl border flex flex-col items-center justify-center text-center transition-all duration-500 ${data.regime === 'NOMINAL' ? 'bg-emerald-500/5 border-emerald-500/10' : 'bg-amber-500/5 border-amber-500/20'}`}>
-                                                    <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Market Regime</span>
-                                                    <div className={`text-[10px] font-black tracking-tighter ${data.regime === 'NOMINAL' ? 'text-emerald-400' : data.regime === 'VOLATILE' ? 'text-amber-400' : 'text-red-400'}`}>
-                                                        {data.regime}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-4 pt-4 border-t border-white/5">
-                                                <div className="flex justify-between items-center text-[11px] font-bold px-1">
-                                                    <span className="text-slate-500 uppercase tracking-[0.1em]">Daily Loss Perimeter</span>
-                                                    <span className="text-white font-black text-xs italic">
-                                                        ₹<ScrambleText text={riskStatus.current_daily_loss?.toLocaleString('en-IN') || '0'} /> / ₹{riskStatus.daily_loss_limit?.toLocaleString('en-IN')}
-                                                    </span>
-                                                </div>
-                                                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden p-[2px]">
-                                                    <div
-                                                        className={`h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_currentColor] ${riskStatus.circuit_breaker_status === 'NOMINAL' ? 'bg-emerald-500/50 text-emerald-500' : 'bg-red-500 text-red-500'}`}
-                                                        style={{ width: `${Math.min(((riskStatus.current_daily_loss || 0) / (riskStatus.daily_loss_limit || 1)) * 100, 100) || 0}%` }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </HUDCard>
-                                </div>
-                            </div>
-
-                            {/* Market Mood Index Row */}
-                            <div className="lg:col-span-3">
-                                <MarketMoodIndex />
-                            </div>
-
-                            {/* Charts & Signals */}
-                            <div className="lg:col-span-2 space-y-6">
-                                <div className="glass-premium holographic-border p-6 rounded-[32px] overflow-hidden relative group transition-all duration-500 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)] border border-white/10">
-                                    <div className="flex justify-between items-end mb-8 relative z-10">
-                                        <div>
-                                            <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Live Tick Streams</span>
-                                            <div className="flex items-baseline gap-2 mt-1">
-                                                <h2 className="text-5xl font-black tabular-nums tracking-tighter">₹{data.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h2>
-                                                <span className="text-emerald-400/80 font-bold text-sm tracking-widest">LIVE_FEED</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="text-right">
-                                            <div className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Exchange</div>
-                                            <div className="text-lg font-black text-indigo-400">NSE INDIA</div>
-                                        </div>
+                                        <HUDCard title="SENSITIVITY" neonColor="amber" className="flex-1 min-h-[60px] relative" lastUpdated={lastAnalysisUpdate}>
+                                            <GreeksCheatSheet data={data} compact={true} />
+                                        </HUDCard>
                                     </div>
 
-                                    <div className="h-[280px] w-full -mx-4">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <AreaChart data={chartData}>
-                                                <defs>
-                                                    <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
-                                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
-                                                <XAxis
-                                                    dataKey="time"
-                                                    hide={true} // Hide labels for clean look, but keep axis structure
-                                                />
-                                                <YAxis
-                                                    domain={['auto', 'auto']}
-                                                    orientation="right"
-                                                    tick={{ fontSize: 10, fill: '#64748b' }}
-                                                    axisLine={false}
-                                                    tickLine={false}
-                                                    width={40}
-                                                />
-                                                <Tooltip
-                                                    contentStyle={{ backgroundColor: '#161720', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
-                                                    itemStyle={{ color: '#fff' }}
-                                                    labelStyle={{ color: '#94a3b8' }}
-                                                />
-                                                <Area
-                                                    type="monotone"
-                                                    dataKey="price"
-                                                    stroke="#6366f1"
-                                                    strokeWidth={3}
-                                                    fillOpacity={1}
-                                                    fill="url(#colorPrice)"
-                                                    animationDuration={500}
-                                                    isAnimationActive={true}
-                                                />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="lg:col-span-1">
-                                <HUDCard title="CORTEX.AI" neonColor="purple" className="h-full">
-                                    <div className="p-5 h-full flex flex-col">
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="p-3 bg-purple-500/10 text-purple-400 rounded-lg border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
-                                                <Brain className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-xs font-black text-white uppercase tracking-wider neon-text-indigo">Neural Command</h3>
-                                                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Inference v9.0</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-6 relative z-10 flex-1 flex flex-col">
-                                            <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/5 flex items-center justify-between">
-                                                <div>
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Signal Output</span>
-                                                        {isAnalyzing && (
-                                                            <div className="flex items-center gap-2 text-indigo-400">
-                                                                <RefreshCw className="w-3 h-3 animate-spin" />
+                                    <div className="lg:col-span-1">
+                                        <HUDCard title="CORTEX" neonColor="purple" className="h-full relative min-h-[125px]" lastUpdated={lastAnalysisUpdate}>
+                                            <div className="p-1 h-full flex flex-col transition-all">
+                                                <div className="bg-black/40 p-1 rounded-lg border border-white/5 flex items-center justify-between">
+                                                    <div className={`text-lg font-black tabular-nums ${data.signal === 'BUY' ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                        {data.confidence}%
+                                                    </div>
+                                                    <div className="scale-75">
+                                                        <ConfidenceGauge score={data.confidence || 0} size="sm" />
+                                                    </div>
+                                                </div>
+                                                <div className="flex-1 bg-black/60 p-1 border border-indigo-500/10 rounded-lg overflow-hidden flex flex-col mt-1">
+                                                    <div className="text-[7px] font-mono leading-none overflow-y-auto custom-scrollbar flex-1 space-y-0.5">
+                                                        {terminalLogs.slice(-4).map((log, i) => (
+                                                            <div key={i} className="truncate text-emerald-500/60">
+                                                                {">"} {log.message}
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                    <div className={`text-4xl font-black tracking-tighter ${data.signal === 'BUY' ? 'text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)]' :
-                                                        data.signal === 'SELL' ? 'text-red-400 shadow-[0_0_20px_rgba(244,63,94,0.4)]' : 'text-amber-400'
-                                                        }`}>
-                                                        {isAnalyzing ? <span className="opacity-50 italic text-xl">SYNC...</span> : data.signal}
+                                                        ))}
                                                     </div>
                                                 </div>
-
-                                                <ConfidenceGauge score={data.confidence || 0} />
-                                            </div>
-
-                                            <div className="bg-black/40 p-5 border border-white/5 relative overflow-hidden rounded-2xl flex-1 min-h-[100px]">
-                                                <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-white/10" />
-                                                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-indigo-500/50" />
-
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <Terminal className="w-3.5 h-3.5 text-emerald-500" />
-                                                    <span className="text-[10px] font-black text-emerald-500/70 uppercase tracking-widest">LOG OUTPUT</span>
-                                                </div>
-                                                <p className="text-[11px] font-mono text-emerald-400/80 leading-relaxed">
-                                                    {">"} {data.trade_recommendation?.reasoning || "Neural core idle. Awaiting market volatility signal..."}
-                                                </p>
-                                            </div>
-
-                                            {!isAnalyzing && (
-                                                <button onClick={runAgentAnalysis} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.4)] text-[10px] font-black uppercase tracking-[0.2em] transition-all clip-path-polygon active:scale-95">
-                                                    INITIALIZE SCAN
+                                                <button onClick={runAgentAnalysis} disabled={isAnalyzing} className="w-full py-1 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 text-[7px] font-black uppercase tracking-widest border border-indigo-500/20 rounded mt-1">
+                                                    {isAnalyzing ? "SYNC" : "INFER"}
                                                 </button>
+                                            </div>
+                                        </HUDCard>
+                                    </div>
+                                </div>
+                            </div>
+
+                                </div>
+                            ) : (
+                                <div className="space-y-4 animate-in fade-in zoom-in duration-500 pb-20">
+                                    {/* Brain Visualizer - Hero Section */}
+                                    <div className="w-full">
+                                        <BrainVisualizer scores={analysis?.model_scores || {}} className="border-purple-500/20 shadow-xl shadow-purple-500/5" />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                        {/* Swarm Status Panel */}
+                                        <div className="lg:col-span-1">
+                                            <HUDCard title="NEURAL TRAINING" neonColor="purple" className="flex-1">
+                                                <div className="p-4 space-y-6">
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <div>
+                                                            <h4 className="text-sm font-black text-white uppercase tracking-wider">Status</h4>
+                                                            <p className="text-[10px] font-black text-purple-400 mt-1">{trainingStatus.stage}</p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => setShowTrainingConfirm(true)}
+                                                            disabled={isTraining}
+                                                            className={`px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${isTraining
+                                                                ? 'bg-slate-500/20 text-slate-500 cursor-not-allowed'
+                                                                : 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-500/20'
+                                                                }`}
+                                                        >
+                                                            {isTraining ? 'Training...' : 'Rebuild Swarm'}
+                                                        </button>
+                                                    </div>
+
+                                                    {trainingStatus.progress > 0 && (
+                                                        <div className="space-y-2">
+                                                            <div className="flex items-center justify-between text-[10px]">
+                                                                <span className="text-slate-400 italic">{trainingStatus.message}</span>
+                                                                <span className="text-purple-400 font-black">{trainingStatus.progress}%</span>
+                                                            </div>
+                                                            <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/5">
+                                                                <div
+                                                                    className="h-full bg-gradient-to-r from-purple-500 to-indigo-500"
+                                                                    style={{ width: `${trainingStatus.progress}%` }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="grid grid-cols-1 gap-2">
+                                                        {[
+                                                            { name: 'Daily Strategist', key: 'DAILY_STRATEGIST', icon: TrendingUp },
+                                                            { name: 'Intraday Sniper', key: 'INTRADAY_SNIPER', icon: Zap },
+                                                            { name: 'Temporal Context', key: 'TFT_TRANSFORMER', icon: Activity },
+                                                            { name: 'RL Timing', key: 'RL_OPTIMIZER', icon: Brain },
+                                                            { name: 'Regime Cluster', key: 'REGIME_ENGINE', icon: Shield }
+                                                        ].map((stage) => {
+                                                            const isComplete = (['DAILY_STRATEGIST', 'INTRADAY_SNIPER', 'TFT_TRANSFORMER', 'RL_OPTIMIZER', 'REGIME_ENGINE'].indexOf(stage.key) < ['DAILY_STRATEGIST', 'INTRADAY_SNIPER', 'TFT_TRANSFORMER', 'RL_OPTIMIZER', 'REGIME_ENGINE'].indexOf(trainingStatus?.stage || 'IDLE'));
+                                                            const isActive = trainingStatus.stage === stage.key;
+                                                            return (
+                                                                <div key={stage.key} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${isComplete ? 'bg-emerald-500/5 border-emerald-500/20 opacity-100' : isActive ? 'bg-purple-500/10 border-purple-500/40 animate-pulse' : 'bg-black/20 border-white/5 opacity-40'}`}>
+                                                                    <stage.icon className={`w-4 h-4 ${isComplete ? 'text-emerald-400' : isActive ? 'text-purple-400' : 'text-slate-600'}`} />
+                                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${isComplete ? 'text-emerald-400' : isActive ? 'text-purple-400' : 'text-slate-600'}`}>{stage.name}</span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            </HUDCard>
+                                        </div>
+
+                                        {/* Swarm Metrics Panel */}
+                                        <div className="lg:col-span-2">
+                                            <HUDCard title="SWARM VALIDATION METRICS" neonColor="indigo" className="h-full">
+                                                {!modelMetrics ? (
+                                                    <div className="h-full flex flex-col items-center justify-center py-20 opacity-20">
+                                                        <Database className="w-12 h-12 mb-4" />
+                                                        <p className="text-[10px] font-black uppercase tracking-widest">Awaiting Validation Pulse...</p>
+                                                    </div>
+                                                ) : (
+                                                    <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {['daily', 'intraday'].map((type) => {
+                                                            const m = modelMetrics[type];
+                                                            if (!m) return null;
+                                                            return (
+                                                                <div key={type} className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-indigo-500/30 transition-all group">
+                                                                    <div className="flex items-center justify-between mb-4">
+                                                                        <h4 className="text-xs font-black text-white uppercase tracking-widest">{type} ENSEMBLE</h4>
+                                                                        <span className="text-sm font-black text-emerald-400 font-mono">+{m.final_strategy_return}%</span>
+                                                                    </div>
+                                                                    <div className="grid grid-cols-3 gap-2">
+                                                                        <div className="text-center">
+                                                                            <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Prec</p>
+                                                                            <p className="text-xs font-black text-indigo-400">{(m.precision * 100).toFixed(1)}%</p>
+                                                                        </div>
+                                                                        <div className="text-center">
+                                                                            <p className="text-[8px] font-black text-slate-500 uppercase mb-1">F1</p>
+                                                                            <p className="text-xs font-black text-emerald-400">{(m.f1 || 0).toFixed(2)}</p>
+                                                                        </div>
+                                                                        <div className="text-center">
+                                                                            <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Trades</p>
+                                                                            <p className="text-xs font-black text-white">{m.trade_count}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
+                                                                        <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Accuracy</span>
+                                                                        <div className="flex-1 mx-4 h-1 bg-white/5 rounded-full overflow-hidden">
+                                                                            <div className="h-full bg-indigo-500" style={{ width: `${m.accuracy * 100}%` }} />
+                                                                        </div>
+                                                                        <span className="text-[10px] font-black text-slate-400 font-mono">{(m.accuracy * 100).toFixed(0)}%</span>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </HUDCard>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Swarm Monologue / Full Terminal Section */}
+                                    <HUDCard title="LIVE SWARM INTELLIGENCE LOGS" neonColor="emerald" className="min-h-[300px]">
+                                        <div className="p-4 font-mono text-[11px] leading-relaxed overflow-y-auto max-h-[400px] custom-scrollbar bg-black/40 rounded-xl border border-white/5">
+                                            {terminalLogs.length === 0 ? (
+                                                <p className="text-slate-700 italic">Listening for neural consensus events...</p>
+                                            ) : (
+                                                terminalLogs.map((log, i) => (
+                                                    <div key={i} className="mb-2 flex gap-4 animate-in fade-in slide-in-from-left-2 transition-all">
+                                                        <span className="text-slate-600 shrink-0">[{log.timestamp}]</span>
+                                                        <span className={`${log.type === 'ai' ? 'text-purple-400' : log.type === 'error' ? 'text-red-400' : log.type === 'signal' ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}>
+                                                            {log.type === 'ai' ? '🧠' : log.type === 'signal' ? '🎯' : '⚛️'} {log.message}
+                                                        </span>
+                                                    </div>
+                                                ))
                                             )}
                                         </div>
-                                    </div>
-                                </HUDCard>
-                            </div>
-
-                            {/* Option Chain / Strikes Section */}
-                            <div className="lg:col-span-3">
-                                <HUDCard title="DERIVATIVE MATRIX" neonColor="indigo" className="space-y-4">
-                                    <div className="p-6">
-                                        <div className="flex justify-between items-center border-b border-indigo-500/20 pb-4">
-                                            <div className="flex items-center gap-2">
-                                                <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg">
-                                                    <ListOrdered className="w-5 h-5" />
-                                                </div>
-                                                <h3 className="font-black text-sm uppercase tracking-widest text-slate-300 italic">Option Chain: {symbol} Strikes</h3>
-                                            </div>
-                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Expiries: Weekly | Monthly</span>
-                                        </div>
-
-                                        <div className="overflow-x-auto mt-4">
-                                            <table className="w-full text-left border-separate border-spacing-y-2">
-                                                <thead>
-                                                    <tr className="text-[10px] font-black uppercase text-slate-600 tracking-widest">
-                                                        <th className="px-4 py-2">CALLS (CE)</th>
-                                                        <th className="px-4 py-2">OI (CE)</th>
-                                                        <th className="px-4 py-2 text-center bg-indigo-500/5 rounded-t-xl">STRIKE PRICE</th>
-                                                        <th className="px-4 py-2 text-right">OI (PE)</th>
-                                                        <th className="px-4 py-2 text-right">PUTS (PE)</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="text-xs font-bold tabular-nums">
-                                                    {(Array.isArray(optionChain) ? optionChain : []).map((item, idx) => {
-                                                        const isATM = data && data.price && item && item.strike ? Math.abs(data.price - item.strike) < 100 : false;
-                                                        return (
-                                                            <tr key={idx} className={`group hover:bg-white/5 transition-all ${isATM ? 'bg-indigo-500/10' : ''}`}>
-                                                                <td className="px-4 py-3 text-emerald-400">₹{item.ce_premium}</td>
-                                                                <td className="px-4 py-3 text-slate-500">{(item.oi_ce / 1000).toFixed(1)}k</td>
-                                                                <td className={`px-4 py-3 text-center transition-all ${isATM ? 'bg-indigo-500 text-white shadow-lg font-black scale-105 rounded-xl border border-indigo-400/30 shadow-[0_0_15px_rgba(99,102,241,0.3)]' : 'bg-white/5 text-slate-400 group-hover:text-white'}`}>
-                                                                    {item.strike}
-                                                                </td>
-                                                                <td className="px-4 py-3 text-right text-slate-500">{(item.oi_pe / 1000).toFixed(1)}k</td>
-                                                                <td className="px-4 py-3 text-right text-red-400">₹{item.pe_premium}</td>
-                                                            </tr>
-                                                        );
-                                                    })}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </HUDCard>
-                            </div>
+                                    </HUDCard>
+                                </div>
+                            )}
 
                         </div>
                     ) : (activeTab || "").toLowerCase() === 'settings' ? (
@@ -2192,107 +2394,18 @@ const DashboardWithLogic = () => {
                                         </div>
                                     </div>
                                 ) : activeSettingsTab === 'Intelligence' ? (
-                                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                                        <div className="flex items-start gap-6 mb-8">
-                                            <div className="p-4 bg-purple-500/10 rounded-3xl text-purple-400 border border-purple-500/20 shadow-lg shadow-purple-500/10">
-                                                <Brain className="w-8 h-8" />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-2xl font-black text-white tracking-tight">AI Swarm Intelligence</h3>
-                                                <p className="text-slate-500 text-sm font-medium mt-2 max-w-md">Retrain the entire neural core - 5 AI models working in harmony. Training takes ~5-15 minutes.</p>
-                                            </div>
+                                    <div className="h-full flex flex-col items-center justify-center py-20 animate-in fade-in zoom-in">
+                                        <div className="w-20 h-20 bg-purple-500/10 rounded-3xl flex items-center justify-center border border-purple-500/20 mb-6 shadow-lg shadow-purple-500/10">
+                                            <Brain className="w-10 h-10 text-purple-400" />
                                         </div>
-
-                                        {/* Training Control Panel */}
-                                        <div className="glass-panel p-8 rounded-3xl space-y-6 border border-purple-500/10">
-                                            <div className="flex items-center justify-between mb-6">
-                                                <div>
-                                                    <h4 className="text-lg font-black text-white">Training Status</h4>
-                                                    <p className="text-[10px] font-black uppercase text-slate-500 mt-1 tracking-widest">{trainingStatus.stage}</p>
-                                                </div>
-                                                <button
-                                                    onClick={() => setShowTrainingConfirm(true)}
-                                                    disabled={isTraining}
-                                                    className={`px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-lg ${isTraining
-                                                        ? 'bg-slate-500/20 text-slate-500 cursor-not-allowed'
-                                                        : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-500/40'
-                                                        }`}
-                                                >
-                                                    {isTraining ? '⏳ Training...' : '🧠 Rebuild Swarm'}
-                                                </button>
-                                            </div>
-
-                                            {/* Progress Bar */}
-                                            {trainingStatus.progress > 0 && (
-                                                <div className="space-y-3">
-                                                    <div className="flex items-center justify-between text-xs mb-1">
-                                                        <span className="font-mono text-slate-400">{trainingStatus.message}</span>
-                                                        <span className="font-mono text-purple-400 font-black">{trainingStatus.progress}%</span>
-                                                    </div>
-                                                    <div className="w-full h-3 bg-black/30 rounded-full overflow-hidden border border-white/5">
-                                                        <div
-                                                            className="h-full bg-gradient-to-r from-purple-600 to-indigo-600 transition-all duration-1000 ease-out shadow-lg shadow-purple-500/50"
-                                                            style={{ width: `${trainingStatus.progress}%` }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Training Stages */}
-                                            <div className="grid grid-cols-5 gap-3 mt-6">
-                                                {[
-                                                    { name: 'Daily', key: 'DAILY_STRATEGIST', icon: TrendingUp },
-                                                    { name: 'Intraday', key: 'INTRADAY_SNIPER', icon: Zap },
-                                                    { name: 'TFT', key: 'TFT_TRANSFORMER', icon: Activity },
-                                                    { name: 'RL', key: 'RL_OPTIMIZER', icon: Brain },
-                                                    { name: 'Regime', key: 'REGIME_ENGINE', icon: Shield }
-                                                ].map((stage) => {
-                                                    const isComplete = (['DAILY_STRATEGIST', 'INTRADAY_SNIPER', 'TFT_TRANSFORMER', 'RL_OPTIMIZER', 'REGIME_ENGINE'].indexOf(stage.key) < ['DAILY_STRATEGIST', 'INTRADAY_SNIPER', 'TFT_TRANSFORMER', 'RL_OPTIMIZER', 'REGIME_ENGINE'].indexOf(trainingStatus?.stage || 'IDLE'));
-                                                    const isActive = trainingStatus.stage === stage.key;
-                                                    const Icon = stage.icon;
-
-                                                    return (
-                                                        <div
-                                                            key={stage.key}
-                                                            className={`p-4 rounded-2xl text-center transition-all ${isComplete ? 'bg-emerald-500/10 border border-emerald-500/30' :
-                                                                isActive ? 'bg-purple-500/10 border border-purple-500/30 animate-pulse' :
-                                                                    'bg-black/20 border border-white/5'
-                                                                }`}
-                                                        >
-                                                            <Icon className={`w-6 h-6 mx-auto mb-2 ${isComplete ? 'text-emerald-400' :
-                                                                isActive ? 'text-purple-400' :
-                                                                    'text-slate-600'
-                                                                }`} />
-                                                            <p className={`text-[10px] font-black uppercase tracking-widest ${isComplete ? 'text-emerald-400' :
-                                                                isActive ? 'text-purple-400' :
-                                                                    'text-slate-600'
-                                                                }`}>{stage.name}</p>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-
-                                            {/* Model Metrics (if available) */}
-                                            {modelMetrics && (
-                                                <div className="mt-6 p-6 bg-black/20 rounded-2xl border border-white/5">
-                                                    <h5 className="text-xs font-black uppercase text-slate-500 tracking-widest mb-4">Latest Metrics</h5>
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        {modelMetrics?.daily && (
-                                                            <>
-                                                                <div>
-                                                                    <p className="text-[10px] text-slate-500 mb-1">Daily Precision</p>
-                                                                    <p className="text-lg font-mono font-black text-emerald-400">{(modelMetrics.daily.precision * 100).toFixed(1)}%</p>
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-[10px] text-slate-500 mb-1">Daily F1 Score</p>
-                                                                    <p className="text-lg font-mono font-black text-cyan-400">{(modelMetrics?.daily?.f1 || 0).toFixed(3)}</p>
-                                                                </div>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
+                                        <h3 className="text-xl font-black text-white uppercase tracking-widest mb-2">Relocated to Live Terminal</h3>
+                                        <p className="text-slate-500 text-sm font-medium mb-8 max-w-sm text-center">We've moved the AI Swarm Intelligence controls directly into the Live Terminal tab for faster tactical access.</p>
+                                        <button
+                                            onClick={() => { setActiveTab('Live Terminal'); setTerminalMode('SWARM'); }}
+                                            className="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95"
+                                        >
+                                            Go to AI Swarm
+                                        </button>
                                     </div>
                                 ) : activeSettingsTab === 'Notifications' ? (
                                     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 overflow-y-auto max-h-[60vh] pr-4 custom-scrollbar">
@@ -2452,6 +2565,8 @@ const DashboardWithLogic = () => {
                         <PaperTrade token={token} symbol={symbol} ltp={data.price || 0} />
                     ) : activeTab.toLowerCase() === 'observatory' ? (
                         <Observatory token={token} />
+                    ) : activeTab.toLowerCase() === 'option chain & gex' ? (
+                        <OptionChainGEX symbol={symbol} />
                     ) : activeTab.toLowerCase() === 'strategies' ? (
                         <Strategies />
                     ) : activeTab.toLowerCase() === 'lessons learned' ? (
@@ -2483,7 +2598,7 @@ const DashboardWithLogic = () => {
             </main >
 
             {/* Login Modal */}
-            <AnimatePresence>
+            < AnimatePresence >
                 {showLogin && (
                     <LoginModal
                         isOpen={showLogin}
@@ -2491,13 +2606,14 @@ const DashboardWithLogic = () => {
                         onLogin={(authToken) => {
                             setIsLoggedIn(true);
                             setToken(authToken); // Store valid token
+                            localStorage.setItem('authToken', authToken); // Critical Fix: Persist token to localStorage
                             setUser({ name: 'Pro Trader', initials: 'PT', status: 'ONLINE', broker: 'ANGEL ONE' });
                             playInitSound();
                         }}
                         onGuestLogin={handleGuestLogin}
                     />
                 )}
-            </AnimatePresence>
+            </AnimatePresence >
 
             {/* Emergency Kill Switch Modal */}
             < AnimatePresence >
@@ -2581,7 +2697,7 @@ const DashboardWithLogic = () => {
             </AnimatePresence >
 
             {/* Auto Pilot Confirmation Modal */}
-            <AnimatePresence>
+            < AnimatePresence >
                 {showModeConfirm && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
                         <motion.div
@@ -2630,10 +2746,10 @@ const DashboardWithLogic = () => {
                         </motion.div>
                     </div>
                 )}
-            </AnimatePresence>
+            </AnimatePresence >
 
             {/* AI Swarm Training Confirmation Modal */}
-            <AnimatePresence>
+            < AnimatePresence >
                 {showTrainingConfirm && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
                         <motion.div
@@ -2683,10 +2799,10 @@ const DashboardWithLogic = () => {
                         </motion.div>
                     </div>
                 )}
-            </AnimatePresence>
+            </AnimatePresence >
 
             {/* Disconnect Confirmation Modal */}
-            <AnimatePresence>
+            < AnimatePresence >
                 {showDisconnectConfirm && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
                         <motion.div
@@ -2724,10 +2840,10 @@ const DashboardWithLogic = () => {
                         </motion.div>
                     </div>
                 )}
-            </AnimatePresence>
+            </AnimatePresence >
 
             {/* Toast Notification */}
-            <AnimatePresence>
+            < AnimatePresence >
                 {toast && (
                     <motion.div
                         initial={{ opacity: 0, y: 50, x: '-50%' }}
@@ -2748,10 +2864,10 @@ const DashboardWithLogic = () => {
                         </div>
                     </motion.div>
                 )}
-            </AnimatePresence>
+            </AnimatePresence >
 
             {/* Logout Confirmation Modal */}
-            <AnimatePresence>
+            < AnimatePresence >
                 {showLogoutConfirm && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
                         <motion.div
@@ -2789,7 +2905,7 @@ const DashboardWithLogic = () => {
                         </motion.div>
                     </div>
                 )}
-            </AnimatePresence>
+            </AnimatePresence >
 
             <style jsx>{`
         .custom-scrollbar::-webkit-scrollbar {

@@ -6,10 +6,13 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
+backend/.venv/
 ENV/
 build/
 develop-eggs/
 dist/
+dist_desktop/
 downloads/
 eggs/
 .eggs/
@@ -22,6 +25,8 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.pid
+backend/cloudflared
 
 # Environment variables
 .env
@@ -42,18 +47,16 @@ Thumbs.db
 # Logs
 *.log
 logs/
+backend/logs/
 
-# Model artifacts
-*.joblib
+# Large model artifacts (rebuilt from backed-up cache data; keep lightweight models & configs tracked)
+backend/market_model*.joblib
 *.pkl
 *.h5
 *.pt
-*.pth
 
-# Data
-*.csv
+# Data: keep all backup data (backend/data/, backend/observatory_data/, backend/knowledge_base/) tracked in GitHub!
 *.parquet
-data/
 
 # Node modules (frontend)
 node_modules/

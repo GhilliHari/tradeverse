@@ -25,26 +25,96 @@ class MockAngelClient:
         self.user_id = user_id
     def is_connected(self): return True
     def profile(self): return {"user_id": self.user_id, "user_name": "Mock User", "broker": "ANGEL", "status": "MOCK"}
-    def ltpData(self, exchange, tradingsymbol, symboltoken): return {"status": True, "data": {"last_price": 500.0}}
+    def ltpData(self, exchange, tradingsymbol, symboltoken): return {"status": True, "data": {"last_price": 57446.25}}
     def ltp(self, symbol): 
+        def _get_mock_ltp(sym):
+            u_sym = sym.upper()
+            try:
+                import yfinance as yf
+                if "BANK" in u_sym:
+                    return float(yf.Ticker("^NSEBANK").fast_info['lastPrice'])
+                if "FIN" in u_sym:
+                    return float(yf.Ticker("^CNXFIN").fast_info['lastPrice'])
+                if "MID" in u_sym:
+                    return float(yf.Ticker("^NSMIDCP").fast_info['lastPrice'])
+                return float(yf.Ticker("^NSEI").fast_info['lastPrice'])
+            except Exception:
+                if "BANK" in u_sym: return 57446.25
+                if "FIN" in u_sym: return 22500.0
+                if "MID" in u_sym: return 12500.0
+                return 24471.70
+
         if isinstance(symbol, list):
-            return {s: {"last_price": 500.0} for s in symbol}
-        return {symbol: {"last_price": 500.0}}
-    def place_order(self, *args, **kwargs): return "MOCK_ORDER_ID"
+            return {s: {"last_price": _get_mock_ltp(s)} for s in symbol}
+        return {symbol: {"last_price": _get_mock_ltp(symbol)}}
+
+    def place_order(self, *args, **kwargs): return f"MOCK_ORDER_{abs(hash(str(args) + str(kwargs))) % 1000000}"
+    def modify_order(self, order_id, price=None, quantity=None, **kwargs):
+        logger.info(f"MockAngelClient: Modified order {order_id} to price={price}, qty={quantity}")
+        return {"status": True, "order_id": order_id}
+    def cancel_order(self, order_id, variety="NORMAL"):
+        logger.info(f"MockAngelClient: Cancelled order {order_id}")
+        return {"status": True, "order_id": order_id}
     def get_option_chain(self, symbol, expiry=None): 
-        # Simulated Bank Nifty Chain
-        spot = 50000
+        import yfinance as yf
+        from greeks_engine import GreeksEngine
+
+        res = self.ltp(symbol)
+        spot = res.get(symbol, {}).get("last_price", 57514.0)
+
+        # Get live VIX
+        try:
+            vix = float(yf.Ticker("^INDIAVIX").fast_info['lastPrice']) / 100.0
+        except Exception:
+            vix = 0.12 # 12% annual volatility
+
+        u_symbol = symbol.upper()
+        if "FIN" in u_symbol: step = 50
+        elif "MID" in u_symbol: step = 25
+        elif "NIFTY" in u_symbol and "BANK" not in u_symbol: step = 50
+        else: step = 100
+
+        base_strike = round(spot / step) * step
+        ge = GreeksEngine(risk_free_rate=0.07)
+        T = 3.0 / 365.0
+
         strikes = []
         for i in range(-5, 6):
-            strike = 50000 + (i * 100)
+            strike = base_strike + (i * step)
+            ce_premium = round(ge.black_scholes_price(S=spot, K=strike, T=T, v=vix, option_type="CE"), 2)
+            pe_premium = round(ge.black_scholes_price(S=spot, K=strike, T=T, v=vix, option_type="PE"), 2)
+
             strikes.append({
                 "strike": strike,
-                "ce_premium": 100,
-                "pe_premium": 100,
-                "oi_ce": 50000 if strike == 50500 else 10000,
-                "oi_pe": 200000 if strike == 49500 else 20000
+                "ce_premium": max(0.5, ce_premium),
+                "pe_premium": max(0.5, pe_premium),
+                "oi_ce": 150000 if i == 2 else 20000, # Call Wall
+                "oi_pe": 250000 if i == -2 else 30000 # Put Wall
             })
         return strikes
+
+    
+    def _get_token_and_exchange(self, symbol):
+        """Simulates token resolution."""
+        if "BANKNIFTY" in symbol.upper() or "NSEBANK" in symbol.upper():
+            return "NSE", "BANKNIFTY", "99926009"
+        if "NIFTY" in symbol.upper() and ("BANK" not in symbol.upper() and "FIN" not in symbol.upper() and "MID" not in symbol.upper()):
+            return "NSE", "NIFTY", "99926000"
+        if "FIN" in symbol.upper():
+            return "NSE", "FINNIFTY", "99926037"
+        if "MID" in symbol.upper() or "NSMIDCP" in symbol.upper():
+            return "NSE", "MIDCPNIFTY", "99926074"
+        return "NSE", symbol, "12345"
+
+    def get_historical_data(self, exchange, token, interval, start_date, end_date):
+        """Simulates historical data fetching."""
+        # Avoid real network calls, return None to trigger yfinance fallback if needed
+        # or return mock candles. For backtests, yfinance is better for mock.
+        return None 
+    
+    def search_scrip(self, symbol):
+        return [{"exchange": "NSE", "tradingsymbol": symbol, "token": "12345"}]
+
 
 
 def get_broker_client(user_id: str = None):

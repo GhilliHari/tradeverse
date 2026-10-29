@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Activity, Play, StopCircle, Target, TrendingUp, TrendingDown,
     DollarSign, Percent, Clock, BarChart3, CheckCircle, XCircle,
-    AlertCircle, Zap, Calendar
+    AlertCircle, Zap, Calendar, RefreshCw
 } from 'lucide-react';
 
 const getApiUrl = () => {
@@ -13,12 +13,18 @@ const getApiUrl = () => {
     return import.meta.env.VITE_API_URL || 'http://localhost:8000';
 };
 const API_URL = getApiUrl();
+const GITHUB_RAW_SUMMARY_URL = 'https://raw.githubusercontent.com/GhilliHari/tradeverse/main/backend/observatory_data/latest_summary.json';
 
 const Observatory = () => {
     const [isRunning, setIsRunning] = useState(false);
     const [isMarketHours, setIsMarketHours] = useState(false);
     const [activePredictions, setActivePredictions] = useState(0);
     const [completedToday, setCompletedToday] = useState(0);
+    const [githubBackupInfo, setGithubBackupInfo] = useState({
+        repo: 'GhilliHari/tradeverse',
+        commit: 'main',
+        mode: 'GitHub Backed'
+    });
 
     const [summary, setSummary] = useState({
         total_predictions: 0,
@@ -33,22 +39,88 @@ const Observatory = () => {
 
     const [recentPredictions, setRecentPredictions] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     const token = localStorage.getItem('token');
 
+    const loadFromGitHubFallback = async () => {
+        try {
+            const res = await fetch(`${GITHUB_RAW_SUMMARY_URL}?t=${Date.now()}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.status) {
+                    setIsRunning(Boolean(data.status.is_running));
+                    setIsMarketHours(Boolean(data.status.is_market_hours));
+                    setActivePredictions(data.status.active_predictions || 0);
+                    setCompletedToday(data.status.completed_today || 0);
+                }
+                if (data.observatory_summary) {
+                    setSummary(data.observatory_summary);
+                }
+                if (Array.isArray(data.recent_predictions)) {
+                    setRecentPredictions(data.recent_predictions.slice(0, 20));
+                }
+                setGithubBackupInfo({
+                    repo: data.repo || 'GhilliHari/tradeverse',
+                    commit: 'Cloud Raw',
+                    mode: 'GitHub Cloud Fallback'
+                });
+            }
+        } catch (err) {
+            console.error('GitHub fallback load error', err);
+        }
+    };
+
+    const handleSyncMarketHours = async () => {
+        setIsSyncing(true);
+        try {
+            const res = await fetch(`${API_URL}/api/observatory/backfill?days=14&push_github=true`, {
+                method: 'POST',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                await Promise.all([fetchStatus(), fetchSummary(), fetchRecent()]);
+            } else {
+                await loadFromGitHubFallback();
+            }
+        } catch (e) {
+            await loadFromGitHubFallback();
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     const fetchStatus = async () => {
         try {
-            const res = await fetch(`${API_URL}/api/observatory/status`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const [res, ghRes] = await Promise.all([
+                fetch(`${API_URL}/api/observatory/status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch(`${API_URL}/api/github/status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).catch(() => null)
+            ]);
+            if (!res.ok) {
+                await loadFromGitHubFallback();
+                return;
+            }
             const data = await res.json();
 
             setIsRunning(data.is_running);
             setIsMarketHours(data.is_market_hours);
             setActivePredictions(data.active_predictions);
             setCompletedToday(data.completed_today);
+
+            if (ghRes && ghRes.ok) {
+                const ghData = await ghRes.json();
+                setGithubBackupInfo({
+                    repo: ghData.repo || 'GhilliHari/tradeverse',
+                    commit: ghData.latest_commit || 'main',
+                    mode: ghData.is_synced ? 'GitHub Synced' : 'GitHub Active'
+                });
+            }
         } catch (e) {
-            console.error('Failed to fetch observatory status', e);
+            await loadFromGitHubFallback();
         }
     };
 
@@ -57,10 +129,12 @@ const Observatory = () => {
             const res = await fetch(`${API_URL}/api/observatory/summary`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const data = await res.json();
-            setSummary(data);
+            if (res.ok) {
+                const data = await res.json();
+                setSummary(data);
+            }
         } catch (e) {
-            console.error('Failed to fetch summary', e);
+            // Handled by loadFromGitHubFallback in fetchStatus
         }
     };
 
@@ -69,17 +143,16 @@ const Observatory = () => {
             const res = await fetch(`${API_URL}/api/observatory/results`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const data = await res.json();
-
-            // Get last 20 predictions, sorted by timestamp descending
-            const predictions = data.predictions || [];
-            const sorted = predictions.sort((a, b) =>
-                new Date(b.timestamp) - new Date(a.timestamp)
-            ).slice(0, 20);
-
-            setRecentPredictions(sorted);
+            if (res.ok) {
+                const data = await res.json();
+                const predictions = data.predictions || [];
+                const sorted = predictions.sort((a, b) =>
+                    new Date(b.timestamp) - new Date(a.timestamp)
+                ).slice(0, 20);
+                setRecentPredictions(sorted);
+            }
         } catch (e) {
-            console.error('Failed to fetch recent predictions', e);
+            // Handled by loadFromGitHubFallback in fetchStatus
         }
     };
 
@@ -173,50 +246,67 @@ const Observatory = () => {
                     </p>
                 </div>
 
-                {/* Control Button */}
-                <button
-                    onClick={isRunning ? handleStop : handleStart}
-                    disabled={isLoading}
-                    className={`px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-lg flex items-center gap-3 ${isRunning
-                        ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-500/40'
-                        : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-500/40'
-                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                    {isRunning ? (
-                        <>
-                            <StopCircle className="w-5 h-5" />
-                            Stop Simulation
-                        </>
-                    ) : (
-                        <>
-                            <Play className="w-5 h-5" />
-                            Start Simulation
-                        </>
-                    )}
-                </button>
+                {/* Control Buttons */}
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={handleSyncMarketHours}
+                        disabled={isSyncing}
+                        className="px-5 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.15em] transition-all shadow-lg flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30"
+                        title={`Sync market hours & backup to GitHub (${githubBackupInfo.repo} #${githubBackupInfo.commit})`}
+                    >
+                        <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                        {isSyncing ? 'Syncing GitHub...' : `Sync & Backup GitHub (#${githubBackupInfo.commit})`}
+                    </button>
+
+                    <button
+                        onClick={isRunning ? handleStop : handleStart}
+                        disabled={isLoading}
+                        className={`px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-lg flex items-center gap-3 ${isRunning
+                            ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-500/40'
+                            : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-500/40'
+                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        {isRunning ? (
+                            <>
+                                <StopCircle className="w-5 h-5" />
+                                Stop Simulation
+                            </>
+                        ) : (
+                            <>
+                                <Play className="w-5 h-5" />
+                                Start Simulation
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
 
             {/* Status Bar */}
             <div className="glass-panel p-6 rounded-3xl border border-purple-500/10">
-                <div className="grid grid-cols-4 gap-6">
+                <div className="grid grid-cols-5 gap-6">
                     <div className="space-y-1">
                         <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Status</p>
                         <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${isRunning ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'}`} />
-                            <p className={`font-black text-sm tracking-tight ${isRunning ? 'text-emerald-400' : 'text-slate-500'}`}>
-                                {isRunning ? 'ACTIVE' : 'IDLE'}
+                            <div className={`w-3 h-3 rounded-full ${isRunning ? 'bg-emerald-400 animate-pulse' : 'bg-emerald-500'}`} />
+                            <p className="font-black text-sm tracking-tight text-emerald-400">
+                                {isRunning ? 'LIVE ACTIVE' : '24/7 CATCH-UP READY'}
                             </p>
                         </div>
                     </div>
 
                     <div className="space-y-1">
-                        <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Market</p>
+                        <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Market (9:15–15:30)</p>
                         <div className="flex items-center gap-2">
-                            <Clock className={`w-4 h-4 ${isMarketHours ? 'text-emerald-400' : 'text-slate-600'}`} />
-                            <p className={`font-black text-sm tracking-tight ${isMarketHours ? 'text-emerald-400' : 'text-slate-500'}`}>
-                                {isMarketHours ? 'OPEN' : 'CLOSED'}
+                            <Clock className={`w-4 h-4 ${isMarketHours ? 'text-emerald-400' : 'text-amber-400'}`} />
+                            <p className={`font-black text-sm tracking-tight ${isMarketHours ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                {isMarketHours ? 'OPEN (LIVE)' : 'OFF-HOURS (SYNCED)'}
                             </p>
                         </div>
+                    </div>
+
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Session Date</p>
+                        <p className="font-black text-lg text-white font-mono tracking-tight">{summary.date || 'Latest'}</p>
                     </div>
 
                     <div className="space-y-1">
@@ -225,8 +315,8 @@ const Observatory = () => {
                     </div>
 
                     <div className="space-y-1">
-                        <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Completed Today</p>
-                        <p className="font-black text-2xl text-cyan-400 tracking-tight">{completedToday}</p>
+                        <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Completed Session</p>
+                        <p className="font-black text-2xl text-cyan-400 tracking-tight">{completedToday || summary.completed || 0}</p>
                     </div>
                 </div>
             </div>

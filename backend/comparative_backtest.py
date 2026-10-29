@@ -22,8 +22,8 @@ def run_backtest(df, engine, strategy_type="naive"):
     """
     trades = []
     
-    # We analyze the last 1000 candles
-    for i in range(len(df) - 30):
+    # We analyze by striding every 15 minutes to simulate the full multi-day period quickly
+    for i in range(0, len(df) - 30, 15):
         # Current Slice
         window = df.iloc[i : i + 20]
         future_window = df.iloc[i + 20 : i + 30] # 10 min horizon
@@ -81,17 +81,17 @@ def main():
     
     # yfinance symbol to fetch_live_data_broker
     dp.symbol = "^NSEBANK"
-    dp.interval = "1m"
-    dp.fetch_live_data_broker(broker, start_date.strftime("%Y-%m-%d %H:%M"), end_date.strftime("%Y-%m-%d %H:%M"))
+    dp.interval = "5m"
+    dp.run_full_pipeline()
     
     if dp.cleaned_data is None or dp.cleaned_data.empty:
         print("Failed to load data.")
         return
         
-    df = dp.cleaned_data.tail(1000)
+    df = dp.cleaned_data # Use all available data (up to 7 days from yf limit)
     engine = ModelEngine(model_type="intraday")
     
-    print(f"\n--- Comparative Backtest: Navie vs Regime-Aware (1000 candles) ---")
+    print(f"\n--- Comparative Backtest: Navie vs Regime-Aware (Multi-Day Timeline) ---")
     
     wr_naive, count_naive = run_backtest(df, engine, "naive")
     print(f"NAIVE STRATEGY:  Win Rate: {wr_naive:.2f}% | Total Trades: {count_naive}")

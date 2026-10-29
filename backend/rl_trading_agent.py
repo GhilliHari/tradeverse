@@ -110,9 +110,13 @@ class RLTradingAgent:
 
     def load_model(self):
         if os.path.exists(self.model_path):
-            self.model = PPO.load(self.model_path, env=self.env)
-            logger.info("RL Model Loaded successfully.")
-            return True
+            try:
+                self.model = PPO.load(self.model_path, env=self.env)
+                logger.info("RL Model Loaded successfully.")
+                return True
+            except Exception as e:
+                logger.warning(f"⚠️ RL Model loading failed due to observation space mismatch: {e}. Retraining recommended.")
+                return False
         return False
 
 if __name__ == "__main__":

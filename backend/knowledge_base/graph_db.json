@@ -1,0 +1,524 @@
+{
+  "nodes": [
+    {
+      "id": "BANKNIFTY",
+      "label": "Bank Nifty Index",
+      "category": "index",
+      "color": "#06b6d4",
+      "properties": {
+        "exchange": "NSE",
+        "asset_class": "equity_index",
+        "lot_size": 15,
+        "strike_step": 100
+      }
+    },
+    {
+      "id": "NIFTY50",
+      "label": "Nifty 50 Index",
+      "category": "index",
+      "color": "#0ea5e9",
+      "properties": {
+        "exchange": "NSE",
+        "asset_class": "broad_index",
+        "lot_size": 25,
+        "strike_step": 50
+      }
+    },
+    {
+      "id": "HDFCBANK",
+      "label": "HDFC Bank (HDFCBANK.NS)",
+      "category": "bank_stock",
+      "color": "#3b82f6",
+      "properties": {
+        "weight": 0.29,
+        "sector": "private_bank",
+        "beta": 1.15,
+        "nim_target": "3.5-3.7%"
+      }
+    },
+    {
+      "id": "ICICIBANK",
+      "label": "ICICI Bank (ICICIBANK.NS)",
+      "category": "bank_stock",
+      "color": "#6366f1",
+      "properties": {
+        "weight": 0.23,
+        "sector": "private_bank",
+        "beta": 1.25,
+        "roa": ">2.2%"
+      }
+    },
+    {
+      "id": "SBIN",
+      "label": "State Bank of India (SBIN.NS)",
+      "category": "bank_stock",
+      "color": "#8b5cf6",
+      "properties": {
+        "weight": 0.1,
+        "sector": "psu_bank",
+        "beta": 1.3,
+        "govt_holding": "57%"
+      }
+    },
+    {
+      "id": "KOTAKBANK",
+      "label": "Kotak Mahindra Bank (KOTAKBANK.NS)",
+      "category": "bank_stock",
+      "color": "#a855f7",
+      "properties": {
+        "weight": 0.1,
+        "sector": "private_bank",
+        "beta": 0.95,
+        "car": "20.8%"
+      }
+    },
+    {
+      "id": "AXISBANK",
+      "label": "Axis Bank (AXISBANK.NS)",
+      "category": "bank_stock",
+      "color": "#d946ef",
+      "properties": {
+        "weight": 0.08,
+        "sector": "private_bank",
+        "beta": 1.35
+      }
+    },
+    {
+      "id": "INDUSINDBK",
+      "label": "IndusInd Bank (INDUSINDBK.NS)",
+      "category": "bank_stock",
+      "color": "#ec4899",
+      "properties": {
+        "weight": 0.05,
+        "sector": "private_bank",
+        "beta": 1.45
+      }
+    },
+    {
+      "id": "RBI_MPC",
+      "label": "RBI Monetary Policy Committee",
+      "category": "macro_policy",
+      "color": "#f59e0b",
+      "properties": {
+        "frequency": "bi_monthly",
+        "mandate": "inflation_targeting_4pct",
+        "announcement_time": "10:00 AM IST"
+      }
+    },
+    {
+      "id": "REPO_RATE",
+      "label": "RBI Repo Benchmark Rate",
+      "category": "macro_policy",
+      "color": "#f97316",
+      "properties": {
+        "current_rate": "6.50%",
+        "sensitivity": "high_bank_margins"
+      }
+    },
+    {
+      "id": "CASH_RESERVE_RATIO_CRR",
+      "label": "Cash Reserve Ratio (CRR)",
+      "category": "macro_policy",
+      "color": "#ef4444",
+      "properties": {
+        "current_ratio": "4.50%",
+        "impact": "banking_system_liquidity"
+      }
+    },
+    {
+      "id": "INDIA_10Y_BOND_YIELD",
+      "label": "India 10Y Sovereign Bond Yield",
+      "category": "macro_policy",
+      "color": "#fbbf24",
+      "properties": {
+        "benchmark": "IN10Y",
+        "impact": "psu_treasury_mark_to_market"
+      }
+    },
+    {
+      "id": "USDINR",
+      "label": "USD / INR Currency Rate",
+      "category": "macro_policy",
+      "color": "#eab308",
+      "properties": {
+        "pair": "USDINR",
+        "impact": "fii_capital_flow_direction"
+      }
+    },
+    {
+      "id": "BRENT_CRUDE",
+      "label": "Brent Crude Oil",
+      "category": "macro_policy",
+      "color": "#84cc16",
+      "properties": {
+        "import_dependency": "85%",
+        "inflation_transmission": "rapid"
+      }
+    },
+    {
+      "id": "FII_DII_FLOWS",
+      "label": "Institutional FII & DII Flows",
+      "category": "macro_policy",
+      "color": "#10b981",
+      "properties": {
+        "flow_tracker": "daily_cash_derivatives",
+        "impact": "trend_sustainability"
+      }
+    },
+    {
+      "id": "UPPER_GAMMA_WALL",
+      "label": "Upper Gamma Wall (Call Wall)",
+      "category": "derivatives_gex",
+      "color": "#f43f5e",
+      "properties": {
+        "metric": "max_positive_call_gamma",
+        "dealer_role": "net_short_gamma_sellers",
+        "behavior": "strong_ceiling_barrier"
+      }
+    },
+    {
+      "id": "LOWER_GAMMA_WALL",
+      "label": "Lower Gamma Wall (Put Wall)",
+      "category": "derivatives_gex",
+      "color": "#10b981",
+      "properties": {
+        "metric": "max_positive_put_gamma",
+        "dealer_role": "net_long_gamma_buyers",
+        "behavior": "strong_floor_support"
+      }
+    },
+    {
+      "id": "CALL_OI_UNWINDING",
+      "label": "Call Open Interest Unwinding",
+      "category": "derivatives_gex",
+      "color": "#fb7185",
+      "properties": {
+        "trigger": "call_writers_covering",
+        "sentiment": "bullish_catalyst"
+      }
+    },
+    {
+      "id": "GAMMA_SHORT_SQUEEZE",
+      "label": "Gamma Short Squeeze Expansion",
+      "category": "derivatives_gex",
+      "color": "#38bdf8",
+      "properties": {
+        "velocity": "400-800 pts in 45m",
+        "mechanism": "dealer_delta_rehedging_futures"
+      }
+    },
+    {
+      "id": "MAX_PAIN_PINNING",
+      "label": "Option Max Pain Strike Pinning",
+      "category": "derivatives_gex",
+      "color": "#a78bfa",
+      "properties": {
+        "timeframe": "expiry_day_after_2pm",
+        "effect": "draws_price_to_minimum_loss_strike"
+      }
+    },
+    {
+      "id": "WEEKEND_THETA_DECAY",
+      "label": "Weekend Theta Decay Penalty",
+      "category": "derivatives_gex",
+      "color": "#f87171",
+      "properties": {
+        "timeframe": "friday_afternoon",
+        "decay_rate": "25-35% premium loss by monday open"
+      }
+    },
+    {
+      "id": "NARROW_CPR",
+      "label": "Narrow CPR (Central Pivot Range)",
+      "category": "quant_strategy",
+      "color": "#22c55e",
+      "properties": {
+        "width": "<0.25% index price",
+        "prediction": "high_momentum_trending_day",
+        "win_rate": 0.78
+      }
+    },
+    {
+      "id": "VIRGIN_CPR",
+      "label": "Virgin CPR Magnet Level",
+      "category": "quant_strategy",
+      "color": "#14b8a6",
+      "properties": {
+        "status": "untested_in_prior_session",
+        "behavior": "high_probability_reversal_target"
+      }
+    },
+    {
+      "id": "VWAP_BAND",
+      "label": "VWAP & 20 EMA Confluence Band",
+      "category": "quant_strategy",
+      "color": "#06b6d4",
+      "properties": {
+        "metric": "volume_weighted_benchmark",
+        "strategy": "pullback_continuation"
+      }
+    },
+    {
+      "id": "CVD_ABSORPTION",
+      "label": "Cumulative Volume Delta (CVD) Absorption",
+      "category": "quant_strategy",
+      "color": "#c084fc",
+      "properties": {
+        "indicator": "cvd_divergence",
+        "signal": "institutional_limit_order_absorption"
+      }
+    },
+    {
+      "id": "GANN_90_HARMONIC",
+      "label": "Gann 90\u00b0 & 180\u00b0 Harmonic Levels",
+      "category": "quant_strategy",
+      "color": "#e879f9",
+      "properties": {
+        "formula": "square_of_9",
+        "reversal_points": "90deg and 180deg price steps"
+      }
+    },
+    {
+      "id": "HARD_STOP_LOSS",
+      "label": "Hard Stop-Loss & 1% Risk Rule",
+      "category": "quant_strategy",
+      "color": "#ef4444",
+      "properties": {
+        "rule": "max_1pct_capital_per_trade",
+        "discipline": "never_widen_losing_sl"
+      }
+    },
+    {
+      "id": "FINNIFTY",
+      "label": "Nifty Financial Services Index",
+      "category": "index",
+      "properties": {
+        "lot_size": 25,
+        "sector": "financials"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "HDFCBANK",
+      "target": "BANKNIFTY",
+      "relation": "CONSTITUENT_OF",
+      "weight": 0.29,
+      "description": "Primary heavyweight driver (29% weight)"
+    },
+    {
+      "relation": "CONSTITUENT_OF",
+      "weight": 0.33,
+      "description": "Heavyweight anchor constituent in FinNifty (33% weight)",
+      "source": "HDFCBANK",
+      "target": "FINNIFTY"
+    },
+    {
+      "source": "ICICIBANK",
+      "target": "BANKNIFTY",
+      "relation": "CONSTITUENT_OF",
+      "weight": 0.23,
+      "description": "Momentum leader constituent (23% weight)"
+    },
+    {
+      "source": "SBIN",
+      "target": "BANKNIFTY",
+      "relation": "CONSTITUENT_OF",
+      "weight": 0.1,
+      "description": "PSU banking bellwether (10% weight)"
+    },
+    {
+      "source": "KOTAKBANK",
+      "target": "BANKNIFTY",
+      "relation": "CONSTITUENT_OF",
+      "weight": 0.1,
+      "description": "Asset quality & capital strength anchor (10% weight)"
+    },
+    {
+      "source": "AXISBANK",
+      "target": "BANKNIFTY",
+      "relation": "CONSTITUENT_OF",
+      "weight": 0.08,
+      "description": "High beta private bank (8% weight)"
+    },
+    {
+      "source": "INDUSINDBK",
+      "target": "BANKNIFTY",
+      "relation": "CONSTITUENT_OF",
+      "weight": 0.05,
+      "description": "High beta retail constituent (5% weight)"
+    },
+    {
+      "source": "RBI_MPC",
+      "target": "REPO_RATE",
+      "relation": "SETS_BENCHMARK",
+      "weight": 1.0,
+      "description": "Sets benchmark repo borrowing rate"
+    },
+    {
+      "source": "RBI_MPC",
+      "target": "CASH_RESERVE_RATIO_CRR",
+      "relation": "MANDATES",
+      "weight": 1.0,
+      "description": "Mandates mandatory cash reserve ratio"
+    },
+    {
+      "source": "REPO_RATE",
+      "target": "HDFCBANK",
+      "relation": "IMPACTS_NIM",
+      "weight": 0.85,
+      "description": "Rate cuts expand credit demand; hikes compress NIM margins"
+    },
+    {
+      "source": "REPO_RATE",
+      "target": "ICICIBANK",
+      "relation": "IMPACTS_NIM",
+      "weight": 0.8,
+      "description": "Direct transmission to floating loan yields"
+    },
+    {
+      "source": "CASH_RESERVE_RATIO_CRR",
+      "target": "SBIN",
+      "relation": "LOCKS_LIQUIDITY",
+      "weight": 0.9,
+      "description": "Higher CRR impounds loanable funds at 0% return"
+    },
+    {
+      "source": "CASH_RESERVE_RATIO_CRR",
+      "target": "HDFCBANK",
+      "relation": "LOCKS_LIQUIDITY",
+      "weight": 0.85,
+      "description": "Reduces bank lending capacity"
+    },
+    {
+      "source": "INDIA_10Y_BOND_YIELD",
+      "target": "SBIN",
+      "relation": "IMPACTS_TREASURY",
+      "weight": 0.88,
+      "description": "Yield surges cause mark-to-market bond portfolio losses"
+    },
+    {
+      "source": "USDINR",
+      "target": "FII_DII_FLOWS",
+      "relation": "DRIVES_CAPITAL_FLOW",
+      "weight": 0.8,
+      "description": "Rupee depreciation triggers FII equity selling"
+    },
+    {
+      "source": "BRENT_CRUDE",
+      "target": "USDINR",
+      "relation": "PRESSURES_CURRENCY",
+      "weight": 0.75,
+      "description": "Higher oil import bills weaken rupee against USD"
+    },
+    {
+      "source": "FII_DII_FLOWS",
+      "target": "BANKNIFTY",
+      "relation": "DRIVES_INSTITUTIONAL_LIQUIDITY",
+      "weight": 0.85,
+      "description": "FII net buying drives large-cap banking index trends"
+    },
+    {
+      "source": "UPPER_GAMMA_WALL",
+      "target": "BANKNIFTY",
+      "relation": "CREATES_CEILING",
+      "weight": 0.9,
+      "description": "Dealer call selling dampens price advance"
+    },
+    {
+      "source": "UPPER_GAMMA_WALL",
+      "target": "GAMMA_SHORT_SQUEEZE",
+      "relation": "TRIGGER_ON_BREACH",
+      "weight": 0.92,
+      "description": "Wall breach forces explosive dealer delta re-hedging"
+    },
+    {
+      "source": "LOWER_GAMMA_WALL",
+      "target": "BANKNIFTY",
+      "relation": "CREATES_FLOOR",
+      "weight": 0.9,
+      "description": "Dealer put buying absorbs market sell-offs"
+    },
+    {
+      "source": "CALL_OI_UNWINDING",
+      "target": "UPPER_GAMMA_WALL",
+      "relation": "DESTABILIZES_WALL",
+      "weight": 0.85,
+      "description": "Call covering removes resistance barrier"
+    },
+    {
+      "source": "GAMMA_SHORT_SQUEEZE",
+      "target": "BANKNIFTY",
+      "relation": "VERTICAL_PRICE_EXPANSION",
+      "weight": 0.95,
+      "description": "Forces vertical 400-800 point index surge in Bank Nifty"
+    },
+    {
+      "source": "MAX_PAIN_PINNING",
+      "target": "BANKNIFTY",
+      "relation": "EXPIRY_MAGNET",
+      "weight": 0.75,
+      "description": "Draws index towards minimum option loss strike after 2:00 PM"
+    },
+    {
+      "source": "WEEKEND_THETA_DECAY",
+      "target": "UPPER_GAMMA_WALL",
+      "relation": "ERODES_OUT_OF_MONEY",
+      "weight": 0.8,
+      "description": "Destroys naked OTM premium over non-trading weekend"
+    },
+    {
+      "source": "NARROW_CPR",
+      "target": "BANKNIFTY",
+      "relation": "FORECASTS_TREND_DAY",
+      "weight": 0.78,
+      "description": "Predicts >500 point high-velocity breakout session"
+    },
+    {
+      "source": "VIRGIN_CPR",
+      "target": "BANKNIFTY",
+      "relation": "ACTS_AS_MAGNETIC_TARGET",
+      "weight": 0.82,
+      "description": "High probability mean-reversion target"
+    },
+    {
+      "source": "VWAP_BAND",
+      "target": "BANKNIFTY",
+      "relation": "PULLBACK_ENTRY_BAND",
+      "weight": 0.8,
+      "description": "Optimal institutional risk-reward entry zone"
+    },
+    {
+      "source": "CVD_ABSORPTION",
+      "target": "UPPER_GAMMA_WALL",
+      "relation": "CONFIRMS_RESISTANCE_REVERSAL",
+      "weight": 0.84,
+      "description": "Confirms large limit orders absorbing breakout buyers"
+    },
+    {
+      "source": "GANN_90_HARMONIC",
+      "target": "BANKNIFTY",
+      "relation": "PROVIDES_SQUARE_OF_9_TARGET",
+      "weight": 0.76,
+      "description": "Calculates harmonic price-time target levels"
+    },
+    {
+      "source": "HARD_STOP_LOSS",
+      "target": "BANKNIFTY",
+      "relation": "CAPITAL_PRESERVATION_BOUNDARY",
+      "weight": 1.0,
+      "description": "Enforces strict 1% account risk cap"
+    }
+  ],
+  "stats": {
+    "total_nodes": 28,
+    "total_edges": 30,
+    "categories": [
+      "index",
+      "macro_policy",
+      "quant_strategy",
+      "derivatives_gex",
+      "bank_stock"
+    ]
+  }
+}

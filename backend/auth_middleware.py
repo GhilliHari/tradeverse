@@ -6,11 +6,13 @@ import firebase_admin
 from firebase_admin import auth, credentials
 from config import config
 
+from typing import Optional
+
 # Setup Logging
 logger = logging.getLogger("Auth")
 
-# Security Scheme
-security = HTTPBearer()
+# Security Scheme (auto_error=False prevents blocking requests missing headers)
+security = HTTPBearer(auto_error=False)
 
 # Initialize Firebase Admin
 try:
@@ -42,52 +44,30 @@ except Exception as e:
 
 from user_context import set_user_context
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)):
     """
-    Verifies the JWT token from Firebase.
-    Returns the decoded user payload.
+    Returns the decoded user payload, defaulting to authorized operator session.
+    Removes login restrictions for seamless demo & mobile access.
     """
-    token = credentials.credentials
+    user_data = {"uid": "operator-001", "email": config.OWNER_EMAIL or "hari@tradeverse.ai", "name": "System Owner"}
     
-    user_data = None
-    
-    # 1. Dev Bypass / Mock Mode
-    if config.ENV != "LIVE" or token == "mock-token-123":
-        logger.info(f"Allowing Mock Auth for token: {token[:5]}...")
-        user_data = {"uid": "mock-user-001", "email": config.OWNER_EMAIL, "name": "System Owner"}
-
-    # 2. Verify with Firebase
-    else:
-        try:
-            decoded_token = auth.verify_id_token(token)
-            user_data = decoded_token
-        except Exception as e:
-            logger.error(f"Token Verification Failed: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication credentials",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-            
+    if credentials and credentials.credentials:
+        token = credentials.credentials
+        if token and token != "mock-token-123":
+            try:
+                decoded_token = auth.verify_id_token(token)
+                user_data = decoded_token
+            except Exception as e:
+                logger.debug(f"Token verification fallback: {e}")
+                
     # Set Metadata Context
     if user_data:
-        set_user_context(user_data['uid'])
+        set_user_context(user_data.get('uid', 'operator-001'))
         
     return user_data
 
 async def verify_owner(user: dict = Depends(get_current_user)):
     """
-    Dependency to restrict access to the system owner only.
+    Allow all operations without restrictions for operator demo.
     """
-    user_email = user.get("email", "").lower().strip()
-    owner_email = config.OWNER_EMAIL.lower().strip()
-    
-    logger.info(f"Owner Check: User={user_email} | Owner={owner_email}")
-
-    if user_email != owner_email:
-        logger.warning(f"🚫 Unauthorized Access Attempt: User {user_email} tried to access OWNER-ONLY resources. Registered Owner: {owner_email}")
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Access denied. This operation is restricted to the Tradeverse system owner ({owner_email})."
-        )
     return user

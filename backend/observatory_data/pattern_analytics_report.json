@@ -1,0 +1,77 @@
+{
+  "generated_at": "2026-08-20T14:32:07.091051",
+  "total_simulations": 154,
+  "winning_simulations": 90,
+  "losing_simulations": 45,
+  "overall_win_rate_pct": 58.4,
+  "total_pnl_rupees": 373566.23,
+  "performance_by_symbol": {
+    "ICICIBANK": {
+      "count": 27,
+      "wins": 19,
+      "pnl": 135604.12000000002
+    },
+    "HDFCBANK": {
+      "count": 27,
+      "wins": 14,
+      "pnl": 73170.52
+    },
+    "FINNIFTY": {
+      "count": 28,
+      "wins": 12,
+      "pnl": 32333.009999999995
+    },
+    "NIFTY": {
+      "count": 33,
+      "wins": 19,
+      "pnl": 79846.12
+    },
+    "BANKNIFTY": {
+      "count": 35,
+      "wins": 24,
+      "pnl": 44269.99
+    },
+    "NSE:BANKNIFTY": {
+      "count": 2,
+      "wins": 2,
+      "pnl": 8342.470000000001
+    },
+    "MIDCPNIFTY": {
+      "count": 2,
+      "wins": 0,
+      "pnl": 0.0
+    }
+  },
+  "performance_by_technique": {
+    "Gann 45\u00b0 + Astro Window + VWAP + RSI 54 Confluence": {
+      "count": 136,
+      "wins": 81,
+      "pnl": 333934.11
+    },
+    "Gann Sq9 + Financial Astrology + VWAP + RSI(14) 54/46 Confluence": {
+      "count": 2,
+      "wins": 2,
+      "pnl": 8342.470000000001
+    },
+    "Gann 45\u00b0 + Astro Window + VWAP + RSI 54 Confluence (Fresh Real Execution)": {
+      "count": 4,
+      "wins": 3,
+      "pnl": 11311.25
+    },
+    "Gann 45\u00b0 + Astro Window + VWAP + RSI 54 Confluence (Live Broker Routing)": {
+      "count": 4,
+      "wins": 4,
+      "pnl": 21016.280000000002
+    },
+    "Gann 45\u00b0 + Astro Jupiter + VWAP + RSI > 54": {
+      "count": 1,
+      "wins": 0,
+      "pnl": -1037.88
+    },
+    "Standard Confluence": {
+      "count": 7,
+      "wins": 0,
+      "pnl": 0.0
+    }
+  }
+}

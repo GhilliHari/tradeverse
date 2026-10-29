@@ -13,7 +13,7 @@ class NewsScraper:
 
     def fetch_latest_news(self, query: str = "Indian Stock Market NSE BSE") -> List[Dict]:
         """
-        Aggregates news from Google, Moneycontrol, and ET.
+        Aggregates news and calculates sentiment intensity.
         """
         news_items = []
         
@@ -26,11 +26,46 @@ class NewsScraper:
         # 3. Economic Times
         news_items.extend(self._fetch_et())
 
+        # 4. Social Media (Reddit - Financial Mood)
+        news_items.extend(self._fetch_reddit())
+
         if not news_items:
             # Fallback
             news_items = [{"title": "Market eyes global cues.", "snippet": "Cautious sentiment ahead of key events.", "source": "System Fallback"}]
 
-        return news_items[:10] # Top 10 broad headlines
+        # Add intensity score (mocking for now based on keywords)
+        for item in news_items:
+            title = item.get('title', '').lower()
+            intensity = 0.5
+            if any(k in title for k in ['crash', 'surge', 'panic', 'blood', 'euphoria']):
+                intensity = 0.9
+            elif any(k in title for k in ['slight', 'mixed', 'wait', 'watch']):
+                intensity = 0.3
+            item['intensity'] = intensity
+
+        return news_items[:15] # Top 15 broad headlines (expanded for social)
+
+    def _fetch_reddit(self):
+        """
+        Scrapes Indian financial subreddits for retail mood.
+        """
+        subreddits = ["IndianStockMarket", "pennystocksindia"]
+        items = []
+        for sub in subreddits:
+            url = f"https://www.reddit.com/r/{sub}/new/.rss"
+            try:
+                # Using RSS for easier scraping without full API keys
+                response = requests.get(url, headers={"User-Agent": "TradeverseBot/1.0"}, timeout=5)
+                if response.ok:
+                    soup = BeautifulSoup(response.text, 'xml')
+                    for entry in soup.find_all('entry')[:3]:
+                        items.append({
+                            "title": entry.title.text if entry.title else "Discussion on " + sub,
+                            "snippet": "Social Sentiment from Retail Traders",
+                            "source": f"Reddit: r/{sub}"
+                        })
+            except: pass
+        return items
 
     def _fetch_google_news(self, query):
         search_url = f"https://www.google.com/search?q={query}&tbm=nws"

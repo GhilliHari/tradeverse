@@ -1,0 +1,6893 @@
+{
+  "date": "2026-10-28",
+  "predictions": [
+    {
+      "timestamp": "2026-10-28T09:25:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 22700,
+        "confidence": 0.3862,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": 0.09,
+          "tft": 0.38,
+          "rl": 0.0,
+          "sentiment": 0.15,
+          "options": 0.0,
+          "order_flow": 0.0,
+          "pattern": 0.23
+        },
+        "regime": "OPENING_VOLATILITY"
+      },
+      "market_context": {
+        "spot_price": 22704.65,
+        "vix": 16.22,
+        "regime": "OPENING_VOLATILITY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22702.2,
+              "qty": 550
+            },
+            {
+              "price": 22699.7,
+              "qty": 600
+            },
+            {
+              "price": 22697.2,
+              "qty": 650
+            },
+            {
+              "price": 22694.7,
+              "qty": 700
+            },
+            {
+              "price": 22692.2,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22707.2,
+              "qty": 550
+            },
+            {
+              "price": 22709.7,
+              "qty": 600
+            },
+            {
+              "price": 22712.2,
+              "qty": 650
+            },
+            {
+              "price": 22714.7,
+              "qty": 700
+            },
+            {
+              "price": 22717.2,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T09:40:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T09:25:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_0925_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 54400,
+        "confidence": 0.8097,
+        "entry_price": 287.54,
+        "model_scores": {
+          "technical": 0.52,
+          "tft": 0.43,
+          "rl": 1.0,
+          "sentiment": 0.31,
+          "options": 0.6,
+          "order_flow": 0.0,
+          "pattern": 0.47
+        },
+        "regime": "OPENING_VOLATILITY"
+      },
+      "market_context": {
+        "spot_price": 54304.2,
+        "vix": 16.22,
+        "regime": "OPENING_VOLATILITY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54301.7,
+              "qty": 550
+            },
+            {
+              "price": 54299.2,
+              "qty": 600
+            },
+            {
+              "price": 54296.7,
+              "qty": 650
+            },
+            {
+              "price": 54294.2,
+              "qty": 700
+            },
+            {
+              "price": 54291.7,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54306.7,
+              "qty": 550
+            },
+            {
+              "price": 54309.2,
+              "qty": 600
+            },
+            {
+              "price": 54311.7,
+              "qty": 650
+            },
+            {
+              "price": 54314.2,
+              "qty": 700
+            },
+            {
+              "price": 54316.7,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T09:40:00",
+        "exit_price": 296.5,
+        "pnl": 134.4,
+        "pnl_pct": 3.12,
+        "max_favorable": 301.33,
+        "max_adverse": 258.52,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T09:25:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 26250,
+        "confidence": 0.411,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": 0.4,
+          "tft": -0.32,
+          "rl": 1.0,
+          "sentiment": 0.03,
+          "options": 0.0,
+          "order_flow": 0.0,
+          "pattern": 0.04
+        },
+        "regime": "OPENING_VOLATILITY"
+      },
+      "market_context": {
+        "spot_price": 26226.7,
+        "vix": 16.22,
+        "regime": "OPENING_VOLATILITY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26224.2,
+              "qty": 550
+            },
+            {
+              "price": 26221.7,
+              "qty": 600
+            },
+            {
+              "price": 26219.2,
+              "qty": 650
+            },
+            {
+              "price": 26216.7,
+              "qty": 700
+            },
+            {
+              "price": 26214.2,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26229.2,
+              "qty": 550
+            },
+            {
+              "price": 26231.7,
+              "qty": 600
+            },
+            {
+              "price": 26234.2,
+              "qty": 650
+            },
+            {
+              "price": 26236.7,
+              "qty": 700
+            },
+            {
+              "price": 26239.2,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T09:40:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T09:25:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 67025,
+        "confidence": 0.4004,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": 0.31,
+          "tft": 0.31,
+          "rl": 0.0,
+          "sentiment": 0.2,
+          "options": 0.0,
+          "order_flow": 0.0,
+          "pattern": 0.31
+        },
+        "regime": "OPENING_VOLATILITY"
+      },
+      "market_context": {
+        "spot_price": 67019.3,
+        "vix": 16.22,
+        "regime": "OPENING_VOLATILITY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67016.8,
+              "qty": 550
+            },
+            {
+              "price": 67014.3,
+              "qty": 600
+            },
+            {
+              "price": 67011.8,
+              "qty": 650
+            },
+            {
+              "price": 67009.3,
+              "qty": 700
+            },
+            {
+              "price": 67006.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67021.8,
+              "qty": 550
+            },
+            {
+              "price": 67024.3,
+              "qty": 600
+            },
+            {
+              "price": 67026.8,
+              "qty": 650
+            },
+            {
+              "price": 67029.3,
+              "qty": 700
+            },
+            {
+              "price": 67031.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T09:40:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T09:40:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_0940_NIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 22750,
+        "confidence": 0.7955,
+        "entry_price": 118.73,
+        "model_scores": {
+          "technical": 0.39,
+          "tft": 0.45,
+          "rl": 1.0,
+          "sentiment": 0.27,
+          "options": 0.6,
+          "order_flow": 0.05,
+          "pattern": 0.42
+        },
+        "regime": "OPENING_VOLATILITY"
+      },
+      "market_context": {
+        "spot_price": 22707.05,
+        "vix": 16.2,
+        "regime": "OPENING_VOLATILITY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22704.5,
+              "qty": 550
+            },
+            {
+              "price": 22702.0,
+              "qty": 600
+            },
+            {
+              "price": 22699.5,
+              "qty": 650
+            },
+            {
+              "price": 22697.0,
+              "qty": 700
+            },
+            {
+              "price": 22694.5,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22709.5,
+              "qty": 550
+            },
+            {
+              "price": 22712.0,
+              "qty": 600
+            },
+            {
+              "price": 22714.5,
+              "qty": 650
+            },
+            {
+              "price": 22717.0,
+              "qty": 700
+            },
+            {
+              "price": 22719.5,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T09:55:00",
+        "exit_price": 118.36,
+        "pnl": -9.25,
+        "pnl_pct": -0.31,
+        "max_favorable": 118.89,
+        "max_adverse": 111.27,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T09:40:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_0940_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 54200,
+        "confidence": 0.918,
+        "entry_price": 266.43,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -0.56,
+          "rl": -1.0,
+          "sentiment": -0.51,
+          "options": -0.6,
+          "order_flow": -0.22,
+          "pattern": -0.78
+        },
+        "regime": "OPENING_VOLATILITY"
+      },
+      "market_context": {
+        "spot_price": 54277.25,
+        "vix": 16.2,
+        "regime": "OPENING_VOLATILITY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54274.8,
+              "qty": 550
+            },
+            {
+              "price": 54272.2,
+              "qty": 600
+            },
+            {
+              "price": 54269.8,
+              "qty": 650
+            },
+            {
+              "price": 54267.2,
+              "qty": 700
+            },
+            {
+              "price": 54264.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54279.8,
+              "qty": 550
+            },
+            {
+              "price": 54282.2,
+              "qty": 600
+            },
+            {
+              "price": 54284.8,
+              "qty": 650
+            },
+            {
+              "price": 54287.2,
+              "qty": 700
+            },
+            {
+              "price": 54289.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T09:55:00",
+        "exit_price": 276.54,
+        "pnl": 151.65,
+        "pnl_pct": 3.79,
+        "max_favorable": 281.99,
+        "max_adverse": 259.43,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T09:40:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 26250,
+        "confidence": 0.3992,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": 0.21,
+          "tft": 0.42,
+          "rl": 0.0,
+          "sentiment": 0.21,
+          "options": 0.0,
+          "order_flow": -0.02,
+          "pattern": 0.32
+        },
+        "regime": "OPENING_VOLATILITY"
+      },
+      "market_context": {
+        "spot_price": 26225.8,
+        "vix": 16.2,
+        "regime": "OPENING_VOLATILITY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26223.3,
+              "qty": 550
+            },
+            {
+              "price": 26220.8,
+              "qty": 600
+            },
+            {
+              "price": 26218.3,
+              "qty": 650
+            },
+            {
+              "price": 26215.8,
+              "qty": 700
+            },
+            {
+              "price": 26213.3,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26228.3,
+              "qty": 550
+            },
+            {
+              "price": 26230.8,
+              "qty": 600
+            },
+            {
+              "price": 26233.3,
+              "qty": 650
+            },
+            {
+              "price": 26235.8,
+              "qty": 700
+            },
+            {
+              "price": 26238.3,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T09:55:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T09:40:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_0940_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 67275,
+        "confidence": 0.96,
+        "entry_price": 396.67,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 1.0,
+          "pattern": 1.0
+        },
+        "regime": "OPENING_VOLATILITY"
+      },
+      "market_context": {
+        "spot_price": 67241.7,
+        "vix": 16.2,
+        "regime": "OPENING_VOLATILITY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67239.2,
+              "qty": 550
+            },
+            {
+              "price": 67236.7,
+              "qty": 600
+            },
+            {
+              "price": 67234.2,
+              "qty": 650
+            },
+            {
+              "price": 67231.7,
+              "qty": 700
+            },
+            {
+              "price": 67229.2,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67244.2,
+              "qty": 550
+            },
+            {
+              "price": 67246.7,
+              "qty": 600
+            },
+            {
+              "price": 67249.2,
+              "qty": 650
+            },
+            {
+              "price": 67251.7,
+              "qty": 700
+            },
+            {
+              "price": 67254.2,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T09:55:00",
+        "exit_price": 467.8,
+        "pnl": 3556.5,
+        "pnl_pct": 17.93,
+        "max_favorable": 491.51,
+        "max_adverse": 345.88,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T09:55:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_0955_NIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 22750,
+        "confidence": 0.785,
+        "entry_price": 118.62,
+        "model_scores": {
+          "technical": 0.36,
+          "tft": 0.43,
+          "rl": 1.0,
+          "sentiment": 0.26,
+          "options": 0.6,
+          "order_flow": -0.0,
+          "pattern": 0.4
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 22706.8,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22704.3,
+              "qty": 550
+            },
+            {
+              "price": 22701.8,
+              "qty": 600
+            },
+            {
+              "price": 22699.3,
+              "qty": 650
+            },
+            {
+              "price": 22696.8,
+              "qty": 700
+            },
+            {
+              "price": 22694.3,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22709.3,
+              "qty": 550
+            },
+            {
+              "price": 22711.8,
+              "qty": 600
+            },
+            {
+              "price": 22714.3,
+              "qty": 650
+            },
+            {
+              "price": 22716.8,
+              "qty": 700
+            },
+            {
+              "price": 22719.3,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:10:00",
+        "exit_price": 109.13,
+        "pnl": -237.25,
+        "pnl_pct": -8.0,
+        "max_favorable": 118.62,
+        "max_adverse": 53.35,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T09:55:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_0955_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 54200,
+        "confidence": 0.9112,
+        "entry_price": 270.82,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -0.58,
+          "rl": -1.0,
+          "sentiment": -0.51,
+          "options": -0.6,
+          "order_flow": -0.08,
+          "pattern": -0.79
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 54267.4,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54264.9,
+              "qty": 550
+            },
+            {
+              "price": 54262.4,
+              "qty": 600
+            },
+            {
+              "price": 54259.9,
+              "qty": 650
+            },
+            {
+              "price": 54257.4,
+              "qty": 700
+            },
+            {
+              "price": 54254.9,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54269.9,
+              "qty": 550
+            },
+            {
+              "price": 54272.4,
+              "qty": 600
+            },
+            {
+              "price": 54274.9,
+              "qty": 650
+            },
+            {
+              "price": 54277.4,
+              "qty": 700
+            },
+            {
+              "price": 54279.9,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:10:00",
+        "exit_price": 487.04,
+        "pnl": 3243.3,
+        "pnl_pct": 79.84,
+        "max_favorable": 559.11,
+        "max_adverse": 266.75,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T09:55:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_0955_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 26300,
+        "confidence": 0.7721,
+        "entry_price": 126.5,
+        "model_scores": {
+          "technical": 0.28,
+          "tft": 0.42,
+          "rl": 1.0,
+          "sentiment": 0.23,
+          "options": 0.6,
+          "order_flow": 0.02,
+          "pattern": 0.35
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 26226.7,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26224.2,
+              "qty": 550
+            },
+            {
+              "price": 26221.7,
+              "qty": 600
+            },
+            {
+              "price": 26219.2,
+              "qty": 650
+            },
+            {
+              "price": 26216.7,
+              "qty": 700
+            },
+            {
+              "price": 26214.2,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26229.2,
+              "qty": 550
+            },
+            {
+              "price": 26231.7,
+              "qty": 600
+            },
+            {
+              "price": 26234.2,
+              "qty": 650
+            },
+            {
+              "price": 26236.7,
+              "qty": 700
+            },
+            {
+              "price": 26239.2,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:10:00",
+        "exit_price": 116.38,
+        "pnl": -253.0,
+        "pnl_pct": -8.0,
+        "max_favorable": 126.5,
+        "max_adverse": 35.15,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T09:55:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_0955_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 67275,
+        "confidence": 0.8612,
+        "entry_price": 400.19,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 0.89,
+          "rl": 0.0,
+          "sentiment": 0.62,
+          "options": 0.6,
+          "order_flow": 0.05,
+          "pattern": 0.95
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 67248.65,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67246.1,
+              "qty": 550
+            },
+            {
+              "price": 67243.6,
+              "qty": 600
+            },
+            {
+              "price": 67241.1,
+              "qty": 650
+            },
+            {
+              "price": 67238.6,
+              "qty": 700
+            },
+            {
+              "price": 67236.1,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67251.1,
+              "qty": 550
+            },
+            {
+              "price": 67253.6,
+              "qty": 600
+            },
+            {
+              "price": 67256.1,
+              "qty": 650
+            },
+            {
+              "price": 67258.6,
+              "qty": 700
+            },
+            {
+              "price": 67261.1,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:10:00",
+        "exit_price": 446.37,
+        "pnl": 2309.0,
+        "pnl_pct": 11.54,
+        "max_favorable": 461.76,
+        "max_adverse": 319.01,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:10:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_1010_NIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 22500,
+        "confidence": 0.94,
+        "entry_price": 93.84,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -1.0,
+          "rl": 0.0,
+          "sentiment": -0.65,
+          "options": -0.6,
+          "order_flow": -1.0,
+          "pattern": -1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 22572.05,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22569.5,
+              "qty": 550
+            },
+            {
+              "price": 22567.0,
+              "qty": 600
+            },
+            {
+              "price": 22564.5,
+              "qty": 650
+            },
+            {
+              "price": 22562.0,
+              "qty": 700
+            },
+            {
+              "price": 22559.5,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22574.5,
+              "qty": 550
+            },
+            {
+              "price": 22577.0,
+              "qty": 600
+            },
+            {
+              "price": 22579.5,
+              "qty": 650
+            },
+            {
+              "price": 22582.0,
+              "qty": 700
+            },
+            {
+              "price": 22584.5,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:25:00",
+        "exit_price": 118.14,
+        "pnl": 607.5,
+        "pnl_pct": 25.9,
+        "max_favorable": 126.24,
+        "max_adverse": 92.77,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:10:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1010_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 53800,
+        "confidence": 0.94,
+        "entry_price": 246.04,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -1.0,
+          "rl": 0.0,
+          "sentiment": -0.65,
+          "options": -0.6,
+          "order_flow": -1.0,
+          "pattern": -1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 53919.3,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 53916.8,
+              "qty": 550
+            },
+            {
+              "price": 53914.3,
+              "qty": 600
+            },
+            {
+              "price": 53911.8,
+              "qty": 650
+            },
+            {
+              "price": 53909.3,
+              "qty": 700
+            },
+            {
+              "price": 53906.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 53921.8,
+              "qty": 550
+            },
+            {
+              "price": 53924.3,
+              "qty": 600
+            },
+            {
+              "price": 53926.8,
+              "qty": 650
+            },
+            {
+              "price": 53929.3,
+              "qty": 700
+            },
+            {
+              "price": 53931.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:25:00",
+        "exit_price": 315.09,
+        "pnl": 1035.75,
+        "pnl_pct": 28.06,
+        "max_favorable": 338.1,
+        "max_adverse": 241.41,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:10:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1010_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 25900,
+        "confidence": 0.94,
+        "entry_price": 111.46,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -1.0,
+          "rl": 0.0,
+          "sentiment": -0.65,
+          "options": -0.6,
+          "order_flow": -1.0,
+          "pattern": -1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 25974.35,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 25971.8,
+              "qty": 550
+            },
+            {
+              "price": 25969.3,
+              "qty": 600
+            },
+            {
+              "price": 25966.8,
+              "qty": 650
+            },
+            {
+              "price": 25964.3,
+              "qty": 700
+            },
+            {
+              "price": 25961.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 25976.8,
+              "qty": 550
+            },
+            {
+              "price": 25979.3,
+              "qty": 600
+            },
+            {
+              "price": 25981.8,
+              "qty": 650
+            },
+            {
+              "price": 25984.3,
+              "qty": 700
+            },
+            {
+              "price": 25986.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:25:00",
+        "exit_price": 147.56,
+        "pnl": 902.5,
+        "pnl_pct": 32.39,
+        "max_favorable": 159.6,
+        "max_adverse": 111.22,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:10:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 67175,
+        "confidence": 0.4496,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": 0.99,
+          "tft": 0.42,
+          "rl": 0.0,
+          "sentiment": 0.45,
+          "options": 0.0,
+          "order_flow": -0.49,
+          "pattern": 0.7
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 67174.75,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67172.2,
+              "qty": 550
+            },
+            {
+              "price": 67169.8,
+              "qty": 600
+            },
+            {
+              "price": 67167.2,
+              "qty": 650
+            },
+            {
+              "price": 67164.8,
+              "qty": 700
+            },
+            {
+              "price": 67162.2,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67177.2,
+              "qty": 550
+            },
+            {
+              "price": 67179.8,
+              "qty": 600
+            },
+            {
+              "price": 67182.2,
+              "qty": 650
+            },
+            {
+              "price": 67184.8,
+              "qty": 700
+            },
+            {
+              "price": 67187.2,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:25:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:25:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_1025_NIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 22450,
+        "confidence": 0.96,
+        "entry_price": 99.98,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -1.0,
+          "rl": -1.0,
+          "sentiment": -0.65,
+          "options": -0.6,
+          "order_flow": -1.0,
+          "pattern": -1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 22506.2,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22503.7,
+              "qty": 550
+            },
+            {
+              "price": 22501.2,
+              "qty": 600
+            },
+            {
+              "price": 22498.7,
+              "qty": 650
+            },
+            {
+              "price": 22496.2,
+              "qty": 700
+            },
+            {
+              "price": 22493.7,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22508.7,
+              "qty": 550
+            },
+            {
+              "price": 22511.2,
+              "qty": 600
+            },
+            {
+              "price": 22513.7,
+              "qty": 650
+            },
+            {
+              "price": 22516.2,
+              "qty": 700
+            },
+            {
+              "price": 22518.7,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:40:00",
+        "exit_price": 101.96,
+        "pnl": 49.5,
+        "pnl_pct": 1.98,
+        "max_favorable": 103.03,
+        "max_adverse": 81.1,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:25:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1025_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 53700,
+        "confidence": 0.94,
+        "entry_price": 257.38,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -1.0,
+          "rl": 0.0,
+          "sentiment": -0.65,
+          "options": -0.6,
+          "order_flow": -1.0,
+          "pattern": -1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 53791.55,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 53789.1,
+              "qty": 550
+            },
+            {
+              "price": 53786.6,
+              "qty": 600
+            },
+            {
+              "price": 53784.1,
+              "qty": 650
+            },
+            {
+              "price": 53781.6,
+              "qty": 700
+            },
+            {
+              "price": 53779.1,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 53794.1,
+              "qty": 550
+            },
+            {
+              "price": 53796.6,
+              "qty": 600
+            },
+            {
+              "price": 53799.1,
+              "qty": 650
+            },
+            {
+              "price": 53801.6,
+              "qty": 700
+            },
+            {
+              "price": 53804.1,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:40:00",
+        "exit_price": 264.83,
+        "pnl": 111.75,
+        "pnl_pct": 2.89,
+        "max_favorable": 268.84,
+        "max_adverse": 209.72,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:25:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1025_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 25850,
+        "confidence": 0.94,
+        "entry_price": 122.62,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -1.0,
+          "rl": 0.0,
+          "sentiment": -0.65,
+          "options": -0.6,
+          "order_flow": -1.0,
+          "pattern": -1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 25897.0,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 25894.5,
+              "qty": 550
+            },
+            {
+              "price": 25892.0,
+              "qty": 600
+            },
+            {
+              "price": 25889.5,
+              "qty": 650
+            },
+            {
+              "price": 25887.0,
+              "qty": 700
+            },
+            {
+              "price": 25884.5,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 25899.5,
+              "qty": 550
+            },
+            {
+              "price": 25902.0,
+              "qty": 600
+            },
+            {
+              "price": 25904.5,
+              "qty": 650
+            },
+            {
+              "price": 25907.0,
+              "qty": 700
+            },
+            {
+              "price": 25909.5,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:40:00",
+        "exit_price": 125.58,
+        "pnl": 74.0,
+        "pnl_pct": 2.41,
+        "max_favorable": 127.17,
+        "max_adverse": 93.4,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:25:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_1025_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 66925,
+        "confidence": 0.8171,
+        "entry_price": 362.08,
+        "model_scores": {
+          "technical": -0.22,
+          "tft": -1.0,
+          "rl": 0.0,
+          "sentiment": -0.4,
+          "options": -0.6,
+          "order_flow": -1.0,
+          "pattern": -0.61
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 66948.05,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 66945.6,
+              "qty": 550
+            },
+            {
+              "price": 66943.1,
+              "qty": 600
+            },
+            {
+              "price": 66940.6,
+              "qty": 650
+            },
+            {
+              "price": 66938.1,
+              "qty": 700
+            },
+            {
+              "price": 66935.6,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 66950.6,
+              "qty": 550
+            },
+            {
+              "price": 66953.1,
+              "qty": 600
+            },
+            {
+              "price": 66955.6,
+              "qty": 650
+            },
+            {
+              "price": 66958.1,
+              "qty": 700
+            },
+            {
+              "price": 66960.6,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:40:00",
+        "exit_price": 333.3,
+        "pnl": -1439.0,
+        "pnl_pct": -7.95,
+        "max_favorable": 370.19,
+        "max_adverse": 299.94,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:40:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_1040_NIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 22500,
+        "confidence": 0.918,
+        "entry_price": 107.37,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -1.0,
+          "rl": -1.0,
+          "sentiment": -0.65,
+          "options": -0.6,
+          "order_flow": 0.66,
+          "pattern": -1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 22539.45,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22537.0,
+              "qty": 550
+            },
+            {
+              "price": 22534.5,
+              "qty": 600
+            },
+            {
+              "price": 22532.0,
+              "qty": 650
+            },
+            {
+              "price": 22529.5,
+              "qty": 700
+            },
+            {
+              "price": 22527.0,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22542.0,
+              "qty": 550
+            },
+            {
+              "price": 22544.5,
+              "qty": 600
+            },
+            {
+              "price": 22547.0,
+              "qty": 650
+            },
+            {
+              "price": 22549.5,
+              "qty": 700
+            },
+            {
+              "price": 22552.0,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:55:00",
+        "exit_price": 110.52,
+        "pnl": 78.75,
+        "pnl_pct": 2.93,
+        "max_favorable": 112.22,
+        "max_adverse": 92.45,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:40:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1040_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 53800,
+        "confidence": 0.9186,
+        "entry_price": 267.59,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -1.0,
+          "rl": -1.0,
+          "sentiment": -0.65,
+          "options": -0.6,
+          "order_flow": 0.65,
+          "pattern": -1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 53869.65,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 53867.2,
+              "qty": 550
+            },
+            {
+              "price": 53864.7,
+              "qty": 600
+            },
+            {
+              "price": 53862.2,
+              "qty": 650
+            },
+            {
+              "price": 53859.7,
+              "qty": 700
+            },
+            {
+              "price": 53857.2,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 53872.2,
+              "qty": 550
+            },
+            {
+              "price": 53874.7,
+              "qty": 600
+            },
+            {
+              "price": 53877.2,
+              "qty": 650
+            },
+            {
+              "price": 53879.7,
+              "qty": 700
+            },
+            {
+              "price": 53882.2,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:55:00",
+        "exit_price": 279.62,
+        "pnl": 180.45,
+        "pnl_pct": 4.5,
+        "max_favorable": 286.1,
+        "max_adverse": 237.7,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:40:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1040_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 25900,
+        "confidence": 0.8984,
+        "entry_price": 121.01,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -1.0,
+          "rl": -1.0,
+          "sentiment": -0.65,
+          "options": -0.6,
+          "order_flow": 0.95,
+          "pattern": -1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 25951.4,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 25948.9,
+              "qty": 550
+            },
+            {
+              "price": 25946.4,
+              "qty": 600
+            },
+            {
+              "price": 25943.9,
+              "qty": 650
+            },
+            {
+              "price": 25941.4,
+              "qty": 700
+            },
+            {
+              "price": 25938.9,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 25953.9,
+              "qty": 550
+            },
+            {
+              "price": 25956.4,
+              "qty": 600
+            },
+            {
+              "price": 25958.9,
+              "qty": 650
+            },
+            {
+              "price": 25961.4,
+              "qty": 700
+            },
+            {
+              "price": 25963.9,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:55:00",
+        "exit_price": 111.33,
+        "pnl": -242.0,
+        "pnl_pct": -8.0,
+        "max_favorable": 122.46,
+        "max_adverse": 96.2,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:40:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_1040_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 66975,
+        "confidence": 0.861,
+        "entry_price": 357.07,
+        "model_scores": {
+          "technical": -0.53,
+          "tft": -1.0,
+          "rl": -1.0,
+          "sentiment": -0.5,
+          "options": -0.6,
+          "order_flow": 0.41,
+          "pattern": -0.77
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 67009.3,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67006.8,
+              "qty": 550
+            },
+            {
+              "price": 67004.3,
+              "qty": 600
+            },
+            {
+              "price": 67001.8,
+              "qty": 650
+            },
+            {
+              "price": 66999.3,
+              "qty": 700
+            },
+            {
+              "price": 66996.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67011.8,
+              "qty": 550
+            },
+            {
+              "price": 67014.3,
+              "qty": 600
+            },
+            {
+              "price": 67016.8,
+              "qty": 650
+            },
+            {
+              "price": 67019.3,
+              "qty": 700
+            },
+            {
+              "price": 67021.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T10:55:00",
+        "exit_price": 367.2,
+        "pnl": 506.5,
+        "pnl_pct": 2.84,
+        "max_favorable": 372.66,
+        "max_adverse": 312.78,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:55:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 22600,
+        "confidence": 0.4364,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -0.34,
+          "rl": 0.0,
+          "sentiment": -0.44,
+          "options": 0.0,
+          "order_flow": 0.71,
+          "pattern": -0.67
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 22575.05,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22572.5,
+              "qty": 550
+            },
+            {
+              "price": 22570.0,
+              "qty": 600
+            },
+            {
+              "price": 22567.5,
+              "qty": 650
+            },
+            {
+              "price": 22565.0,
+              "qty": 700
+            },
+            {
+              "price": 22562.5,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22577.5,
+              "qty": 550
+            },
+            {
+              "price": 22580.0,
+              "qty": 600
+            },
+            {
+              "price": 22582.5,
+              "qty": 650
+            },
+            {
+              "price": 22585.0,
+              "qty": 700
+            },
+            {
+              "price": 22587.5,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:10:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:55:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 53900,
+        "confidence": 0.4509,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -0.45,
+          "rl": 0.0,
+          "sentiment": -0.47,
+          "options": 0.0,
+          "order_flow": 0.54,
+          "pattern": -0.72
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 53934.15,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 53931.7,
+              "qty": 550
+            },
+            {
+              "price": 53929.2,
+              "qty": 600
+            },
+            {
+              "price": 53926.7,
+              "qty": 650
+            },
+            {
+              "price": 53924.2,
+              "qty": 700
+            },
+            {
+              "price": 53921.7,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 53936.7,
+              "qty": 550
+            },
+            {
+              "price": 53939.2,
+              "qty": 600
+            },
+            {
+              "price": 53941.7,
+              "qty": 650
+            },
+            {
+              "price": 53944.2,
+              "qty": 700
+            },
+            {
+              "price": 53946.7,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:10:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:55:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 26000,
+        "confidence": 0.4399,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -0.53,
+          "rl": 0.0,
+          "sentiment": -0.5,
+          "options": 0.0,
+          "order_flow": 1.0,
+          "pattern": -0.77
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 26009.95,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26007.5,
+              "qty": 550
+            },
+            {
+              "price": 26005.0,
+              "qty": 600
+            },
+            {
+              "price": 26002.5,
+              "qty": 650
+            },
+            {
+              "price": 26000.0,
+              "qty": 700
+            },
+            {
+              "price": 25997.5,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26012.5,
+              "qty": 550
+            },
+            {
+              "price": 26015.0,
+              "qty": 600
+            },
+            {
+              "price": 26017.5,
+              "qty": 650
+            },
+            {
+              "price": 26020.0,
+              "qty": 700
+            },
+            {
+              "price": 26022.5,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:10:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T10:55:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 67100,
+        "confidence": 0.4486,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -0.45,
+          "rl": 0.0,
+          "sentiment": -0.47,
+          "options": 0.0,
+          "order_flow": 0.6,
+          "pattern": -0.72
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 67099.2,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67096.7,
+              "qty": 550
+            },
+            {
+              "price": 67094.2,
+              "qty": 600
+            },
+            {
+              "price": 67091.7,
+              "qty": 650
+            },
+            {
+              "price": 67089.2,
+              "qty": 700
+            },
+            {
+              "price": 67086.7,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67101.7,
+              "qty": 550
+            },
+            {
+              "price": 67104.2,
+              "qty": 600
+            },
+            {
+              "price": 67106.7,
+              "qty": 650
+            },
+            {
+              "price": 67109.2,
+              "qty": 700
+            },
+            {
+              "price": 67111.7,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:10:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:10:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 22600,
+        "confidence": 0.3711,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": -0.25,
+          "tft": -0.09,
+          "rl": 0.0,
+          "sentiment": -0.11,
+          "options": 0.0,
+          "order_flow": 0.2,
+          "pattern": -0.17
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 22585.2,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22582.7,
+              "qty": 550
+            },
+            {
+              "price": 22580.2,
+              "qty": 600
+            },
+            {
+              "price": 22577.7,
+              "qty": 650
+            },
+            {
+              "price": 22575.2,
+              "qty": 700
+            },
+            {
+              "price": 22572.7,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22587.7,
+              "qty": 550
+            },
+            {
+              "price": 22590.2,
+              "qty": 600
+            },
+            {
+              "price": 22592.7,
+              "qty": 650
+            },
+            {
+              "price": 22595.2,
+              "qty": 700
+            },
+            {
+              "price": 22597.7,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:25:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:10:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 54000,
+        "confidence": 0.359,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": 0.06,
+          "tft": -0.1,
+          "rl": 0.0,
+          "sentiment": -0.01,
+          "options": 0.0,
+          "order_flow": 0.3,
+          "pattern": -0.02
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 53970.3,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 53967.8,
+              "qty": 550
+            },
+            {
+              "price": 53965.3,
+              "qty": 600
+            },
+            {
+              "price": 53962.8,
+              "qty": 650
+            },
+            {
+              "price": 53960.3,
+              "qty": 700
+            },
+            {
+              "price": 53957.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 53972.8,
+              "qty": 550
+            },
+            {
+              "price": 53975.3,
+              "qty": 600
+            },
+            {
+              "price": 53977.8,
+              "qty": 650
+            },
+            {
+              "price": 53980.3,
+              "qty": 700
+            },
+            {
+              "price": 53982.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:25:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:10:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 26050,
+        "confidence": 0.376,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": -0.03,
+          "tft": 0.08,
+          "rl": 0.0,
+          "sentiment": 0.02,
+          "options": 0.0,
+          "order_flow": 0.6,
+          "pattern": 0.03
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 26044.4,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26041.9,
+              "qty": 550
+            },
+            {
+              "price": 26039.4,
+              "qty": 600
+            },
+            {
+              "price": 26036.9,
+              "qty": 650
+            },
+            {
+              "price": 26034.4,
+              "qty": 700
+            },
+            {
+              "price": 26031.9,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26046.9,
+              "qty": 550
+            },
+            {
+              "price": 26049.4,
+              "qty": 600
+            },
+            {
+              "price": 26051.9,
+              "qty": 650
+            },
+            {
+              "price": 26054.4,
+              "qty": 700
+            },
+            {
+              "price": 26056.9,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:25:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:10:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 67150,
+        "confidence": 0.4245,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": 0.13,
+          "tft": 0.66,
+          "rl": 0.0,
+          "sentiment": 0.26,
+          "options": 0.0,
+          "order_flow": 0.36,
+          "pattern": 0.4
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 67152.25,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67149.8,
+              "qty": 550
+            },
+            {
+              "price": 67147.2,
+              "qty": 600
+            },
+            {
+              "price": 67144.8,
+              "qty": 650
+            },
+            {
+              "price": 67142.2,
+              "qty": 700
+            },
+            {
+              "price": 67139.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67154.8,
+              "qty": 550
+            },
+            {
+              "price": 67157.2,
+              "qty": 600
+            },
+            {
+              "price": 67159.8,
+              "qty": 650
+            },
+            {
+              "price": 67162.2,
+              "qty": 700
+            },
+            {
+              "price": 67164.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:25:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:25:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_1125_NIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 22650,
+        "confidence": 0.827,
+        "entry_price": 119.91,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 0.41,
+          "rl": 0.0,
+          "sentiment": 0.45,
+          "options": 0.6,
+          "order_flow": 0.51,
+          "pattern": 0.7
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 22610.85,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22608.3,
+              "qty": 550
+            },
+            {
+              "price": 22605.8,
+              "qty": 600
+            },
+            {
+              "price": 22603.3,
+              "qty": 650
+            },
+            {
+              "price": 22600.8,
+              "qty": 700
+            },
+            {
+              "price": 22598.3,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22613.3,
+              "qty": 550
+            },
+            {
+              "price": 22615.8,
+              "qty": 600
+            },
+            {
+              "price": 22618.3,
+              "qty": 650
+            },
+            {
+              "price": 22620.8,
+              "qty": 700
+            },
+            {
+              "price": 22623.3,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:40:00",
+        "exit_price": 129.96,
+        "pnl": 251.25,
+        "pnl_pct": 8.38,
+        "max_favorable": 133.31,
+        "max_adverse": 119.65,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:25:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1125_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 54200,
+        "confidence": 0.96,
+        "entry_price": 268.5,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 0.68,
+          "rl": 1.0,
+          "sentiment": 0.55,
+          "options": 0.6,
+          "order_flow": 0.8,
+          "pattern": 0.84
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 54066.4,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54063.9,
+              "qty": 550
+            },
+            {
+              "price": 54061.4,
+              "qty": 600
+            },
+            {
+              "price": 54058.9,
+              "qty": 650
+            },
+            {
+              "price": 54056.4,
+              "qty": 700
+            },
+            {
+              "price": 54053.9,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54068.9,
+              "qty": 550
+            },
+            {
+              "price": 54071.4,
+              "qty": 600
+            },
+            {
+              "price": 54073.9,
+              "qty": 650
+            },
+            {
+              "price": 54076.4,
+              "qty": 700
+            },
+            {
+              "price": 54078.9,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:40:00",
+        "exit_price": 296.53,
+        "pnl": 420.45,
+        "pnl_pct": 10.44,
+        "max_favorable": 305.87,
+        "max_adverse": 264.33,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:25:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1125_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 26150,
+        "confidence": 0.9125,
+        "entry_price": 133.22,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 0.87,
+          "rl": 0.0,
+          "sentiment": 0.61,
+          "options": 0.6,
+          "order_flow": 0.85,
+          "pattern": 0.94
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 26093.6,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26091.1,
+              "qty": 550
+            },
+            {
+              "price": 26088.6,
+              "qty": 600
+            },
+            {
+              "price": 26086.1,
+              "qty": 650
+            },
+            {
+              "price": 26083.6,
+              "qty": 700
+            },
+            {
+              "price": 26081.1,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26096.1,
+              "qty": 550
+            },
+            {
+              "price": 26098.6,
+              "qty": 600
+            },
+            {
+              "price": 26101.1,
+              "qty": 650
+            },
+            {
+              "price": 26103.6,
+              "qty": 700
+            },
+            {
+              "price": 26106.1,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:40:00",
+        "exit_price": 145.36,
+        "pnl": 303.5,
+        "pnl_pct": 9.11,
+        "max_favorable": 149.4,
+        "max_adverse": 127.78,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:25:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_1125_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 67200,
+        "confidence": 0.8239,
+        "entry_price": 397.9,
+        "model_scores": {
+          "technical": 0.88,
+          "tft": 0.72,
+          "rl": 0.0,
+          "sentiment": 0.52,
+          "options": 0.6,
+          "order_flow": 0.12,
+          "pattern": 0.8
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 67170.05,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67167.6,
+              "qty": 550
+            },
+            {
+              "price": 67165.1,
+              "qty": 600
+            },
+            {
+              "price": 67162.6,
+              "qty": 650
+            },
+            {
+              "price": 67160.1,
+              "qty": 700
+            },
+            {
+              "price": 67157.6,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67172.6,
+              "qty": 550
+            },
+            {
+              "price": 67175.1,
+              "qty": 600
+            },
+            {
+              "price": 67177.6,
+              "qty": 650
+            },
+            {
+              "price": 67180.1,
+              "qty": 700
+            },
+            {
+              "price": 67182.6,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:40:00",
+        "exit_price": 435.75,
+        "pnl": 1892.5,
+        "pnl_pct": 9.51,
+        "max_favorable": 448.37,
+        "max_adverse": 395.78,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:40:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_1140_NIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 22650,
+        "confidence": 0.8003,
+        "entry_price": 121.09,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 0.44,
+          "rl": 0.0,
+          "sentiment": 0.47,
+          "options": 0.6,
+          "order_flow": 0.05,
+          "pattern": 0.72
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 22613.35,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22610.8,
+              "qty": 550
+            },
+            {
+              "price": 22608.3,
+              "qty": 600
+            },
+            {
+              "price": 22605.8,
+              "qty": 650
+            },
+            {
+              "price": 22603.3,
+              "qty": 700
+            },
+            {
+              "price": 22600.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22615.8,
+              "qty": 550
+            },
+            {
+              "price": 22618.3,
+              "qty": 600
+            },
+            {
+              "price": 22620.8,
+              "qty": 650
+            },
+            {
+              "price": 22623.3,
+              "qty": 700
+            },
+            {
+              "price": 22625.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:55:00",
+        "exit_price": 134.11,
+        "pnl": 325.5,
+        "pnl_pct": 10.75,
+        "max_favorable": 138.45,
+        "max_adverse": 114.86,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:40:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1140_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 54200,
+        "confidence": 0.8246,
+        "entry_price": 268.93,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 0.64,
+          "rl": 0.0,
+          "sentiment": 0.53,
+          "options": 0.6,
+          "order_flow": 0.01,
+          "pattern": 0.82
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 54067.35,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54064.8,
+              "qty": 550
+            },
+            {
+              "price": 54062.3,
+              "qty": 600
+            },
+            {
+              "price": 54059.8,
+              "qty": 650
+            },
+            {
+              "price": 54057.3,
+              "qty": 700
+            },
+            {
+              "price": 54054.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54069.8,
+              "qty": 550
+            },
+            {
+              "price": 54072.3,
+              "qty": 600
+            },
+            {
+              "price": 54074.8,
+              "qty": 650
+            },
+            {
+              "price": 54077.3,
+              "qty": 700
+            },
+            {
+              "price": 54079.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:55:00",
+        "exit_price": 298.34,
+        "pnl": 441.15,
+        "pnl_pct": 10.94,
+        "max_favorable": 308.14,
+        "max_adverse": 253.3,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:40:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1140_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 26150,
+        "confidence": 0.8117,
+        "entry_price": 128.35,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 0.64,
+          "rl": 0.0,
+          "sentiment": 0.53,
+          "options": 0.6,
+          "order_flow": -0.18,
+          "pattern": 0.82
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 26082.9,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26080.4,
+              "qty": 550
+            },
+            {
+              "price": 26077.9,
+              "qty": 600
+            },
+            {
+              "price": 26075.4,
+              "qty": 650
+            },
+            {
+              "price": 26072.9,
+              "qty": 700
+            },
+            {
+              "price": 26070.4,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26085.4,
+              "qty": 550
+            },
+            {
+              "price": 26087.9,
+              "qty": 600
+            },
+            {
+              "price": 26090.4,
+              "qty": 650
+            },
+            {
+              "price": 26092.9,
+              "qty": 700
+            },
+            {
+              "price": 26095.4,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:55:00",
+        "exit_price": 137.68,
+        "pnl": 233.25,
+        "pnl_pct": 7.27,
+        "max_favorable": 140.79,
+        "max_adverse": 120.55,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:40:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_1140_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 67250,
+        "confidence": 0.8939,
+        "entry_price": 398.66,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 0.99,
+          "rl": 0.0,
+          "sentiment": 0.64,
+          "options": 0.6,
+          "order_flow": 0.34,
+          "pattern": 0.99
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 67220.95,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67218.4,
+              "qty": 550
+            },
+            {
+              "price": 67215.9,
+              "qty": 600
+            },
+            {
+              "price": 67213.4,
+              "qty": 650
+            },
+            {
+              "price": 67210.9,
+              "qty": 700
+            },
+            {
+              "price": 67208.4,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67223.4,
+              "qty": 550
+            },
+            {
+              "price": 67225.9,
+              "qty": 600
+            },
+            {
+              "price": 67228.4,
+              "qty": 650
+            },
+            {
+              "price": 67230.9,
+              "qty": 700
+            },
+            {
+              "price": 67233.4,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T11:55:00",
+        "exit_price": 422.77,
+        "pnl": 1205.5,
+        "pnl_pct": 6.05,
+        "max_favorable": 430.81,
+        "max_adverse": 360.07,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:55:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_1155_NIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 22700,
+        "confidence": 0.96,
+        "entry_price": 107.84,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 0.83,
+          "rl": 1.0,
+          "sentiment": 0.6,
+          "options": 0.6,
+          "order_flow": 0.4,
+          "pattern": 0.92
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 22633.7,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22631.2,
+              "qty": 550
+            },
+            {
+              "price": 22628.7,
+              "qty": 600
+            },
+            {
+              "price": 22626.2,
+              "qty": 650
+            },
+            {
+              "price": 22623.7,
+              "qty": 700
+            },
+            {
+              "price": 22621.2,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22636.2,
+              "qty": 550
+            },
+            {
+              "price": 22638.7,
+              "qty": 600
+            },
+            {
+              "price": 22641.2,
+              "qty": 650
+            },
+            {
+              "price": 22643.7,
+              "qty": 700
+            },
+            {
+              "price": 22646.2,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:10:00",
+        "exit_price": 120.43,
+        "pnl": 314.75,
+        "pnl_pct": 11.67,
+        "max_favorable": 124.62,
+        "max_adverse": 100.07,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:55:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1155_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 54200,
+        "confidence": 0.96,
+        "entry_price": 284.64,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 0.89,
+          "rl": 1.0,
+          "sentiment": 0.62,
+          "options": 0.6,
+          "order_flow": 0.28,
+          "pattern": 0.95
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 54101.45,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54098.9,
+              "qty": 550
+            },
+            {
+              "price": 54096.4,
+              "qty": 600
+            },
+            {
+              "price": 54093.9,
+              "qty": 650
+            },
+            {
+              "price": 54091.4,
+              "qty": 700
+            },
+            {
+              "price": 54088.9,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54103.9,
+              "qty": 550
+            },
+            {
+              "price": 54106.4,
+              "qty": 600
+            },
+            {
+              "price": 54108.9,
+              "qty": 650
+            },
+            {
+              "price": 54111.4,
+              "qty": 700
+            },
+            {
+              "price": 54113.9,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:10:00",
+        "exit_price": 302.26,
+        "pnl": 264.3,
+        "pnl_pct": 6.19,
+        "max_favorable": 308.14,
+        "max_adverse": 261.86,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:55:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1155_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 26150,
+        "confidence": 0.9251,
+        "entry_price": 130.16,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 0.69,
+          "rl": 1.0,
+          "sentiment": 0.55,
+          "options": 0.6,
+          "order_flow": 0.07,
+          "pattern": 0.84
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 26086.9,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26084.4,
+              "qty": 550
+            },
+            {
+              "price": 26081.9,
+              "qty": 600
+            },
+            {
+              "price": 26079.4,
+              "qty": 650
+            },
+            {
+              "price": 26076.9,
+              "qty": 700
+            },
+            {
+              "price": 26074.4,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26089.4,
+              "qty": 550
+            },
+            {
+              "price": 26091.9,
+              "qty": 600
+            },
+            {
+              "price": 26094.4,
+              "qty": 650
+            },
+            {
+              "price": 26096.9,
+              "qty": 700
+            },
+            {
+              "price": 26099.4,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:10:00",
+        "exit_price": 140.41,
+        "pnl": 256.25,
+        "pnl_pct": 7.87,
+        "max_favorable": 143.82,
+        "max_adverse": 121.6,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T11:55:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_1155_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 67275,
+        "confidence": 0.96,
+        "entry_price": 401.36,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 0.2,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 67250.95,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67248.4,
+              "qty": 550
+            },
+            {
+              "price": 67245.9,
+              "qty": 600
+            },
+            {
+              "price": 67243.4,
+              "qty": 650
+            },
+            {
+              "price": 67240.9,
+              "qty": 700
+            },
+            {
+              "price": 67238.4,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67253.4,
+              "qty": 550
+            },
+            {
+              "price": 67255.9,
+              "qty": 600
+            },
+            {
+              "price": 67258.4,
+              "qty": 650
+            },
+            {
+              "price": 67260.9,
+              "qty": 700
+            },
+            {
+              "price": 67263.4,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:10:00",
+        "exit_price": 426.37,
+        "pnl": 1250.5,
+        "pnl_pct": 6.23,
+        "max_favorable": 434.7,
+        "max_adverse": 360.08,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:10:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_1210_NIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 22700,
+        "confidence": 0.8462,
+        "entry_price": 110.95,
+        "model_scores": {
+          "technical": 0.85,
+          "tft": 0.91,
+          "rl": 0.0,
+          "sentiment": 0.57,
+          "options": 0.6,
+          "order_flow": 0.14,
+          "pattern": 0.88
+        },
+        "regime": "LUNCH_LULL"
+      },
+      "market_context": {
+        "spot_price": 22640.7,
+        "vix": 16.2,
+        "regime": "LUNCH_LULL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22638.2,
+              "qty": 550
+            },
+            {
+              "price": 22635.7,
+              "qty": 600
+            },
+            {
+              "price": 22633.2,
+              "qty": 650
+            },
+            {
+              "price": 22630.7,
+              "qty": 700
+            },
+            {
+              "price": 22628.2,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22643.2,
+              "qty": 550
+            },
+            {
+              "price": 22645.7,
+              "qty": 600
+            },
+            {
+              "price": 22648.2,
+              "qty": 650
+            },
+            {
+              "price": 22650.7,
+              "qty": 700
+            },
+            {
+              "price": 22653.2,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:25:00",
+        "exit_price": 121.37,
+        "pnl": 260.5,
+        "pnl_pct": 9.39,
+        "max_favorable": 124.84,
+        "max_adverse": 106.37,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:10:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1210_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 54200,
+        "confidence": 0.8135,
+        "entry_price": 279.46,
+        "model_scores": {
+          "technical": 0.88,
+          "tft": 0.75,
+          "rl": 0.0,
+          "sentiment": 0.53,
+          "options": 0.6,
+          "order_flow": -0.09,
+          "pattern": 0.81
+        },
+        "regime": "LUNCH_LULL"
+      },
+      "market_context": {
+        "spot_price": 54090.35,
+        "vix": 16.2,
+        "regime": "LUNCH_LULL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54087.8,
+              "qty": 550
+            },
+            {
+              "price": 54085.3,
+              "qty": 600
+            },
+            {
+              "price": 54082.8,
+              "qty": 650
+            },
+            {
+              "price": 54080.3,
+              "qty": 700
+            },
+            {
+              "price": 54077.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54092.8,
+              "qty": 550
+            },
+            {
+              "price": 54095.3,
+              "qty": 600
+            },
+            {
+              "price": 54097.8,
+              "qty": 650
+            },
+            {
+              "price": 54100.3,
+              "qty": 700
+            },
+            {
+              "price": 54102.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:25:00",
+        "exit_price": 314.69,
+        "pnl": 528.45,
+        "pnl_pct": 12.61,
+        "max_favorable": 326.44,
+        "max_adverse": 265.68,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:10:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1210_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 26150,
+        "confidence": 0.7841,
+        "entry_price": 131.77,
+        "model_scores": {
+          "technical": 0.66,
+          "tft": 0.71,
+          "rl": 0.0,
+          "sentiment": 0.45,
+          "options": 0.6,
+          "order_flow": 0.06,
+          "pattern": 0.69
+        },
+        "regime": "LUNCH_LULL"
+      },
+      "market_context": {
+        "spot_price": 26090.45,
+        "vix": 16.2,
+        "regime": "LUNCH_LULL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26088.0,
+              "qty": 550
+            },
+            {
+              "price": 26085.5,
+              "qty": 600
+            },
+            {
+              "price": 26083.0,
+              "qty": 650
+            },
+            {
+              "price": 26080.5,
+              "qty": 700
+            },
+            {
+              "price": 26078.0,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26093.0,
+              "qty": 550
+            },
+            {
+              "price": 26095.5,
+              "qty": 600
+            },
+            {
+              "price": 26098.0,
+              "qty": 650
+            },
+            {
+              "price": 26100.5,
+              "qty": 700
+            },
+            {
+              "price": 26103.0,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:25:00",
+        "exit_price": 146.66,
+        "pnl": 372.25,
+        "pnl_pct": 11.3,
+        "max_favorable": 151.62,
+        "max_adverse": 126.7,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:10:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_1210_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 67275,
+        "confidence": 0.8489,
+        "entry_price": 406.39,
+        "model_scores": {
+          "technical": 0.82,
+          "tft": 1.0,
+          "rl": 0.0,
+          "sentiment": 0.59,
+          "options": 0.6,
+          "order_flow": 0.07,
+          "pattern": 0.91
+        },
+        "regime": "LUNCH_LULL"
+      },
+      "market_context": {
+        "spot_price": 67260.8,
+        "vix": 16.2,
+        "regime": "LUNCH_LULL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67258.3,
+              "qty": 550
+            },
+            {
+              "price": 67255.8,
+              "qty": 600
+            },
+            {
+              "price": 67253.3,
+              "qty": 650
+            },
+            {
+              "price": 67250.8,
+              "qty": 700
+            },
+            {
+              "price": 67248.3,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67263.3,
+              "qty": 550
+            },
+            {
+              "price": 67265.8,
+              "qty": 600
+            },
+            {
+              "price": 67268.3,
+              "qty": 650
+            },
+            {
+              "price": 67270.8,
+              "qty": 700
+            },
+            {
+              "price": 67273.3,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:25:00",
+        "exit_price": 435.32,
+        "pnl": 1446.5,
+        "pnl_pct": 7.12,
+        "max_favorable": 444.96,
+        "max_adverse": 387.39,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:25:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_1225_NIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 22700,
+        "confidence": 0.8846,
+        "entry_price": 115.09,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 0.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 0.18,
+          "pattern": 1.0
+        },
+        "regime": "LUNCH_LULL"
+      },
+      "market_context": {
+        "spot_price": 22649.85,
+        "vix": 16.2,
+        "regime": "LUNCH_LULL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22647.3,
+              "qty": 550
+            },
+            {
+              "price": 22644.8,
+              "qty": 600
+            },
+            {
+              "price": 22642.3,
+              "qty": 650
+            },
+            {
+              "price": 22639.8,
+              "qty": 700
+            },
+            {
+              "price": 22637.3,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22652.3,
+              "qty": 550
+            },
+            {
+              "price": 22654.8,
+              "qty": 600
+            },
+            {
+              "price": 22657.3,
+              "qty": 650
+            },
+            {
+              "price": 22659.8,
+              "qty": 700
+            },
+            {
+              "price": 22662.3,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:40:00",
+        "exit_price": 132.98,
+        "pnl": 447.25,
+        "pnl_pct": 15.54,
+        "max_favorable": 138.94,
+        "max_adverse": 111.44,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:25:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1225_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 54200,
+        "confidence": 0.8961,
+        "entry_price": 299.64,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 0.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 0.35,
+          "pattern": 1.0
+        },
+        "regime": "LUNCH_LULL"
+      },
+      "market_context": {
+        "spot_price": 54132.9,
+        "vix": 16.2,
+        "regime": "LUNCH_LULL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54130.4,
+              "qty": 550
+            },
+            {
+              "price": 54127.9,
+              "qty": 600
+            },
+            {
+              "price": 54125.4,
+              "qty": 650
+            },
+            {
+              "price": 54122.9,
+              "qty": 700
+            },
+            {
+              "price": 54120.4,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54135.4,
+              "qty": 550
+            },
+            {
+              "price": 54137.9,
+              "qty": 600
+            },
+            {
+              "price": 54140.4,
+              "qty": 650
+            },
+            {
+              "price": 54142.9,
+              "qty": 700
+            },
+            {
+              "price": 54145.4,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:40:00",
+        "exit_price": 346.47,
+        "pnl": 702.45,
+        "pnl_pct": 15.63,
+        "max_favorable": 362.08,
+        "max_adverse": 294.81,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:25:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1225_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 26150,
+        "confidence": 0.8763,
+        "entry_price": 143.56,
+        "model_scores": {
+          "technical": 0.84,
+          "tft": 1.0,
+          "rl": 0.0,
+          "sentiment": 0.6,
+          "options": 0.6,
+          "order_flow": 0.43,
+          "pattern": 0.92
+        },
+        "regime": "LUNCH_LULL"
+      },
+      "market_context": {
+        "spot_price": 26115.55,
+        "vix": 16.2,
+        "regime": "LUNCH_LULL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26113.0,
+              "qty": 550
+            },
+            {
+              "price": 26110.5,
+              "qty": 600
+            },
+            {
+              "price": 26108.0,
+              "qty": 650
+            },
+            {
+              "price": 26105.5,
+              "qty": 700
+            },
+            {
+              "price": 26103.0,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26118.0,
+              "qty": 550
+            },
+            {
+              "price": 26120.5,
+              "qty": 600
+            },
+            {
+              "price": 26123.0,
+              "qty": 650
+            },
+            {
+              "price": 26125.5,
+              "qty": 700
+            },
+            {
+              "price": 26128.0,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:40:00",
+        "exit_price": 162.53,
+        "pnl": 474.25,
+        "pnl_pct": 13.21,
+        "max_favorable": 168.85,
+        "max_adverse": 135.24,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:25:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_1225_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 67325,
+        "confidence": 0.8853,
+        "entry_price": 395.81,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 0.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 0.19,
+          "pattern": 1.0
+        },
+        "regime": "LUNCH_LULL"
+      },
+      "market_context": {
+        "spot_price": 67289.4,
+        "vix": 16.2,
+        "regime": "LUNCH_LULL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67286.9,
+              "qty": 550
+            },
+            {
+              "price": 67284.4,
+              "qty": 600
+            },
+            {
+              "price": 67281.9,
+              "qty": 650
+            },
+            {
+              "price": 67279.4,
+              "qty": 700
+            },
+            {
+              "price": 67276.9,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67291.9,
+              "qty": 550
+            },
+            {
+              "price": 67294.4,
+              "qty": 600
+            },
+            {
+              "price": 67296.9,
+              "qty": 650
+            },
+            {
+              "price": 67299.4,
+              "qty": 700
+            },
+            {
+              "price": 67301.9,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:40:00",
+        "exit_price": 426.67,
+        "pnl": 1543.0,
+        "pnl_pct": 7.8,
+        "max_favorable": 436.96,
+        "max_adverse": 372.11,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:40:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_1240_NIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 22750,
+        "confidence": 0.96,
+        "entry_price": 113.8,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 0.92,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 22696.35,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22693.8,
+              "qty": 550
+            },
+            {
+              "price": 22691.3,
+              "qty": 600
+            },
+            {
+              "price": 22688.8,
+              "qty": 650
+            },
+            {
+              "price": 22686.3,
+              "qty": 700
+            },
+            {
+              "price": 22683.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22698.8,
+              "qty": 550
+            },
+            {
+              "price": 22701.3,
+              "qty": 600
+            },
+            {
+              "price": 22703.8,
+              "qty": 650
+            },
+            {
+              "price": 22706.3,
+              "qty": 700
+            },
+            {
+              "price": 22708.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:55:00",
+        "exit_price": 138.21,
+        "pnl": 610.25,
+        "pnl_pct": 21.45,
+        "max_favorable": 146.34,
+        "max_adverse": 102.12,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:40:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1240_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 54300,
+        "confidence": 0.96,
+        "entry_price": 308.62,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 0.97,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 54250.0,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54247.5,
+              "qty": 550
+            },
+            {
+              "price": 54245.0,
+              "qty": 600
+            },
+            {
+              "price": 54242.5,
+              "qty": 650
+            },
+            {
+              "price": 54240.0,
+              "qty": 700
+            },
+            {
+              "price": 54237.5,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54252.5,
+              "qty": 550
+            },
+            {
+              "price": 54255.0,
+              "qty": 600
+            },
+            {
+              "price": 54257.5,
+              "qty": 650
+            },
+            {
+              "price": 54260.0,
+              "qty": 700
+            },
+            {
+              "price": 54262.5,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:55:00",
+        "exit_price": 362.91,
+        "pnl": 814.35,
+        "pnl_pct": 17.59,
+        "max_favorable": 381.01,
+        "max_adverse": 260.48,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:40:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1240_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 26200,
+        "confidence": 0.96,
+        "entry_price": 143.99,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 0.87,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 26165.8,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26163.3,
+              "qty": 550
+            },
+            {
+              "price": 26160.8,
+              "qty": 600
+            },
+            {
+              "price": 26158.3,
+              "qty": 650
+            },
+            {
+              "price": 26155.8,
+              "qty": 700
+            },
+            {
+              "price": 26153.3,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26168.3,
+              "qty": 550
+            },
+            {
+              "price": 26170.8,
+              "qty": 600
+            },
+            {
+              "price": 26173.3,
+              "qty": 650
+            },
+            {
+              "price": 26175.8,
+              "qty": 700
+            },
+            {
+              "price": 26178.3,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:55:00",
+        "exit_price": 169.44,
+        "pnl": 636.25,
+        "pnl_pct": 17.67,
+        "max_favorable": 177.93,
+        "max_adverse": 121.88,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:40:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_1240_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 67400,
+        "confidence": 0.96,
+        "entry_price": 396.96,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 0.51,
+          "pattern": 1.0
+        },
+        "regime": "LUNCH_LULL"
+      },
+      "market_context": {
+        "spot_price": 67365.75,
+        "vix": 16.2,
+        "regime": "LUNCH_LULL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67363.2,
+              "qty": 550
+            },
+            {
+              "price": 67360.8,
+              "qty": 600
+            },
+            {
+              "price": 67358.2,
+              "qty": 650
+            },
+            {
+              "price": 67355.8,
+              "qty": 700
+            },
+            {
+              "price": 67353.2,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67368.2,
+              "qty": 550
+            },
+            {
+              "price": 67370.8,
+              "qty": 600
+            },
+            {
+              "price": 67373.2,
+              "qty": 650
+            },
+            {
+              "price": 67375.8,
+              "qty": 700
+            },
+            {
+              "price": 67378.2,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T12:55:00",
+        "exit_price": 462.06,
+        "pnl": 3255.0,
+        "pnl_pct": 16.4,
+        "max_favorable": 483.76,
+        "max_adverse": 369.76,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:55:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_1255_NIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 22800,
+        "confidence": 0.96,
+        "entry_price": 121.11,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 1.0,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 22761.45,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22759.0,
+              "qty": 550
+            },
+            {
+              "price": 22756.5,
+              "qty": 600
+            },
+            {
+              "price": 22754.0,
+              "qty": 650
+            },
+            {
+              "price": 22751.5,
+              "qty": 700
+            },
+            {
+              "price": 22749.0,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22764.0,
+              "qty": 550
+            },
+            {
+              "price": 22766.5,
+              "qty": 600
+            },
+            {
+              "price": 22769.0,
+              "qty": 650
+            },
+            {
+              "price": 22771.5,
+              "qty": 700
+            },
+            {
+              "price": 22774.0,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:10:00",
+        "exit_price": 126.09,
+        "pnl": 124.5,
+        "pnl_pct": 4.11,
+        "max_favorable": 128.77,
+        "max_adverse": 98.26,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:55:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1255_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 54500,
+        "confidence": 0.96,
+        "entry_price": 276.1,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 1.0,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 54379.1,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54376.6,
+              "qty": 550
+            },
+            {
+              "price": 54374.1,
+              "qty": 600
+            },
+            {
+              "price": 54371.6,
+              "qty": 650
+            },
+            {
+              "price": 54369.1,
+              "qty": 700
+            },
+            {
+              "price": 54366.6,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54381.6,
+              "qty": 550
+            },
+            {
+              "price": 54384.1,
+              "qty": 600
+            },
+            {
+              "price": 54386.6,
+              "qty": 650
+            },
+            {
+              "price": 54389.1,
+              "qty": 700
+            },
+            {
+              "price": 54391.6,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:10:00",
+        "exit_price": 297.15,
+        "pnl": 315.75,
+        "pnl_pct": 7.62,
+        "max_favorable": 304.16,
+        "max_adverse": 218.27,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:55:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1255_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 26300,
+        "confidence": 0.96,
+        "entry_price": 128.21,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 1.0,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 26230.55,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26228.0,
+              "qty": 550
+            },
+            {
+              "price": 26225.5,
+              "qty": 600
+            },
+            {
+              "price": 26223.0,
+              "qty": 650
+            },
+            {
+              "price": 26220.5,
+              "qty": 700
+            },
+            {
+              "price": 26218.0,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26233.0,
+              "qty": 550
+            },
+            {
+              "price": 26235.5,
+              "qty": 600
+            },
+            {
+              "price": 26238.0,
+              "qty": 650
+            },
+            {
+              "price": 26240.5,
+              "qty": 700
+            },
+            {
+              "price": 26243.0,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:10:00",
+        "exit_price": 137.05,
+        "pnl": 221.0,
+        "pnl_pct": 6.89,
+        "max_favorable": 139.99,
+        "max_adverse": 102.15,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T12:55:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_1255_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 67550,
+        "confidence": 0.96,
+        "entry_price": 403.4,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 1.0,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 67526.65,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67524.1,
+              "qty": 550
+            },
+            {
+              "price": 67521.6,
+              "qty": 600
+            },
+            {
+              "price": 67519.1,
+              "qty": 650
+            },
+            {
+              "price": 67516.6,
+              "qty": 700
+            },
+            {
+              "price": 67514.1,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67529.1,
+              "qty": 550
+            },
+            {
+              "price": 67531.6,
+              "qty": 600
+            },
+            {
+              "price": 67534.1,
+              "qty": 650
+            },
+            {
+              "price": 67536.6,
+              "qty": 700
+            },
+            {
+              "price": 67539.1,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:10:00",
+        "exit_price": 428.13,
+        "pnl": 1236.5,
+        "pnl_pct": 6.13,
+        "max_favorable": 436.38,
+        "max_adverse": 344.2,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:10:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_1310_NIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 22800,
+        "confidence": 0.9274,
+        "entry_price": 109.02,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": -0.52,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 22735.0,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22732.5,
+              "qty": 550
+            },
+            {
+              "price": 22730.0,
+              "qty": 600
+            },
+            {
+              "price": 22727.5,
+              "qty": 650
+            },
+            {
+              "price": 22725.0,
+              "qty": 700
+            },
+            {
+              "price": 22722.5,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22737.5,
+              "qty": 550
+            },
+            {
+              "price": 22740.0,
+              "qty": 600
+            },
+            {
+              "price": 22742.5,
+              "qty": 650
+            },
+            {
+              "price": 22745.0,
+              "qty": 700
+            },
+            {
+              "price": 22747.5,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:25:00",
+        "exit_price": 112.45,
+        "pnl": 85.75,
+        "pnl_pct": 3.15,
+        "max_favorable": 114.3,
+        "max_adverse": 84.84,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:10:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1310_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 54400,
+        "confidence": 0.9362,
+        "entry_price": 300.57,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": -0.39,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 54332.3,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54329.8,
+              "qty": 550
+            },
+            {
+              "price": 54327.3,
+              "qty": 600
+            },
+            {
+              "price": 54324.8,
+              "qty": 650
+            },
+            {
+              "price": 54322.3,
+              "qty": 700
+            },
+            {
+              "price": 54319.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54334.8,
+              "qty": 550
+            },
+            {
+              "price": 54337.3,
+              "qty": 600
+            },
+            {
+              "price": 54339.8,
+              "qty": 650
+            },
+            {
+              "price": 54342.3,
+              "qty": 700
+            },
+            {
+              "price": 54344.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:25:00",
+        "exit_price": 292.92,
+        "pnl": -114.75,
+        "pnl_pct": -2.55,
+        "max_favorable": 306.48,
+        "max_adverse": 242.55,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:10:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1310_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 26250,
+        "confidence": 0.9308,
+        "entry_price": 138.29,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": -0.47,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 26203.2,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26200.7,
+              "qty": 550
+            },
+            {
+              "price": 26198.2,
+              "qty": 600
+            },
+            {
+              "price": 26195.7,
+              "qty": 650
+            },
+            {
+              "price": 26193.2,
+              "qty": 700
+            },
+            {
+              "price": 26190.7,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26205.7,
+              "qty": 550
+            },
+            {
+              "price": 26208.2,
+              "qty": 600
+            },
+            {
+              "price": 26210.7,
+              "qty": 650
+            },
+            {
+              "price": 26213.2,
+              "qty": 700
+            },
+            {
+              "price": 26215.7,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:25:00",
+        "exit_price": 141.6,
+        "pnl": 82.75,
+        "pnl_pct": 2.39,
+        "max_favorable": 143.39,
+        "max_adverse": 109.3,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:10:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_1310_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 67475,
+        "confidence": 0.9287,
+        "entry_price": 402.76,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": -0.5,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 67451.3,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67448.8,
+              "qty": 550
+            },
+            {
+              "price": 67446.3,
+              "qty": 600
+            },
+            {
+              "price": 67443.8,
+              "qty": 650
+            },
+            {
+              "price": 67441.3,
+              "qty": 700
+            },
+            {
+              "price": 67438.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67453.8,
+              "qty": 550
+            },
+            {
+              "price": 67456.3,
+              "qty": 600
+            },
+            {
+              "price": 67458.8,
+              "qty": 650
+            },
+            {
+              "price": 67461.3,
+              "qty": 700
+            },
+            {
+              "price": 67463.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:25:00",
+        "exit_price": 413.59,
+        "pnl": 541.5,
+        "pnl_pct": 2.69,
+        "max_favorable": 419.42,
+        "max_adverse": 334.59,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:25:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_1325_NIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 22800,
+        "confidence": 0.9504,
+        "entry_price": 105.14,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": -0.18,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 22726.1,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22723.6,
+              "qty": 550
+            },
+            {
+              "price": 22721.1,
+              "qty": 600
+            },
+            {
+              "price": 22718.6,
+              "qty": 650
+            },
+            {
+              "price": 22716.1,
+              "qty": 700
+            },
+            {
+              "price": 22713.6,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22728.6,
+              "qty": 550
+            },
+            {
+              "price": 22731.1,
+              "qty": 600
+            },
+            {
+              "price": 22733.6,
+              "qty": 650
+            },
+            {
+              "price": 22736.1,
+              "qty": 700
+            },
+            {
+              "price": 22738.6,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:40:00",
+        "exit_price": 107.79,
+        "pnl": 66.25,
+        "pnl_pct": 2.52,
+        "max_favorable": 109.22,
+        "max_adverse": 84.84,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:25:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1325_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 54400,
+        "confidence": 0.9544,
+        "entry_price": 293.53,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": -0.12,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 54317.65,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54315.2,
+              "qty": 550
+            },
+            {
+              "price": 54312.7,
+              "qty": 600
+            },
+            {
+              "price": 54310.2,
+              "qty": 650
+            },
+            {
+              "price": 54307.7,
+              "qty": 700
+            },
+            {
+              "price": 54305.2,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54320.2,
+              "qty": 550
+            },
+            {
+              "price": 54322.7,
+              "qty": 600
+            },
+            {
+              "price": 54325.2,
+              "qty": 650
+            },
+            {
+              "price": 54327.7,
+              "qty": 700
+            },
+            {
+              "price": 54330.2,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:40:00",
+        "exit_price": 299.3,
+        "pnl": 86.55,
+        "pnl_pct": 1.97,
+        "max_favorable": 302.4,
+        "max_adverse": 242.55,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:25:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1325_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 26250,
+        "confidence": 0.96,
+        "entry_price": 138.95,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 0.02,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 26204.6,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26202.1,
+              "qty": 550
+            },
+            {
+              "price": 26199.6,
+              "qty": 600
+            },
+            {
+              "price": 26197.1,
+              "qty": 650
+            },
+            {
+              "price": 26194.6,
+              "qty": 700
+            },
+            {
+              "price": 26192.1,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26207.1,
+              "qty": 550
+            },
+            {
+              "price": 26209.6,
+              "qty": 600
+            },
+            {
+              "price": 26212.1,
+              "qty": 650
+            },
+            {
+              "price": 26214.6,
+              "qty": 700
+            },
+            {
+              "price": 26217.1,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:40:00",
+        "exit_price": 144.73,
+        "pnl": 144.5,
+        "pnl_pct": 4.16,
+        "max_favorable": 147.84,
+        "max_adverse": 109.3,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:25:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_1325_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 67450,
+        "confidence": 0.9557,
+        "entry_price": 407.85,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": -0.1,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 67436.55,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67434.1,
+              "qty": 550
+            },
+            {
+              "price": 67431.6,
+              "qty": 600
+            },
+            {
+              "price": 67429.1,
+              "qty": 650
+            },
+            {
+              "price": 67426.6,
+              "qty": 700
+            },
+            {
+              "price": 67424.1,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67439.1,
+              "qty": 550
+            },
+            {
+              "price": 67441.6,
+              "qty": 600
+            },
+            {
+              "price": 67444.1,
+              "qty": 650
+            },
+            {
+              "price": 67446.6,
+              "qty": 700
+            },
+            {
+              "price": 67449.1,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:40:00",
+        "exit_price": 419.02,
+        "pnl": 558.5,
+        "pnl_pct": 2.74,
+        "max_favorable": 425.04,
+        "max_adverse": 345.88,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:40:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261028_1340_NIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 22750,
+        "confidence": 0.96,
+        "entry_price": 127.31,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": -0.02,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 22725.0,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22722.5,
+              "qty": 550
+            },
+            {
+              "price": 22720.0,
+              "qty": 600
+            },
+            {
+              "price": 22717.5,
+              "qty": 650
+            },
+            {
+              "price": 22715.0,
+              "qty": 700
+            },
+            {
+              "price": 22712.5,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22727.5,
+              "qty": 550
+            },
+            {
+              "price": 22730.0,
+              "qty": 600
+            },
+            {
+              "price": 22732.5,
+              "qty": 650
+            },
+            {
+              "price": 22735.0,
+              "qty": 700
+            },
+            {
+              "price": 22737.5,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:55:00",
+        "exit_price": 132.68,
+        "pnl": 134.25,
+        "pnl_pct": 4.22,
+        "max_favorable": 135.57,
+        "max_adverse": 117.57,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:40:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1340_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 54400,
+        "confidence": 0.9557,
+        "entry_price": 287.64,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": -0.1,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 54305.25,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54302.8,
+              "qty": 550
+            },
+            {
+              "price": 54300.2,
+              "qty": 600
+            },
+            {
+              "price": 54297.8,
+              "qty": 650
+            },
+            {
+              "price": 54295.2,
+              "qty": 700
+            },
+            {
+              "price": 54292.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54307.8,
+              "qty": 550
+            },
+            {
+              "price": 54310.2,
+              "qty": 600
+            },
+            {
+              "price": 54312.8,
+              "qty": 650
+            },
+            {
+              "price": 54315.2,
+              "qty": 700
+            },
+            {
+              "price": 54317.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:55:00",
+        "exit_price": 300.54,
+        "pnl": 193.5,
+        "pnl_pct": 4.48,
+        "max_favorable": 307.49,
+        "max_adverse": 268.53,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:40:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1340_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 26250,
+        "confidence": 0.8705,
+        "entry_price": 138.22,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 0.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": -0.03,
+          "pattern": 1.0
+        },
+        "regime": "TRENDING_INTRADAY"
+      },
+      "market_context": {
+        "spot_price": 26203.05,
+        "vix": 16.2,
+        "regime": "TRENDING_INTRADAY",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26200.5,
+              "qty": 550
+            },
+            {
+              "price": 26198.0,
+              "qty": 600
+            },
+            {
+              "price": 26195.5,
+              "qty": 650
+            },
+            {
+              "price": 26193.0,
+              "qty": 700
+            },
+            {
+              "price": 26190.5,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26205.5,
+              "qty": 550
+            },
+            {
+              "price": 26208.0,
+              "qty": 600
+            },
+            {
+              "price": 26210.5,
+              "qty": 650
+            },
+            {
+              "price": 26213.0,
+              "qty": 700
+            },
+            {
+              "price": 26215.5,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:55:00",
+        "exit_price": 147.49,
+        "pnl": 231.75,
+        "pnl_pct": 6.71,
+        "max_favorable": 150.58,
+        "max_adverse": 133.4,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:40:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 67400,
+        "confidence": 0.4842,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": 0.91,
+          "tft": 0.82,
+          "rl": 0.0,
+          "sentiment": 0.56,
+          "options": 0.0,
+          "order_flow": -0.18,
+          "pattern": 0.86
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 67410.15,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67407.6,
+              "qty": 550
+            },
+            {
+              "price": 67405.1,
+              "qty": 600
+            },
+            {
+              "price": 67402.6,
+              "qty": 650
+            },
+            {
+              "price": 67400.1,
+              "qty": 700
+            },
+            {
+              "price": 67397.6,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67412.6,
+              "qty": 550
+            },
+            {
+              "price": 67415.1,
+              "qty": 600
+            },
+            {
+              "price": 67417.6,
+              "qty": 650
+            },
+            {
+              "price": 67420.1,
+              "qty": 700
+            },
+            {
+              "price": 67422.6,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T13:55:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:55:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 22700,
+        "confidence": 0.4289,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": 0.41,
+          "tft": 0.76,
+          "rl": 0.0,
+          "sentiment": 0.38,
+          "options": 0.0,
+          "order_flow": -0.37,
+          "pattern": 0.58
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 22706.25,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22703.8,
+              "qty": 550
+            },
+            {
+              "price": 22701.2,
+              "qty": 600
+            },
+            {
+              "price": 22698.8,
+              "qty": 650
+            },
+            {
+              "price": 22696.2,
+              "qty": 700
+            },
+            {
+              "price": 22693.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22708.8,
+              "qty": 550
+            },
+            {
+              "price": 22711.2,
+              "qty": 600
+            },
+            {
+              "price": 22713.8,
+              "qty": 650
+            },
+            {
+              "price": 22716.2,
+              "qty": 700
+            },
+            {
+              "price": 22718.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T14:10:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:55:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261028_1355_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 54400,
+        "confidence": 0.8138,
+        "entry_price": 281.84,
+        "model_scores": {
+          "technical": 0.68,
+          "tft": 0.99,
+          "rl": 0.0,
+          "sentiment": 0.54,
+          "options": 0.6,
+          "order_flow": -0.1,
+          "pattern": 0.83
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 54292.85,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54290.3,
+              "qty": 550
+            },
+            {
+              "price": 54287.8,
+              "qty": 600
+            },
+            {
+              "price": 54285.3,
+              "qty": 650
+            },
+            {
+              "price": 54282.8,
+              "qty": 700
+            },
+            {
+              "price": 54280.3,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54295.3,
+              "qty": 550
+            },
+            {
+              "price": 54297.8,
+              "qty": 600
+            },
+            {
+              "price": 54300.3,
+              "qty": 650
+            },
+            {
+              "price": 54302.8,
+              "qty": 700
+            },
+            {
+              "price": 54305.3,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T14:10:00",
+        "exit_price": 290.94,
+        "pnl": 136.5,
+        "pnl_pct": 3.23,
+        "max_favorable": 295.84,
+        "max_adverse": 267.07,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:55:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": "SIM_20261028_1355_FINNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 26250,
+        "confidence": 0.96,
+        "entry_price": 145.05,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 1.0,
+          "rl": 1.0,
+          "sentiment": 0.65,
+          "options": 0.6,
+          "order_flow": 0.25,
+          "pattern": 1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 26217.35,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26214.8,
+              "qty": 550
+            },
+            {
+              "price": 26212.3,
+              "qty": 600
+            },
+            {
+              "price": 26209.8,
+              "qty": 650
+            },
+            {
+              "price": 26207.3,
+              "qty": 700
+            },
+            {
+              "price": 26204.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26219.8,
+              "qty": 550
+            },
+            {
+              "price": 26222.3,
+              "qty": 600
+            },
+            {
+              "price": 26224.8,
+              "qty": 650
+            },
+            {
+              "price": 26227.3,
+              "qty": 700
+            },
+            {
+              "price": 26229.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T14:10:00",
+        "exit_price": 148.64,
+        "pnl": 89.75,
+        "pnl_pct": 2.48,
+        "max_favorable": 150.58,
+        "max_adverse": 132.57,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T13:55:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 67400,
+        "confidence": 0.4237,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": 0.36,
+          "tft": 0.63,
+          "rl": 0.0,
+          "sentiment": 0.32,
+          "options": 0.0,
+          "order_flow": -0.13,
+          "pattern": 0.49
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 67391.3,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67388.8,
+              "qty": 550
+            },
+            {
+              "price": 67386.3,
+              "qty": 600
+            },
+            {
+              "price": 67383.8,
+              "qty": 650
+            },
+            {
+              "price": 67381.3,
+              "qty": 700
+            },
+            {
+              "price": 67378.8,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67393.8,
+              "qty": 550
+            },
+            {
+              "price": 67396.3,
+              "qty": 600
+            },
+            {
+              "price": 67398.8,
+              "qty": 650
+            },
+            {
+              "price": 67401.3,
+              "qty": 700
+            },
+            {
+              "price": 67403.8,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T14:10:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T14:10:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 22700,
+        "confidence": 0.3862,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": -0.2,
+          "tft": 0.71,
+          "rl": 0.0,
+          "sentiment": 0.17,
+          "options": 0.0,
+          "order_flow": 0.01,
+          "pattern": 0.26
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 22706.65,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 22704.2,
+              "qty": 550
+            },
+            {
+              "price": 22701.7,
+              "qty": 600
+            },
+            {
+              "price": 22699.2,
+              "qty": 650
+            },
+            {
+              "price": 22696.7,
+              "qty": 700
+            },
+            {
+              "price": 22694.2,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 22709.2,
+              "qty": 550
+            },
+            {
+              "price": 22711.7,
+              "qty": 600
+            },
+            {
+              "price": 22714.2,
+              "qty": 650
+            },
+            {
+              "price": 22716.7,
+              "qty": 700
+            },
+            {
+              "price": 22719.2,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T14:25:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T14:10:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 54300,
+        "confidence": 0.4301,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": 0.07,
+          "tft": 0.96,
+          "rl": 0.0,
+          "sentiment": 0.34,
+          "options": 0.0,
+          "order_flow": 0.05,
+          "pattern": 0.52
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 54298.6,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 54296.1,
+              "qty": 550
+            },
+            {
+              "price": 54293.6,
+              "qty": 600
+            },
+            {
+              "price": 54291.1,
+              "qty": 650
+            },
+            {
+              "price": 54288.6,
+              "qty": 700
+            },
+            {
+              "price": 54286.1,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 54301.1,
+              "qty": 550
+            },
+            {
+              "price": 54303.6,
+              "qty": 600
+            },
+            {
+              "price": 54306.1,
+              "qty": 650
+            },
+            {
+              "price": 54308.6,
+              "qty": 700
+            },
+            {
+              "price": 54311.1,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T14:25:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T14:10:00",
+      "symbol": "FINNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 26200,
+        "confidence": 0.4756,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": 0.6,
+          "tft": 1.0,
+          "rl": 0.0,
+          "sentiment": 0.52,
+          "options": 0.0,
+          "order_flow": -0.05,
+          "pattern": 0.8
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 26214.45,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 26212.0,
+              "qty": 550
+            },
+            {
+              "price": 26209.5,
+              "qty": 600
+            },
+            {
+              "price": 26207.0,
+              "qty": 650
+            },
+            {
+              "price": 26204.5,
+              "qty": 700
+            },
+            {
+              "price": 26202.0,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 26217.0,
+              "qty": 550
+            },
+            {
+              "price": 26219.5,
+              "qty": 600
+            },
+            {
+              "price": 26222.0,
+              "qty": 650
+            },
+            {
+              "price": 26224.5,
+              "qty": 700
+            },
+            {
+              "price": 26227.0,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T14:25:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T14:10:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 67375,
+        "confidence": 0.3857,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": -0.27,
+          "tft": 0.53,
+          "rl": -1.0,
+          "sentiment": 0.08,
+          "options": 0.0,
+          "order_flow": -0.05,
+          "pattern": 0.13
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 67384.0,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67381.5,
+              "qty": 550
+            },
+            {
+              "price": 67379.0,
+              "qty": 600
+            },
+            {
+              "price": 67376.5,
+              "qty": 650
+            },
+            {
+              "price": 67374.0,
+              "qty": 700
+            },
+            {
+              "price": 67371.5,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67386.5,
+              "qty": 550
+            },
+            {
+              "price": 67389.0,
+              "qty": 600
+            },
+            {
+              "price": 67391.5,
+              "qty": 650
+            },
+            {
+              "price": 67394.0,
+              "qty": 700
+            },
+            {
+              "price": 67396.5,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T14:25:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T14:25:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 67350,
+        "confidence": 0.3659,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": -0.22,
+          "tft": 0.2,
+          "rl": 0.0,
+          "sentiment": -0.01,
+          "options": 0.0,
+          "order_flow": -0.31,
+          "pattern": -0.01
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 67338.05,
+        "vix": 16.2,
+        "regime": "NOMINAL",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67335.6,
+              "qty": 550
+            },
+            {
+              "price": 67333.1,
+              "qty": 600
+            },
+            {
+              "price": 67330.6,
+              "qty": 650
+            },
+            {
+              "price": 67328.1,
+              "qty": 700
+            },
+            {
+              "price": 67325.6,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67340.6,
+              "qty": 550
+            },
+            {
+              "price": 67343.1,
+              "qty": 600
+            },
+            {
+              "price": 67345.6,
+              "qty": 650
+            },
+            {
+              "price": 67348.1,
+              "qty": 700
+            },
+            {
+              "price": 67350.6,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T14:40:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T14:40:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_1440_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 67250,
+        "confidence": 0.7962,
+        "entry_price": 363.96,
+        "model_scores": {
+          "technical": -0.97,
+          "tft": -0.25,
+          "rl": 0.0,
+          "sentiment": -0.4,
+          "options": -0.6,
+          "order_flow": -0.44,
+          "pattern": -0.61
+        },
+        "regime": "POWER_HOUR_TREND"
+      },
+      "market_context": {
+        "spot_price": 67272.9,
+        "vix": 16.2,
+        "regime": "POWER_HOUR_TREND",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67270.4,
+              "qty": 550
+            },
+            {
+              "price": 67267.9,
+              "qty": 600
+            },
+            {
+              "price": 67265.4,
+              "qty": 650
+            },
+            {
+              "price": 67262.9,
+              "qty": 700
+            },
+            {
+              "price": 67260.4,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67275.4,
+              "qty": 550
+            },
+            {
+              "price": 67277.9,
+              "qty": 600
+            },
+            {
+              "price": 67280.4,
+              "qty": 650
+            },
+            {
+              "price": 67282.9,
+              "qty": 700
+            },
+            {
+              "price": 67285.4,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T14:55:00",
+        "exit_price": 381.59,
+        "pnl": 881.5,
+        "pnl_pct": 4.84,
+        "max_favorable": 391.08,
+        "max_adverse": 333.67,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T14:55:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": "SIM_20261028_1455_MIDCPNIFTY",
+      "prediction": {
+        "signal": "BUY_PE",
+        "strike": 67275,
+        "confidence": 0.7897,
+        "entry_price": 365.37,
+        "model_scores": {
+          "technical": -0.73,
+          "tft": -0.11,
+          "rl": -1.0,
+          "sentiment": -0.27,
+          "options": -0.6,
+          "order_flow": 0.15,
+          "pattern": -0.42
+        },
+        "regime": "POWER_HOUR_TREND"
+      },
+      "market_context": {
+        "spot_price": 67295.2,
+        "vix": 16.2,
+        "regime": "POWER_HOUR_TREND",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67292.7,
+              "qty": 550
+            },
+            {
+              "price": 67290.2,
+              "qty": 600
+            },
+            {
+              "price": 67287.7,
+              "qty": 650
+            },
+            {
+              "price": 67285.2,
+              "qty": 700
+            },
+            {
+              "price": 67282.7,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67297.7,
+              "qty": 550
+            },
+            {
+              "price": 67300.2,
+              "qty": 600
+            },
+            {
+              "price": 67302.7,
+              "qty": 650
+            },
+            {
+              "price": 67305.2,
+              "qty": 700
+            },
+            {
+              "price": 67307.7,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T15:10:00",
+        "exit_price": 336.14,
+        "pnl": -1461.5,
+        "pnl_pct": -8.0,
+        "max_favorable": 369.01,
+        "max_adverse": 307.35,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-10-28T15:10:00",
+      "symbol": "MIDCPNIFTY",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 67375,
+        "confidence": 0.4042,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": 0.07,
+          "tft": 0.38,
+          "rl": 0.0,
+          "sentiment": 0.15,
+          "options": 0.0,
+          "order_flow": 0.52,
+          "pattern": 0.23
+        },
+        "regime": "POWER_HOUR_TREND"
+      },
+      "market_context": {
+        "spot_price": 67373.0,
+        "vix": 16.2,
+        "regime": "POWER_HOUR_TREND",
+        "order_book": {
+          "bids": [
+            {
+              "price": 67370.5,
+              "qty": 550
+            },
+            {
+              "price": 67368.0,
+              "qty": 600
+            },
+            {
+              "price": 67365.5,
+              "qty": 650
+            },
+            {
+              "price": 67363.0,
+              "qty": 700
+            },
+            {
+              "price": 67360.5,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 67375.5,
+              "qty": 550
+            },
+            {
+              "price": 67378.0,
+              "qty": 600
+            },
+            {
+              "price": 67380.5,
+              "qty": 650
+            },
+            {
+              "price": 67383.0,
+              "qty": 700
+            },
+            {
+              "price": 67385.5,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-10-28T15:25:00",
+        "exit_price": 0.0,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    }
+  ]
+}

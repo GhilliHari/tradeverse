@@ -1,0 +1,2213 @@
+{
+  "date": "2026-02-26",
+  "predictions": [
+    {
+      "timestamp": "2026-02-25T15:18:35.120477",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 100,
+        "confidence": 0.0,
+        "entry_price": 213.31046888958673,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 90.93900299072266,
+        "vix": 12.32403260250952,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T09:15:29.246661",
+        "exit_price": 196.05,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 222.13,
+        "max_adverse": 166.94,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-25T15:23:44.090252",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61000,
+        "confidence": 0.0,
+        "entry_price": 187.67304285750768,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61028.80078125,
+        "vix": 10.144109289272553,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T09:15:29.250591",
+        "exit_price": 194.41,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 216.16,
+        "max_adverse": 175.41,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T09:15:34.653361",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61200,
+        "confidence": 0.0,
+        "entry_price": 195.71260122039297,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61185.30078125,
+        "vix": 10.737959950189415,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T09:30:44.622608",
+        "exit_price": 199.59,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 214.69,
+        "max_adverse": 182.35,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T09:20:38.877649",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 100,
+        "confidence": 0.0,
+        "entry_price": 199.42638292850341,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 90.81999969482422,
+        "vix": 13.46787837950775,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T09:35:49.939627",
+        "exit_price": 190.89,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 217.1,
+        "max_adverse": 178.79,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T09:25:44.619156",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 191.56596625037622,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61104.1484375,
+        "vix": 10.655373521169516,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T09:40:55.467510",
+        "exit_price": 202.02,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 215.52,
+        "max_adverse": 190.15,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T09:30:49.936051",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 195.69945093180883,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61130.75,
+        "vix": 10.652234137694364,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T09:46:00.250042",
+        "exit_price": 194.32,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 217.84,
+        "max_adverse": 175.85,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T09:35:55.463382",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 187.09089214270458,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61142.3515625,
+        "vix": 12.32277037748557,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T09:51:05.382874",
+        "exit_price": 218.5,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 235.04,
+        "max_adverse": 194.88,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T09:41:00.246704",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61200,
+        "confidence": 0.0,
+        "entry_price": 213.28644094189042,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61246.0,
+        "vix": 13.758199875796212,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T09:56:10.172070",
+        "exit_price": 180.38,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 208.74,
+        "max_adverse": 170.31,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T09:46:05.379270",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61200,
+        "confidence": 0.0,
+        "entry_price": 188.71209269373952,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61208.05078125,
+        "vix": 10.623886933279838,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T10:01:14.773661",
+        "exit_price": 212.18,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 231.18,
+        "max_adverse": 183.78,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T09:51:10.168861",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61200,
+        "confidence": 0.0,
+        "entry_price": 187.05725488008144,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61196.3515625,
+        "vix": 11.711086366615852,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T10:06:19.285424",
+        "exit_price": 194.9,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 207.8,
+        "max_adverse": 174.2,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T09:56:14.767930",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 209.30263752565037,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61124.55078125,
+        "vix": 13.818942044472676,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T10:11:27.639680",
+        "exit_price": 208.13,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 225.03,
+        "max_adverse": 192.9,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T10:01:19.281665",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 25500,
+        "confidence": 0.0,
+        "entry_price": 215.6551333240206,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 25521.099609375,
+        "vix": 12.438911384226952,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T10:16:32.675745",
+        "exit_price": 219.07,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 230.55,
+        "max_adverse": 194.19,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T10:06:27.635991",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61200,
+        "confidence": 0.0,
+        "entry_price": 196.4355505739678,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61167.1484375,
+        "vix": 11.336963020677327,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T10:21:37.449152",
+        "exit_price": 210.57,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 226.37,
+        "max_adverse": 199.25,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T10:11:32.675139",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61200,
+        "confidence": 0.0,
+        "entry_price": 191.3490564863429,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61188.0,
+        "vix": 10.743544713159087,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T10:26:44.312840",
+        "exit_price": 214.94,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 234.83,
+        "max_adverse": 201.59,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T10:16:37.445887",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 25500,
+        "confidence": 0.0,
+        "entry_price": 196.9353083081116,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 25547.900390625,
+        "vix": 12.132876283362851,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T10:31:50.147954",
+        "exit_price": 205.06,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 233.04,
+        "max_adverse": 194.94,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T10:21:44.309058",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 181.35387461342265,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61105.44921875,
+        "vix": 10.392633444366172,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T10:36:54.697036",
+        "exit_price": 187.26,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 198.62,
+        "max_adverse": 166.68,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T10:26:50.145953",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 210.54816153933905,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61098.1015625,
+        "vix": 12.929897737945106,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T10:41:58.812325",
+        "exit_price": 185.99,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 196.53,
+        "max_adverse": 156.27,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T10:31:54.693346",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 214.96233996162724,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61085.44921875,
+        "vix": 10.83933032222399,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T10:47:02.780897",
+        "exit_price": 205.68,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 233.06,
+        "max_adverse": 180.55,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T10:36:58.809477",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61000,
+        "confidence": 0.0,
+        "entry_price": 192.697432653599,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61046.8984375,
+        "vix": 11.889906964455157,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T10:52:07.966343",
+        "exit_price": 193.94,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 221.03,
+        "max_adverse": 180.29,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T10:42:02.776913",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 219.51245745722085,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61069.0,
+        "vix": 11.223297358102545,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T10:57:16.067505",
+        "exit_price": 205.67,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 235.66,
+        "max_adverse": 193.97,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T10:47:07.942174",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 219.53211011997305,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61084.5,
+        "vix": 13.698468549607496,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T11:02:21.351756",
+        "exit_price": 195.7,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 215.83,
+        "max_adverse": 181.63,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T10:52:16.063922",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 202.4854556153046,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61125.6015625,
+        "vix": 13.780893771250467,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T11:07:25.944764",
+        "exit_price": 196.88,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 208.42,
+        "max_adverse": 178.95,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T10:57:21.348836",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 180.9699336820297,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61085.1015625,
+        "vix": 13.662670042750332,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T11:12:32.797327",
+        "exit_price": 219.53,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 246.91,
+        "max_adverse": 202.09,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T11:02:25.942332",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 100,
+        "confidence": 0.0,
+        "entry_price": 189.69022268921088,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 90.84500122070312,
+        "vix": 11.476924613155376,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T11:17:37.082800",
+        "exit_price": 209.24,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 231.17,
+        "max_adverse": 180.1,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T11:07:32.794697",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61000,
+        "confidence": 0.0,
+        "entry_price": 191.21369632905035,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61045.1015625,
+        "vix": 10.38850391829681,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T11:22:42.523583",
+        "exit_price": 182.12,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 193.75,
+        "max_adverse": 167.13,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T11:12:37.080945",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 208.10694330610835,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61081.6015625,
+        "vix": 11.553358043790398,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T11:27:48.314406",
+        "exit_price": 181.47,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 196.71,
+        "max_adverse": 163.9,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T11:17:42.520988",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 197.8503986671908,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61073.5,
+        "vix": 12.126856124797719,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T11:32:53.634186",
+        "exit_price": 216.44,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 239.41,
+        "max_adverse": 200.33,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T11:22:48.311908",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 209.61682430084272,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61082.80078125,
+        "vix": 11.188674915644624,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T11:37:57.627464",
+        "exit_price": 202.18,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 220.13,
+        "max_adverse": 183.84,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T11:27:53.584911",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 184.6799107729753,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61140.8984375,
+        "vix": 11.436467907815132,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T11:43:01.847793",
+        "exit_price": 182.9,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 194.44,
+        "max_adverse": 170.26,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T11:32:57.625858",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 25500,
+        "confidence": 0.0,
+        "entry_price": 180.93834922478672,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 25518.25,
+        "vix": 10.704403963960802,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T11:48:04.740227",
+        "exit_price": 217.42,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 231.87,
+        "max_adverse": 199.65,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T11:38:01.845268",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 183.34919820190757,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61065.5,
+        "vix": 11.002842835482578,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T11:53:08.568317",
+        "exit_price": 202.12,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 231.51,
+        "max_adverse": 172.71,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T11:43:04.738087",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 25500,
+        "confidence": 0.0,
+        "entry_price": 204.29272995583227,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 25465.25,
+        "vix": 12.158599405516371,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T11:58:12.577928",
+        "exit_price": 185.0,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 201.07,
+        "max_adverse": 164.17,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T11:48:08.568750",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61000,
+        "confidence": 0.0,
+        "entry_price": 192.38289202161732,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61048.6015625,
+        "vix": 12.166756812813068,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T12:03:16.576835",
+        "exit_price": 213.41,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 229.14,
+        "max_adverse": 195.57,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T11:53:12.575309",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61100,
+        "confidence": 0.0,
+        "entry_price": 185.95806994686117,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61062.80078125,
+        "vix": 13.473467912383054,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T12:08:20.668569",
+        "exit_price": 192.83,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 205.9,
+        "max_adverse": 167.26,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T11:58:16.524360",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61000,
+        "confidence": 0.0,
+        "entry_price": 209.93478981978328,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61000.8515625,
+        "vix": 10.289754321943324,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T12:13:24.322273",
+        "exit_price": 213.91,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 226.55,
+        "max_adverse": 198.71,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T12:03:20.615625",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61000,
+        "confidence": 0.0,
+        "entry_price": 180.4000973847899,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61024.5,
+        "vix": 13.807234931135449,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T12:18:27.383711",
+        "exit_price": 181.74,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 192.01,
+        "max_adverse": 167.67,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T12:08:24.320624",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61000,
+        "confidence": 0.0,
+        "entry_price": 180.36649331156832,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61015.94921875,
+        "vix": 13.269704519140417,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T12:23:31.261049",
+        "exit_price": 190.94,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 215.54,
+        "max_adverse": 162.8,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T12:13:27.381365",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 100,
+        "confidence": 0.0,
+        "entry_price": 203.0136945389988,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 90.89749908447266,
+        "vix": 13.849043119173015,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T12:28:34.527400",
+        "exit_price": 194.73,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 211.45,
+        "max_adverse": 184.49,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T12:18:31.073957",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61000,
+        "confidence": 0.0,
+        "entry_price": 188.69113778948628,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60952.19921875,
+        "vix": 10.268557126984401,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T12:33:38.325289",
+        "exit_price": 202.75,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 219.36,
+        "max_adverse": 187.52,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T12:28:38.315259",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 100,
+        "confidence": 0.0,
+        "entry_price": 187.26976620787772,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 90.86000061035156,
+        "vix": 13.116566694918756,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T12:43:47.845335",
+        "exit_price": 213.3,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 232.46,
+        "max_adverse": 191.76,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T12:33:43.341078",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 60900,
+        "confidence": 0.0,
+        "entry_price": 195.35035794445446,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60886.1015625,
+        "vix": 12.254493201558518,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T12:48:52.136582",
+        "exit_price": 216.29,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 245.32,
+        "max_adverse": 201.85,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T12:38:47.843307",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 60900,
+        "confidence": 0.0,
+        "entry_price": 201.21031340285708,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60906.05078125,
+        "vix": 10.556568237269794,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T12:53:56.516893",
+        "exit_price": 191.91,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 204.26,
+        "max_adverse": 178.6,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T12:43:52.133640",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61000,
+        "confidence": 0.0,
+        "entry_price": 214.27916799663961,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60951.05078125,
+        "vix": 12.731399516155331,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T12:59:00.225833",
+        "exit_price": 193.59,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 206.28,
+        "max_adverse": 174.62,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T12:48:56.515223",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 60900,
+        "confidence": 0.0,
+        "entry_price": 189.49541085482,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60945.25,
+        "vix": 10.022838750968553,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T13:04:05.207216",
+        "exit_price": 183.4,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 198.49,
+        "max_adverse": 163.2,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T12:54:00.223616",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 60900,
+        "confidence": 0.0,
+        "entry_price": 191.24898842684394,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60896.3984375,
+        "vix": 10.216937246346536,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T13:09:11.000056",
+        "exit_price": 217.29,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 243.76,
+        "max_adverse": 201.95,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T12:59:05.205336",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 60900,
+        "confidence": 0.0,
+        "entry_price": 191.06765189680524,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60864.1484375,
+        "vix": 12.716959001593446,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T13:14:15.191772",
+        "exit_price": 184.43,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 204.97,
+        "max_adverse": 166.15,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T13:04:10.997672",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 100,
+        "confidence": 0.0,
+        "entry_price": 216.71046178795152,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 90.85250091552734,
+        "vix": 13.554515750809497,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T13:19:20.943789",
+        "exit_price": 214.35,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 244.15,
+        "max_adverse": 204.24,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T13:09:15.189826",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 60900,
+        "confidence": 0.0,
+        "entry_price": 191.0646589077941,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60881.3984375,
+        "vix": 13.84703720592848,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T13:24:26.290986",
+        "exit_price": 215.65,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 244.71,
+        "max_adverse": 202.04,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T13:14:20.940678",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 60900,
+        "confidence": 0.0,
+        "entry_price": 184.11743992110388,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60893.05078125,
+        "vix": 13.656247387155448,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T13:29:30.907035",
+        "exit_price": 188.56,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 201.32,
+        "max_adverse": 163.05,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T13:19:26.287769",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 60900,
+        "confidence": 0.0,
+        "entry_price": 199.16309879831223,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60893.8984375,
+        "vix": 13.590097426719709,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T13:34:37.220430",
+        "exit_price": 198.48,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 225.37,
+        "max_adverse": 171.68,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T13:24:30.906277",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 60900,
+        "confidence": 0.0,
+        "entry_price": 218.76828093916774,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60939.05078125,
+        "vix": 12.361790316850353,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T13:39:42.685561",
+        "exit_price": 196.82,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 220.98,
+        "max_adverse": 168.67,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T13:29:37.218885",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 60900,
+        "confidence": 0.0,
+        "entry_price": 185.01897241116154,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60948.30078125,
+        "vix": 12.364808649030492,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T13:44:46.128680",
+        "exit_price": 216.75,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 240.29,
+        "max_adverse": 192.22,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T13:34:42.683560",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 60900,
+        "confidence": 0.0,
+        "entry_price": 212.6266826112748,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60930.75,
+        "vix": 10.958841304230532,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T13:49:49.705138",
+        "exit_price": 194.46,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 215.78,
+        "max_adverse": 175.95,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T13:39:46.127695",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 0,
+        "confidence": 0.0,
+        "entry_price": 218.90584110994513,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 13.515000343322754,
+        "vix": 12.466721558134891,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T13:54:52.493403",
+        "exit_price": 187.66,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 200.05,
+        "max_adverse": 164.04,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T13:44:49.703293",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 25400,
+        "confidence": 0.0,
+        "entry_price": 218.21199272750877,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 25436.849609375,
+        "vix": 10.18828690234716,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T13:59:55.997193",
+        "exit_price": 213.36,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 231.83,
+        "max_adverse": 199.77,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T13:49:52.491447",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 100,
+        "confidence": 0.0,
+        "entry_price": 195.4726369824477,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 90.8949966430664,
+        "vix": 10.05128305790518,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T14:04:58.916058",
+        "exit_price": 191.29,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 203.1,
+        "max_adverse": 164.66,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T13:54:55.991343",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 60900,
+        "confidence": 0.0,
+        "entry_price": 203.1047851995458,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60945.1484375,
+        "vix": 12.253290557255708,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T14:10:02.261609",
+        "exit_price": 216.5,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 229.67,
+        "max_adverse": 203.04,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T13:59:58.914067",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 25400,
+        "confidence": 0.0,
+        "entry_price": 186.6497330683252,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 25438.849609375,
+        "vix": 12.355923656325697,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T14:15:05.923117",
+        "exit_price": 198.62,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 220.27,
+        "max_adverse": 171.86,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T14:05:02.259907",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 100,
+        "confidence": 0.0,
+        "entry_price": 219.42338991418964,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 90.88500213623047,
+        "vix": 13.384733594297867,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T14:20:09.811242",
+        "exit_price": 193.63,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 212.58,
+        "max_adverse": 181.27,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T14:10:05.921773",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 0,
+        "confidence": 0.0,
+        "entry_price": 198.23451363128817,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 13.460000038146973,
+        "vix": 11.641191852607612,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T14:25:12.866321",
+        "exit_price": 181.93,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 211.66,
+        "max_adverse": 165.15,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T14:15:09.808992",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61000,
+        "confidence": 0.0,
+        "entry_price": 181.98547820426563,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60957.80078125,
+        "vix": 11.234780057696822,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T14:30:16.604353",
+        "exit_price": 210.85,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 238.29,
+        "max_adverse": 188.69,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T14:20:12.864344",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 25500,
+        "confidence": 0.0,
+        "entry_price": 204.76359330774278,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 25451.44921875,
+        "vix": 12.357134060244269,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T14:35:20.132882",
+        "exit_price": 215.9,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 226.77,
+        "max_adverse": 197.68,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T14:25:16.601321",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 60900,
+        "confidence": 0.0,
+        "entry_price": 202.54222430170967,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60944.19921875,
+        "vix": 11.927240201364445,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T14:40:24.391436",
+        "exit_price": 211.12,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 228.39,
+        "max_adverse": 187.23,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T14:30:20.130924",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61000,
+        "confidence": 0.0,
+        "entry_price": 199.01756364445367,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 60966.80078125,
+        "vix": 13.68102925084856,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T14:45:27.987333",
+        "exit_price": 212.28,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 224.52,
+        "max_adverse": 191.53,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T14:40:27.986727",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 0,
+        "confidence": 0.0,
+        "entry_price": 209.96450473043467,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 13.489999771118164,
+        "vix": 13.96703283397683,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T14:55:34.396332",
+        "exit_price": 184.36,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 199.15,
+        "max_adverse": 170.2,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T14:55:37.348851",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 100,
+        "confidence": 0.0,
+        "entry_price": 181.8933367950932,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 90.88999938964844,
+        "vix": 11.786469872148988,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T15:10:49.477053",
+        "exit_price": 185.67,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 206.35,
+        "max_adverse": 158.69,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T15:00:45.995427",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 0,
+        "confidence": 0.0,
+        "entry_price": 207.9617347117802,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 13.055000305175781,
+        "vix": 12.428939480141269,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T15:15:54.293757",
+        "exit_price": 185.41,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 213.94,
+        "max_adverse": 156.91,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T15:05:49.473999",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61200,
+        "confidence": 0.0,
+        "entry_price": 200.25097813110327,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61169.19921875,
+        "vix": 12.255857959356934,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T15:20:57.219250",
+        "exit_price": 185.23,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 206.24,
+        "max_adverse": 164.27,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-02-26T15:10:54.291456",
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61200,
+        "confidence": 0.0,
+        "entry_price": 214.85545128836986,
+        "model_scores": {
+          "technical": 0.0,
+          "tft": 0.0,
+          "rl": 0.0,
+          "sentiment": 0.0,
+          "options": -1.0
+        },
+        "regime": "NOMINAL"
+      },
+      "market_context": {
+        "spot_price": 61212.05078125,
+        "vix": 13.441758152143947,
+        "regime": "NOMINAL"
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-02-26T15:26:00.846266",
+        "exit_price": 183.23,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 201.2,
+        "max_adverse": 160.59,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    }
+  ]
+}

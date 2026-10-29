@@ -61,10 +61,10 @@ def verify_integration():
         intel.model.generate_content.return_value = mock_response
         
         # Mock Broker
-        intel.kite = MagicMock()
-        intel.kite.is_connected.return_value = True
-        intel.kite.ltp.return_value = {"^NSEBANK": {"last_price": 50500}}
-        intel.kite.get_option_chain.return_value = []
+        intel._kite = MagicMock()
+        intel._kite.is_connected.return_value = True
+        intel._kite.ltp.return_value = {"^NSEBANK": {"last_price": 50500}}
+        intel._kite.get_option_chain.return_value = []
 
         # 3. TEST SCENARIO A: High Confidence (Should produce BUY/SELL)
         print("\nScenario A: Testing High Confidence Signal...")

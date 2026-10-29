@@ -144,3 +144,56 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* --- LIVE SCAN ANIMATIONS --- */
+
+@keyframes scan-sweep {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.scan-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 200%;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(99, 102, 241, 0.05) 40%,
+    rgba(99, 102, 241, 0.3) 50%,
+    rgba(99, 102, 241, 0.05) 60%,
+    transparent 100%
+  );
+  animation: scan-sweep 3s ease-in-out infinite;
+  z-index: 10;
+}
+
+.scan-overlay-emerald {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(16, 185, 129, 0.05) 40%,
+    rgba(16, 185, 129, 0.3) 50%,
+    rgba(16, 185, 129, 0.05) 60%,
+    transparent 100%
+  );
+}
+
+.pulse-fast {
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

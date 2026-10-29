@@ -3,6 +3,7 @@ import {
     Activity, Play, Server, Database, TrendingUp,
     Shield, CheckCircle, AlertTriangle, Cpu, Target
 } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import HUDCard from './ui/HUDCard';
 import ScrambleText from './ui/ScrambleText';
 
@@ -18,6 +19,8 @@ const API_URL = getApiUrl();
 
 const Backtest = () => {
     const [isLoading, setIsLoading] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [progressLabel, setProgressLabel] = useState("");
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [result, setResult] = useState(null);
     const [modelType, setModelType] = useState('daily_12y');
@@ -26,6 +29,26 @@ const Backtest = () => {
     const runBacktest = async () => {
         setIsLoading(true);
         setResult(null);
+        setProgress(0);
+
+        // Progress Simulation for UX
+        const stages = [
+            { p: 15, label: "INGESTING HISTORICAL CANDLES..." },
+            { p: 35, label: "CALCULATING BLACK-SCHOLES GREEKS..." },
+            { p: 55, label: "EXTRACTING FRACTAL FEATURES..." },
+            { p: 75, label: "TRAINING NEURAL ENSEMBLE..." },
+            { p: 92, label: "VALIDATING OUT-OF-SAMPLE TRAJECTORY..." }
+        ];
+
+        let currentStage = 0;
+        const interval = setInterval(() => {
+            if (currentStage < stages.length) {
+                setProgress(stages[currentStage].p);
+                setProgressLabel(stages[currentStage].label);
+                currentStage++;
+            }
+        }, 1200);
+
         try {
             const res = await fetch(`${API_URL}/api/ai/backtest`, {
                 method: 'POST',
@@ -33,15 +56,24 @@ const Backtest = () => {
                 body: JSON.stringify({ symbol, model_type: modelType })
             });
             const data = await res.json();
+            clearInterval(interval);
+            setProgress(100);
+            setProgressLabel("ANALYSIS COMPLETE");
+
             if (data.status === 'success') {
-                setResult(data.metrics);
+                setTimeout(() => {
+                    setResult(data.metrics);
+                    setIsLoading(false);
+                }, 500);
             } else {
+                setIsLoading(false);
                 alert("Backtest Failed: " + data.detail);
             }
         } catch (e) {
+            clearInterval(interval);
+            setIsLoading(false);
             alert("Network Error: " + e.message);
         }
-        setIsLoading(false);
     };
 
     const refreshData = async () => {
@@ -77,57 +109,76 @@ const Backtest = () => {
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             {/* Control Panel */}
             <HUDCard title="NEURAL BACKTEST ENGINE v2.1" neonColor="amber">
-                <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center border border-amber-500/20 shadow-[0_0_20px_rgba(245,158,11,0.1)]">
-                            <Cpu className={`w-8 h-8 text-amber-500 ${isLoading ? 'animate-spin' : ''}`} />
+                <div className="p-6">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
+                        <div className="flex items-center gap-6">
+                            <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center border border-amber-500/20 shadow-[0_0_20px_rgba(245,158,11,0.1)]">
+                                <Cpu className={`w-8 h-8 text-amber-500 ${isLoading ? 'animate-spin' : ''}`} />
+                            </div>
+                            <div>
+                                <div className="text-2xl font-black text-white font-mono tracking-tight">
+                                    HISTORICAL VALIDATION
+                                </div>
+                                <div className="text-[10px] font-bold uppercase text-slate-500 mt-1 flex items-center gap-2">
+                                    <Database className="w-3 h-3" />
+                                    {modelType.includes('daily') ? '12 YEARS DATA (10Y TRAIN / 2Y TEST)' :
+                                        modelType.includes('1y') ? '1 YEAR DATA (SNP)' :
+                                            modelType.includes('5m') ? '1 MONTH DATA (SNP)' : '7 DAYS DATA (SNP)'}
+                                    <span className="mx-2 text-slate-700">|</span>
+                                    <span className="text-amber-500/80">INSTITUTIONAL TICK DATA (CONFIRMED)</span>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <div className="text-2xl font-black text-white font-mono tracking-tight">
-                                HISTORICAL VALIDATION
-                            </div>
-                            <div className="text-[10px] font-bold uppercase text-slate-500 mt-1 flex items-center gap-2">
-                                <Database className="w-3 h-3" />
-                                {modelType.includes('daily') ? '12 YEARS DATA (10Y TRAIN / 2Y TEST)' :
-                                    modelType.includes('1y') ? '1 YEAR DATA (SNP)' :
-                                        modelType.includes('1m') ? '1 MONTH DATA (SNP)' : '7 DAYS DATA (SNP)'}
-                            </div>
+
+                        <div className="flex gap-4">
+                            <select
+                                value={modelType}
+                                onChange={(e) => setModelType(e.target.value)}
+                                className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-widest text-slate-300 focus:outline-none focus:border-amber-500/50"
+                            >
+                                <option value="daily_12y">Daily Strategist (12 Years)</option>
+                                <option value="intraday_7d">Intraday Sniper (7 Days)</option>
+                                <option value="intraday_5m">1 Month Sniper (30 Days)</option>
+                                <option value="intraday_1y">1 Year Sniper (365 Days)</option>
+                            </select>
+
+                            <button
+                                onClick={refreshData}
+                                disabled={isRefreshing}
+                                className={`px-4 py-3 rounded-xl font-bold uppercase tracking-widest text-xs flex items-center gap-2 transition-all border border-white/10 hover:bg-white/5 ${isRefreshing ? 'opacity-50' : ''}`}
+                                title="Refresh Data Source"
+                            >
+                                <Server className={`w-4 h-4 text-slate-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+                            </button>
+
+                            <button
+                                onClick={runBacktest}
+                                disabled={isLoading}
+                                className={`px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${isLoading
+                                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                                    : 'bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_20px_rgba(245,158,11,0.3)]'
+                                    }`}
+                            >
+                                {isLoading ? 'PROCESSING...' : 'Run Simulation'}
+                                {!isLoading && <Play className="w-4 h-4 fill-current" />}
+                            </button>
                         </div>
                     </div>
 
-                    <div className="flex gap-4">
-                        <select
-                            value={modelType}
-                            onChange={(e) => setModelType(e.target.value)}
-                            className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-widest text-slate-300 focus:outline-none focus:border-amber-500/50"
-                        >
-                            <option value="daily_12y">Daily Strategist (12 Years)</option>
-                            <option value="intraday_7d">Intraday Sniper (7 Days)</option>
-                            <option value="intraday_1m">1 Month Sniper (30 Days)</option>
-                            <option value="intraday_1y">1 Year Sniper (365 Days)</option>
-                        </select>
-
-                        <button
-                            onClick={refreshData}
-                            disabled={isRefreshing}
-                            className={`px-4 py-3 rounded-xl font-bold uppercase tracking-widest text-xs flex items-center gap-2 transition-all border border-white/10 hover:bg-white/5 ${isRefreshing ? 'opacity-50' : ''}`}
-                            title="Refresh Data Source"
-                        >
-                            <Server className={`w-4 h-4 text-slate-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-                        </button>
-
-                        <button
-                            onClick={runBacktest}
-                            disabled={isLoading}
-                            className={`px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${isLoading
-                                ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                                : 'bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_20px_rgba(245,158,11,0.3)]'
-                                }`}
-                        >
-                            {isLoading ? 'Training Neural Net...' : 'Run Simulation'}
-                            {!isLoading && <Play className="w-4 h-4 fill-current" />}
-                        </button>
-                    </div>
+                    {isLoading && (
+                        <div className="space-y-2 animate-in fade-in duration-300">
+                            <div className="flex justify-between items-center text-[10px] font-black font-mono">
+                                <span className="text-amber-500 animate-pulse">{progressLabel}</span>
+                                <span className="text-white">{progress}%</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                <div
+                                    className="h-full bg-gradient-to-r from-amber-600 to-amber-400 transition-all duration-700 ease-out shadow-[0_0_10px_rgba(245,158,11,0.5)]"
+                                    style={{ width: `${progress}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </HUDCard>
 
@@ -234,6 +285,89 @@ const Backtest = () => {
                             </div>
                         </div>
                     </HUDCard>
+
+                    {/* Equity Curve Chart */}
+                    {result.equity_curve && result.equity_curve.length > 0 && (
+                        <HUDCard title="CUMULATIVE RETURN TRAJECTORY (STRATEGY VS BUY & HOLD)" neonColor="purple" className="col-span-1 md:col-span-2 lg:col-span-4 h-[400px]">
+                            <div className="p-6 h-full flex flex-col">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div className="flex gap-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
+                                            <span className="text-xs font-bold text-slate-300">AI Strategy ({result.final_strategy_return > 0 ? '+' : ''}{result.final_strategy_return}%)</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-slate-500"></div>
+                                            <span className="text-xs font-bold text-slate-400">Benchmark ({result.final_benchmark_return > 0 ? '+' : ''}{result.final_benchmark_return}%)</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-[10px] text-slate-500 uppercase font-black">Test Data Set (Out-of-Sample)</div>
+                                </div>
+                                <div className="flex-1 w-full min-h-0">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={result.equity_curve} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="colorStrategy" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                                                </linearGradient>
+                                                <linearGradient id="colorBenchmark" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#64748b" stopOpacity={0.2} />
+                                                    <stop offset="95%" stopColor="#64748b" stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <XAxis
+                                                dataKey="date"
+                                                stroke="#475569"
+                                                tick={{ fill: '#64748b', fontSize: 10 }}
+                                                tickFormatter={(val) => {
+                                                    // Display only month/year or time depending on string length
+                                                    if (val.length > 10) return val.split(' ')[1]; // Time
+                                                    return val.substring(2, 7); // YY-MM
+                                                }}
+                                                tickLine={false}
+                                                axisLine={false}
+                                                minTickGap={30}
+                                            />
+                                            <YAxis
+                                                stroke="#475569"
+                                                domain={['auto', 'auto']}
+                                                tick={{ fill: '#64748b', fontSize: 10 }}
+                                                tickFormatter={(val) => `${val.toFixed(0)}`}
+                                                tickLine={false}
+                                                axisLine={false}
+                                                width={40}
+                                            />
+                                            <Tooltip
+                                                contentStyle={{ backgroundColor: '#000000ee', border: '1px solid #333', borderRadius: '8px' }}
+                                                itemStyle={{ fontSize: 12, fontWeight: 'bold' }}
+                                                labelStyle={{ color: '#94a3b8', fontSize: 10, marginBottom: 4 }}
+                                                formatter={(value, name) => [`${value}`, name === 'strategy' ? 'AI Strategy' : 'Buy & Hold']}
+                                            />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="benchmark"
+                                                stroke="#64748b"
+                                                strokeWidth={2}
+                                                fillOpacity={1}
+                                                fill="url(#colorBenchmark)"
+                                                isAnimationActive={true}
+                                            />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="strategy"
+                                                stroke="#a855f7"
+                                                strokeWidth={3}
+                                                fillOpacity={1}
+                                                fill="url(#colorStrategy)"
+                                                isAnimationActive={true}
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </HUDCard>
+                    )}
                 </div>
             )}
         </div>

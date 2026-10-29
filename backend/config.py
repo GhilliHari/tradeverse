@@ -17,7 +17,7 @@ class Config:
     ENV = os.getenv("TRADEVERSE_ENV", "MOCK").upper()
     
     # API Keys
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyAMxry7kyw7svsZumX6_hu7aGELVHamkm0")
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
     REDIS_URL = os.getenv("REDIS_URL", "")
     FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS", "")
     
@@ -49,6 +49,7 @@ class Config:
         import json
         data = {
             "ENV": self.ENV,
+            "GEMINI_API_KEY": self.GEMINI_API_KEY,
             "ANGEL_CLIENT_ID": self.ANGEL_CLIENT_ID,
             "ANGEL_PASSWORD": self.ANGEL_PASSWORD,
             "ANGEL_API_KEY": self.ANGEL_API_KEY,

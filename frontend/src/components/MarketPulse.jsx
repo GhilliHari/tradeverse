@@ -72,6 +72,47 @@ const StockRow = ({ stock, isGainer }) => (
 );
 
 const MarketPulse = () => {
+    const [data, setData] = React.useState(null);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/api/market/pulse');
+                const json = await response.json();
+                setData(json);
+            } catch (error) {
+                console.error("Pulse Fetch Failed:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+        const interval = setInterval(fetchData, 10000); // 10s polling fallback
+        
+        // WebSocket logic (Optional future upgrade integration)
+        let ws = new WebSocket('ws://localhost:8000/ws/market-pulse');
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'PREDICTION_UPDATE') {
+                console.log("WS Pulse Update:", msg);
+                // Trigger refresh or update specific bits
+            }
+        };
+
+        return () => {
+            clearInterval(interval);
+            ws.close();
+        };
+    }, []);
+
+    const pulse = data || {
+        breadth: breadthData,
+        institutional: institutionalData,
+        macro: { usdinr: 83.12, brent: 82.45, dxy: 104.2, ratio: 2.45 }
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
 
@@ -82,7 +123,7 @@ const MarketPulse = () => {
                         <TrendingUp className="w-4 h-4 text-emerald-400" />
                         <span className="text-[10px] uppercase font-black text-slate-500 tracking-wider">Advances</span>
                     </div>
-                    <div className="text-3xl font-black text-emerald-400 font-mono">{breadthData.advances}</div>
+                    <div className="text-3xl font-black text-emerald-400 font-mono">{pulse.breadth.advances}</div>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20">
@@ -90,7 +131,7 @@ const MarketPulse = () => {
                         <TrendingDown className="w-4 h-4 text-red-400" />
                         <span className="text-[10px] uppercase font-black text-slate-500 tracking-wider">Declines</span>
                     </div>
-                    <div className="text-3xl font-black text-red-400 font-mono">{breadthData.declines}</div>
+                    <div className="text-3xl font-black text-red-400 font-mono">{pulse.breadth.declines}</div>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20">
@@ -98,7 +139,7 @@ const MarketPulse = () => {
                         <Activity className="w-4 h-4 text-purple-400" />
                         <span className="text-[10px] uppercase font-black text-slate-500 tracking-wider">A/D Ratio</span>
                     </div>
-                    <div className="text-3xl font-black text-purple-400 font-mono">{breadthData.advanceDeclineRatio}</div>
+                    <div className="text-3xl font-black text-purple-400 font-mono">{pulse.breadth.ratio || pulse.breadth.advanceDeclineRatio}</div>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20">
@@ -106,13 +147,46 @@ const MarketPulse = () => {
                         <Users className="w-4 h-4 text-cyan-400" />
                         <span className="text-[10px] uppercase font-black text-slate-500 tracking-wider">FII Net</span>
                     </div>
-                    <div className="text-3xl font-black text-cyan-400 font-mono">+₹360Cr</div>
+                    <div className="text-3xl font-black text-cyan-400 font-mono">
+                        {pulse.institutional[0].net > 0 ? '+' : ''}{pulse.institutional[0].net}Cr
+                    </div>
                 </div>
             </div>
 
+            {/* Global Macro Cues - NEW UPGRADE Component */}
+            <HUDCard title="GLOBAL MACRO PULSE" neonColor="cyan" className="p-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="space-y-1">
+                        <div className="text-[10px] text-slate-500 font-bold uppercase">USD-INR (FX)</div>
+                        <div className="text-xl font-mono font-black text-white">₹{pulse.macro.usdinr?.toFixed(2)}</div>
+                        <div className={`text-[10px] font-bold ${pulse.macro.usdinr > 83.5 ? 'text-red-400' : 'text-emerald-400'}`}>
+                            {pulse.macro.usdinr > 83.5 ? 'BEARISH PRESSURE' : 'NOMINAL'}
+                        </div>
+                    </div>
+                    <div className="space-y-1">
+                        <div className="text-[10px] text-slate-500 font-bold uppercase">Brent Crude</div>
+                        <div className="text-xl font-mono font-black text-white">${pulse.macro.brent?.toFixed(2)}</div>
+                        <div className={`text-[10px] font-bold ${pulse.macro.brent > 85 ? 'text-red-400' : 'text-emerald-400'}`}>
+                            {pulse.macro.brent > 85 ? 'INFLATION RISK' : 'STABLE'}
+                        </div>
+                    </div>
+                    <div className="space-y-1">
+                        <div className="text-[10px] text-slate-500 font-bold uppercase">DXY (Dollar Index)</div>
+                        <div className="text-xl font-mono font-black text-white">{pulse.macro.dxy?.toFixed(2)}</div>
+                        <div className={`text-[10px] font-bold ${pulse.macro.dxy > 104 ? 'text-red-400' : 'text-emerald-400'}`}>
+                            {pulse.macro.dxy > 104 ? 'GLOBAL RISK-OFF' : 'RISK-ON'}
+                        </div>
+                    </div>
+                    <div className="space-y-1">
+                        <div className="text-[10px] text-slate-500 font-bold uppercase">BN/Nifty Ratio</div>
+                        <div className="text-xl font-mono font-black text-white">{pulse.macro.ratio?.toFixed(2)}</div>
+                        <div className="text-[10px] font-bold text-cyan-400 uppercase tracking-tighter">Relative Strength</div>
+                    </div>
+                </div>
+            </HUDCard>
+
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
                 {/* Sector Performance */}
                 <HUDCard title="SECTOR HEAT MAP" neonColor="amber" className="lg:col-span-2 h-[400px]">
                     <div className="p-6 h-full">
@@ -134,10 +208,10 @@ const MarketPulse = () => {
                     </div>
                 </HUDCard>
 
-                {/* FII/DII Activity */}
+                {/* Institutional Flow */}
                 <HUDCard title="INSTITUTIONAL FLOW" neonColor="indigo" className="h-[400px]">
                     <div className="p-6 space-y-6">
-                        {institutionalData.map(inst => (
+                        {pulse.institutional.map(inst => (
                             <div key={inst.name} className="space-y-3">
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-black text-white">{inst.name}</span>

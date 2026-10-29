@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-07",
+  "technique": "Gann Sq9 + Financial Astrology + VWAP + RSI(14) 54/46 Confluence",
+  "predictions": [
+    {
+      "id": "NSE:BANKNIFTY_BUY_PE_105544",
+      "symbol": "NSE:BANKNIFTY",
+      "timestamp": "2026-09-07T10:55:44.921171",
+      "prediction": {
+        "signal": "BUY_PE",
+        "symbol": "NSE:BANKNIFTY",
+        "strike": "57100 PE (ATM)",
+        "confidence": 0.85,
+        "technique": "Gann Sq9 + Financial Astrology + VWAP + RSI(14) 54/46 Confluence",
+        "entry_price": 250.0,
+        "target_1_price": 388.41,
+        "stop_loss_price": 200.0,
+        "model_scores": {
+          "gann_sq9": 0.95,
+          "astro_aspect": 0.9,
+          "vwap_trend": 0.92,
+          "rsi_momentum": 0.88
+        }
+      },
+      "market_context": {
+        "spot_price": 57065.9,
+        "gann_angle": "-45\u00b0 Lower Cross",
+        "astro_window": "Intraday Confluence Window",
+        "vwap": 0.0,
+        "rsi_14": 25.7
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-09-07T11:10:44.921195",
+        "exit_price": 388.41,
+        "pnl": 4152.24,
+        "pnl_pct": 55.4,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    }
+  ]
+}
