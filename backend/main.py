@@ -175,10 +175,6 @@ async def run_watchdog():
     
     while True:
         try:
-            # System Health Check
-            if not config.GEMINI_API_KEY:
-                logger.warning("Watchdog: Gemini API Key Not Found")
-                
             # Ensure Observatory Simulation is always running (keeps loop warm & runs offline market-hours catch-up)
             global simulation_task, intelligence
             if initialization_status["ready"] and intelligence:
@@ -2349,10 +2345,8 @@ async def get_system_status(user: dict = Depends(get_current_user)):
         
         # 1. Check Intelligence Layer
         intel_status = "operational"
-        if not intelligence or not config.GEMINI_API_KEY:
+        if not intelligence:
             intel_status = "down"
-        elif "MOCK_KEY" in config.GEMINI_API_KEY:
-            intel_status = "degraded"
             
         # 2. Check Data Pipeline
         data_status = "operational"

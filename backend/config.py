@@ -16,8 +16,8 @@ class Config:
     # Environment: MOCK or LIVE
     ENV = os.getenv("TRADEVERSE_ENV", "MOCK").upper()
     
-    # API Keys
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+    # API Keys (Defaults to embedded operator key / GraphRAG fallback if not set in env)
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyAMxry7kyw7svsZumX6_hu7aGELVHamkm0")
     REDIS_URL = os.getenv("REDIS_URL", "")
     FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS", "")
     
@@ -71,10 +71,9 @@ class Config:
                 with open("settings.json", "r") as f:
                     data = json.load(f)
                     for k, v in data.items():
-                        # ONLY overwrite if not already set by Environment Variables
-                        # This ensures cloud-configured vars (Render/Heroku/Vercel) take precedence
+                        # ONLY overwrite if not already set by Environment Variables and value is non-empty
                         env_key = f"TRADEVERSE_{k}" if k == "ENV" else k
-                        if not os.getenv(env_key):
+                        if not os.getenv(env_key) and v not in ("", None):
                             setattr(self, k, v)
                             logger.info(f"Loaded {k} from settings.json")
             except Exception as e:
