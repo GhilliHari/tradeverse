@@ -20,6 +20,8 @@
     },
     "files": [
       "electron-main.cjs",
+      "backend-path.json",
+      "build/**/*",
       "frontend/dist/**/*",
       "package.json"
     ],
