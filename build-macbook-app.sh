@@ -70,3 +70,4 @@ echo "   • Applications: /Applications/Tradeverse AI.app"
 echo ""
 echo "🚀 Opening Tradeverse AI Desktop App..."
 open "$HOME/Desktop/Tradeverse AI.app"
+

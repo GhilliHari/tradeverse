@@ -3,7 +3,10 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const http = require('http');
+const https = require('https');
 const { spawn } = require('child_process');
+
+const CLOUD_BACKEND_HOST = 'tradeverse-1-aosu.onrender.com';
 
 let mainWindow;
 let backendProcess;
@@ -100,27 +103,62 @@ async function ensureFrontendServer() {
     staticServer = http.createServer((req, res) => {
       const urlPath = (req.url || '/').split('?')[0];
 
-      // Proxy /api and /backend-status to local Python Backend on port 8000
+      // Proxy /api and /backend-status to local Python Backend (port 8000) with automatic 24/7 Cloud Render failover
       if (urlPath.startsWith('/api') || urlPath.startsWith('/backend-status')) {
-        const targetPath = req.url.replace(/^\/backend-status/, '') || '/';
-        const proxyReq = http.request(
-          {
-            hostname: '127.0.0.1',
-            port: 8000,
-            path: targetPath,
-            method: req.method,
-            headers: req.headers
-          },
-          (proxyRes) => {
-            res.writeHead(proxyRes.statusCode || 200, proxyRes.headers);
-            proxyRes.pipe(res, { end: true });
-          }
-        );
-        proxyReq.on('error', () => {
-          res.writeHead(502, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ status: 'starting', detail: 'Backend warming up...' }));
+        const targetPath = req.url.replace(/^\/backend-status\/?/, '/') || '/';
+        const bodyChunks = [];
+        req.on('data', (chunk) => bodyChunks.push(chunk));
+        req.on('end', () => {
+          const bodyBuffer = Buffer.concat(bodyChunks);
+
+          const forwardToCloud = () => {
+            const cloudHeaders = Object.assign({}, req.headers, {
+              host: CLOUD_BACKEND_HOST
+            });
+            const cloudReq = https.request(
+              {
+                hostname: CLOUD_BACKEND_HOST,
+                port: 443,
+                path: targetPath,
+                method: req.method,
+                headers: cloudHeaders
+              },
+              (cloudRes) => {
+                res.writeHead(cloudRes.statusCode || 200, cloudRes.headers);
+                cloudRes.pipe(res, { end: true });
+              }
+            );
+            cloudReq.on('error', () => {
+              res.writeHead(502, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ status: 'starting', detail: 'Backend warming up...' }));
+            });
+            if (bodyBuffer.length > 0) cloudReq.write(bodyBuffer);
+            cloudReq.end();
+          };
+
+          const proxyReq = http.request(
+            {
+              hostname: '127.0.0.1',
+              port: 8000,
+              path: targetPath,
+              method: req.method,
+              headers: req.headers,
+              timeout: 2500
+            },
+            (proxyRes) => {
+              res.writeHead(proxyRes.statusCode || 200, proxyRes.headers);
+              proxyRes.pipe(res, { end: true });
+            }
+          );
+          proxyReq.on('timeout', () => {
+            proxyReq.destroy();
+          });
+          proxyReq.on('error', () => {
+            forwardToCloud();
+          });
+          if (bodyBuffer.length > 0) proxyReq.write(bodyBuffer);
+          proxyReq.end();
         });
-        req.pipe(proxyReq, { end: true });
         return;
       }
 

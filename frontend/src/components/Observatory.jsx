@@ -16,7 +16,10 @@ const getApiUrl = () => {
             }
         }
     } catch (e) { }
-    return import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
+        return 'http://localhost:8000';
+    }
+    return import.meta.env.VITE_API_URL || '';
 };
 const API_URL = getApiUrl();
 const GITHUB_RAW_SUMMARY_URL = 'https://raw.githubusercontent.com/GhilliHari/tradeverse/main/backend/observatory_data/latest_summary.json';

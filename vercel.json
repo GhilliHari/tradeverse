@@ -6,6 +6,18 @@
     "framework": null,
     "rewrites": [
         {
+            "source": "/backend-status",
+            "destination": "https://tradeverse-1-aosu.onrender.com/"
+        },
+        {
+            "source": "/backend-status/",
+            "destination": "https://tradeverse-1-aosu.onrender.com/"
+        },
+        {
+            "source": "/backend-status/:path*",
+            "destination": "https://tradeverse-1-aosu.onrender.com/:path*"
+        },
+        {
             "source": "/api/:path*",
             "destination": "https://tradeverse-1-aosu.onrender.com/api/:path*"
         },

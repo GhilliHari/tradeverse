@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: tradeverse-backend
+    env: docker
+    rootDir: backend
+    plan: free
+    envVars:
+      - key: TRADEVERSE_ENV
+        value: MOCK
+      - key: PORT
+        value: 8000
+      - key: RENDER_EXTERNAL_URL
+        value: https://tradeverse-1-aosu.onrender.com

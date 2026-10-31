@@ -13,7 +13,7 @@ import ScrambleText from './ui/ScrambleText';
 
 const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
     const [step, setStep] = useState('scan'); // scan, input, signup, forgot, verifying, success, error
-    const [email, setEmail] = useState('hari@tradeverse.in');
+    const [email, setEmail] = useState('hari@tradeverse.ai');
     const [password, setPassword] = useState('Goal@123');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState(null);
@@ -26,7 +26,7 @@ const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
             setIsScanning(true);
             setError(null);
             setMessage(null);
-            setEmail('hari@tradeverse.in');
+            setEmail('hari@tradeverse.ai');
             setPassword('Goal@123');
             setConfirmPassword('');
             // Simulate Biometric Scan

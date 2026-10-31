@@ -4,6 +4,7 @@ import sys
 import time
 import signal
 import os
+import threading
 import qrcode
 import atexit
 
@@ -120,6 +121,16 @@ def start_tunnel(port, name):
             print(f"❌ Failed to obtain tunnel URL for {name}.")
             process.terminate()
             sys.exit(1)
+
+        # Drain stdout continuously in background thread so OS pipe buffer never fills and deadlocks cloudflared
+        def _drain_stdout(proc):
+            try:
+                for _ in proc.stdout:
+                    pass
+            except Exception:
+                pass
+
+        threading.Thread(target=_drain_stdout, args=(process,), daemon=True).start()
             
         print(f"✅ {name} tunnel live at: {tunnel_url}")
         return process, tunnel_url
@@ -165,8 +176,8 @@ def main():
     # 3. Start Backend Tunnel
     backend_process, backend_url = start_tunnel(BACKEND_PORT, "Backend")
     
-    # 4. Update frontend/.env with backend tunnel URL
-    update_env(backend_url)
+    # 4. Keep frontend/.env clean (Vite proxy on port 5173 routes /api and /backend-status directly to localhost:8000)
+    print(f"\n⚙️ Routing API via Vite proxy (/api -> http://localhost:{BACKEND_PORT}) so both localhost and remote tunnel work simultaneously.")
     
     # 5. Start Frontend Tunnel
     frontend_process, frontend_url = start_tunnel(FRONTEND_PORT, "Frontend")

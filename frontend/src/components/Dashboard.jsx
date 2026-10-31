@@ -295,8 +295,8 @@ const DashboardWithLogic = () => {
             showToast("🚀 Initializing backend connection...", "info");
 
             try {
-                // Simple HEAD or GET request to root to wake up Render
-                await fetch(`${API_URL}/`, { method: 'GET' });
+                // Simple HEAD or GET request to root/ping to wake up Render
+                await fetch(`${API_URL}/api/ping`, { method: 'GET' });
                 console.log("Dashboard: Backend Woken Up!");
                 showToast("✅ Backend Online & Ready", "success");
                 setSystemStatus(prev => ({ ...prev, backend: true }));
@@ -620,7 +620,7 @@ const DashboardWithLogic = () => {
 
     const fetchSystemStatus = async () => {
         try {
-            const res = await fetch(`${API_URL}/`);
+            const res = await fetch(`${API_URL || '/backend-status'}/`);
             const data = await res.json();
             setSystemStatus({
                 backend: true,
@@ -919,7 +919,7 @@ const DashboardWithLogic = () => {
             setUser({ name: 'Guest Trader', initials: 'G', status: 'GUEST' });
 
             // Detect owner on mount
-            if (auth?.currentUser?.email?.toLowerCase() === OWNER_EMAIL) {
+            if (savedToken === 'mock-token-123' || auth?.currentUser?.email?.toLowerCase() === OWNER_EMAIL) {
                 setIsOwner(true);
             }
         }
@@ -946,7 +946,7 @@ const DashboardWithLogic = () => {
                 } catch (err) {
                     console.error("Error refreshing Firebase token:", err);
                 }
-            } else {
+            } else if (localStorage.getItem('authToken') !== 'mock-token-123') {
                 setIsOwner(false);
             }
         });
@@ -1167,7 +1167,7 @@ const DashboardWithLogic = () => {
             }
 
             // Fetch System Initialization Status (Intelligence & Backend)
-            const resInit = await fetch(`${API_URL}/`);
+            const resInit = await fetch(`${API_URL || '/backend-status'}/`);
             if (resInit.ok) {
                 const initData = await resInit.json();
                 setSystemStatus({
@@ -2616,6 +2616,7 @@ const DashboardWithLogic = () => {
                             setIsLoggedIn(true);
                             setToken(authToken); // Store valid token
                             localStorage.setItem('authToken', authToken); // Critical Fix: Persist token to localStorage
+                            if (authToken === 'mock-token-123') setIsOwner(true);
                             setUser({ name: 'Pro Trader', initials: 'PT', status: 'ONLINE', broker: 'ANGEL ONE' });
                             playInitSound();
                         }}

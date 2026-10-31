@@ -5,9 +5,18 @@ import { workerSetInterval, workerClearInterval } from '../utils/workerTimer';
 const getApiUrl = () => {
     try {
         const saved = localStorage.getItem('tradeverse_api_url');
-        if (saved) return saved.replace(/\/$/, '');
+        if (saved) {
+            if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') && saved.includes('trycloudflare.com')) {
+                localStorage.removeItem('tradeverse_api_url');
+            } else {
+                return saved.replace(/\/$/, '');
+            }
+        }
     } catch (e) { }
-    return import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
+        return 'http://localhost:8000';
+    }
+    return import.meta.env.VITE_API_URL || '';
 };
 const API_URL = getApiUrl();
 

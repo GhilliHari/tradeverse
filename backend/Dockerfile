@@ -22,7 +22,7 @@ COPY . .
 EXPOSE 8000
 
 # Health check endpoint
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3     CMD curl -f http://localhost:8000/api/terminal/telemetry || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3     CMD curl -f http://localhost:${PORT:-8000}/api/ping || exit 1
 
-# Launch FastAPI backend app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Launch FastAPI backend app (main.py binds to $PORT or 8000)
+CMD ["python", "main.py"]

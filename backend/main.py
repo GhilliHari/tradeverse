@@ -266,21 +266,25 @@ async def run_autonomous_trading():
 
 async def keep_awake_pinger():
     """
-    Background task to ping the server every 14 minutes to prevent Render free tier from sleeping.
-    Render sleeps after 15 mins of inactivity.
+    Background task to ping the external Render URL every 10 minutes to prevent Render free tier from sleeping.
+    Render sleeps after 15 mins of external inactivity.
     """
     import httpx
+    external_url = os.getenv("RENDER_EXTERNAL_URL", "https://tradeverse-1-aosu.onrender.com").rstrip("/")
     while True:
         try:
-            await asyncio.sleep(14 * 60) # Ping every 14 minutes
-            # Using httpx for async internal request. PORT defaults to 8000 for local, Render sets it dynamically.
+            await asyncio.sleep(10 * 60) # Ping every 10 minutes
             port = os.getenv("PORT", "8000")
-            url = f"http://127.0.0.1:{port}/api/ping"
+            local_url = f"http://127.0.0.1:{port}/api/ping"
+            remote_url = f"{external_url}/api/ping"
             
-            # Simple unauthenticated ping to self
-            async with httpx.AsyncClient() as client:
-                res = await client.get(url, timeout=5.0)
-                logger.info(f"Self-Ping Keep-Awake: {res.status_code}")
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                try:
+                    res = await client.get(remote_url)
+                    logger.info(f"External Keep-Awake Ping ({remote_url}): {res.status_code}")
+                except Exception:
+                    res = await client.get(local_url)
+                    logger.info(f"Local Keep-Awake Ping: {res.status_code}")
         except Exception as e:
             # We don't want this to crash the server if httpx fails
             logger.debug(f"Self-Ping Error (ignoring): {e}")
@@ -329,6 +333,9 @@ async def websocket_market_pulse(websocket: WebSocket):
         ws_manager.disconnect(websocket)
 
 @app.get("/")
+@app.get("/backend-status")
+@app.get("/backend-status/")
+@app.get("/api/status")
 async def root():
     return {
         "message": "Tradeverse API is active", 

@@ -76,9 +76,10 @@ const MarketPulse = () => {
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
+        const apiBase = (typeof window !== 'undefined' && window.location.protocol === 'file:') ? 'http://localhost:8000' : '';
         const fetchData = async () => {
             try {
-                const response = await fetch('http://localhost:8000/api/market/pulse');
+                const response = await fetch(`${apiBase}/api/market/pulse`);
                 const json = await response.json();
                 setData(json);
             } catch (error) {
@@ -91,19 +92,27 @@ const MarketPulse = () => {
         fetchData();
         const interval = setInterval(fetchData, 10000); // 10s polling fallback
         
-        // WebSocket logic (Optional future upgrade integration)
-        let ws = new WebSocket('ws://localhost:8000/ws/market-pulse');
-        ws.onmessage = (event) => {
-            const msg = JSON.parse(event.data);
-            if (msg.type === 'PREDICTION_UPDATE') {
-                console.log("WS Pulse Update:", msg);
-                // Trigger refresh or update specific bits
+        // WebSocket logic (Local or 24/7 Cloud Render WebSocket)
+        let ws = null;
+        try {
+            if (typeof window !== 'undefined') {
+                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const wsUrl = isLocal
+                    ? 'ws://localhost:8000/ws/market-pulse'
+                    : 'wss://tradeverse-1-aosu.onrender.com/ws/market-pulse';
+                ws = new WebSocket(wsUrl);
+                ws.onmessage = (event) => {
+                    const msg = JSON.parse(event.data);
+                    if (msg.type === 'PREDICTION_UPDATE') {
+                        console.log("WS Pulse Update:", msg);
+                    }
+                };
             }
-        };
+        } catch (e) { }
 
         return () => {
             clearInterval(interval);
-            ws.close();
+            if (ws) ws.close();
         };
     }, []);
 

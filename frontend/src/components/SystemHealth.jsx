@@ -7,7 +7,9 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, Area
 import HUDCard from './ui/HUDCard';
 import ScrambleText from './ui/ScrambleText';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = (typeof window !== 'undefined' && window.location.protocol === 'file:')
+    ? 'http://localhost:8000'
+    : (import.meta.env.VITE_API_URL || '');
 
 const StatusBadge = ({ status }) => {
     const config = {
