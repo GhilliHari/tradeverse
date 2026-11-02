@@ -46,21 +46,71 @@ class RedisMock:
     def exists(self, key):
         return key in self.data
 
+class ResilientRedis:
+    """
+    Wraps a real Redis client with automatic, permanent failover to RedisMock
+    if the remote Redis host (e.g., expired Upstash instance) is unreachable.
+    Non-blocking at import time so Uvicorn binds the port immediately.
+    """
+    def __init__(self, url: str):
+        self.url = url
+        self.mock = RedisMock()
+        self._failed_over = False
+        try:
+            self._client = redis.from_url(
+                url,
+                decode_responses=True,
+                socket_connect_timeout=1.5,
+                socket_timeout=1.5,
+            )
+            logger.info(f"Redis Client configured for {url.split('@')[-1]}")
+        except Exception as e:
+            logger.warning(f"⚠️ Redis Config Failed: {e}. Falling back to RedisMock.")
+            self._client = None
+            self._failed_over = True
+
+    def _call(self, method_name: str, *args, **kwargs):
+        if self._failed_over or self._client is None:
+            return getattr(self.mock, method_name)(*args, **kwargs)
+        try:
+            return getattr(self._client, method_name)(*args, **kwargs)
+        except Exception as e:
+            logger.warning(
+                f"⚠️ Redis unreachable ({e}). Automatically failing over to in-memory RedisMock."
+            )
+            self._failed_over = True
+            return getattr(self.mock, method_name)(*args, **kwargs)
+
+    def get(self, key):
+        return self._call("get", key)
+
+    def set(self, key, val, ex=None):
+        return self._call("set", key, val, ex=ex)
+
+    def delete(self, key):
+        return self._call("delete", key)
+
+    def ping(self):
+        return self._call("ping")
+
+    def sadd(self, key, *values):
+        return self._call("sadd", key, *values)
+
+    def srem(self, key, *values):
+        return self._call("srem", key, *values)
+
+    def smembers(self, key):
+        return self._call("smembers", key)
+
+    def exists(self, key):
+        return self._call("exists", key)
+
+
 def get_redis_client():
     if not config.REDIS_URL:
-         logger.warning("⚠️ No REDIS_URL found. Using RedisMock.")
-         return RedisMock()
-         
-    try:
-        # redis-py is lazy, so simply creating the client is non-blocking.
-        # We skip the blocking ping() here to ensure fast startup.
-        # Connection errors will be handled by the application logic (or global error handler).
-        client = redis.from_url(config.REDIS_URL, decode_responses=True, socket_connect_timeout=2)
-        logger.info(f"Redis Client configured for {config.REDIS_URL.split('@')[-1]}") # Log safe URL
-        return client
-    except Exception as e:
-        logger.warning(f"⚠️ Redis Config Failed: {e}. Falling back to RedisMock.")
+        logger.warning("⚠️ No REDIS_URL found. Using RedisMock.")
         return RedisMock()
+    return ResilientRedis(config.REDIS_URL)
 
 redis_client = get_redis_client()
 
