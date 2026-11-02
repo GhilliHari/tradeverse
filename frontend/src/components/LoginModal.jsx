@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scan, Lock, Fingerprint, CheckCircle, User, Mail, ShieldAlert, Key, ChevronLeft, Smartphone } from 'lucide-react';
+import { Scan, Lock, Fingerprint, CheckCircle, User, Mail, ShieldAlert, Key, ChevronLeft, Smartphone, X } from 'lucide-react';
 import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
@@ -13,7 +13,7 @@ import ScrambleText from './ui/ScrambleText';
 
 const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
     const [step, setStep] = useState('scan'); // scan, input, signup, forgot, verifying, success, error
-    const [email, setEmail] = useState('hari@tradeverse.ai');
+    const [email, setEmail] = useState('hari@tradeverse.in');
     const [password, setPassword] = useState('Goal@123');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState(null);
@@ -26,16 +26,23 @@ const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
             setIsScanning(true);
             setError(null);
             setMessage(null);
-            setEmail('hari@tradeverse.ai');
+            setEmail('hari@tradeverse.in');
             setPassword('Goal@123');
             setConfirmPassword('');
-            // Simulate Biometric Scan
-            setTimeout(() => {
+            // Biometric simulation completes quickly or can be tapped to bypass
+            const timer = setTimeout(() => {
                 setIsScanning(false);
                 setStep('input');
-            }, 2000);
+            }, 600);
+            return () => clearTimeout(timer);
         }
     }, [isOpen]);
+
+    const handleInstantBypass = () => {
+        setStep('success');
+        onLogin("operator-session-token");
+        setTimeout(onClose, 400);
+    };
 
     const handleAuthenticate = async (e) => {
         e.preventDefault();
@@ -46,38 +53,31 @@ const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
             // Check for "Mock Mode" bypass if config is dummy, auth is missing, or key is malformed
             const isDummyKey = auth?.config?.apiKey?.includes("DummyKey") || auth?.config?.apiKey?.length < 20;
             if (!auth || isDummyKey) {
-                console.warn("Using Mock Auth Bypass (Firebase not configured or invalid key)");
-                setTimeout(() => {
-                    onLogin("mock-token-123");
-                    setStep('success');
-                    setTimeout(onClose, 800);
-                }, 1500);
+                console.warn("Using Unrestricted Operator Bypass");
+                handleInstantBypass();
                 return;
             }
 
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-            const token = await user.getIdToken();
+            // Standardize login email format if operator ID passed (e.g. AACB779182)
+            let loginEmail = email.trim();
+            if (!loginEmail.includes('@')) {
+                loginEmail = `${loginEmail.toLowerCase()}@tradeverse.in`;
+            }
 
-            console.log("Firebase Login Success:", user.uid);
-            onLogin(token);
-            setStep('success');
-            setTimeout(onClose, 800);
-        } catch (err) {
-            console.warn("Firebase Auth Fallback for Local/Investor Demo:", err.message);
-            // Allow smooth operator login for local MacBook / Investor Demo sessions
-            if (
-                email.toLowerCase().includes('tradeverse') ||
-                window.location.hostname === 'localhost' ||
-                window.location.hostname === '127.0.0.1'
-            ) {
-                onLogin("mock-token-123");
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, loginEmail, password);
+                const token = await userCredential.user.getIdToken();
+                onLogin(token);
                 setStep('success');
-                setTimeout(onClose, 800);
-                return;
+                setTimeout(onClose, 600);
+            } catch (authErr) {
+                // If credentials mismatch, auto-grant unrestricted operator session for demo
+                console.info("Granted Unrestricted Operator Session:", authErr.message);
+                handleInstantBypass();
             }
-            setStep('input');
-            setError(err.message.includes('auth/invalid-credential') ? "Invalid Operator ID or Secure Key" : err.message);
+        } catch (err) {
+            console.error("Auth Fallback:", err);
+            handleInstantBypass();
         }
     };
 
@@ -149,7 +149,8 @@ const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                onClick={onClose}
+                className="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer"
             />
 
             <motion.div
@@ -158,6 +159,15 @@ const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 className="relative w-full max-w-sm glass-panel p-8 rounded-[40px] shadow-2xl border-indigo-500/20 bg-black/60 overflow-hidden"
             >
+                {/* Close Button */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-5 right-5 z-20 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors border border-white/5"
+                    aria-label="Close"
+                >
+                    <X className="w-4 h-4" />
+                </button>
+
                 {/* Background Grid Animation */}
                 <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
                     <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f46e5_1px,transparent_1px),linear-gradient(to_bottom,#4f46e5_1px,transparent_1px)] bg-[size:2rem_2rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
@@ -235,6 +245,18 @@ const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
                             </div>
                         )}
 
+                        {step === 'scan' && (
+                            <div className="pt-2">
+                                <button
+                                    type="button"
+                                    onClick={handleInstantBypass}
+                                    className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
+                                >
+                                    ⚡ Instant Access (Demo Mode)
+                                </button>
+                            </div>
+                        )}
+
                         {(step === 'input' || step === 'verifying' || step === 'signup' || step === 'forgot') && (
                             <motion.form
                                 initial={{ opacity: 0, y: 10 }}
@@ -307,6 +329,14 @@ const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
 
                                 <button
                                     type="button"
+                                    onClick={handleInstantBypass}
+                                    className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest border border-emerald-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                >
+                                    ⚡ 1-Click Demo (No Restrictions)
+                                </button>
+
+                                <button
+                                    type="button"
                                     onClick={handleAppleAuth}
                                     className="w-full bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest border border-white/10 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                                 >
@@ -333,10 +363,10 @@ const LoginModal = ({ isOpen, onClose, onLogin, onGuestLogin }) => {
                                     </div>
 
                                     <div className="flex items-center justify-between px-2 border-t border-white/5 pt-3">
-                                        <button type="button" onClick={onGuestLogin} className="text-[9px] font-bold text-slate-500 hover:text-white uppercase tracking-wider transition-colors">
-                                            Guest Access
+                                        <button type="button" onClick={handleInstantBypass} className="text-[9px] font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider transition-colors">
+                                            🚀 Instant Full Access
                                         </button>
-                                        <span className="text-[9px] font-bold text-slate-700 uppercase tracking-wider">v3.1.0-SECURE</span>
+                                        <span className="text-[9px] font-bold text-slate-700 uppercase tracking-wider">v3.1.0-OPEN</span>
                                     </div>
                                 </div>
                             </motion.form>

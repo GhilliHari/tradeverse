@@ -9,6 +9,9 @@ import {
 import HUDCard from './ui/HUDCard';
 import ScrambleText from './ui/ScrambleText';
 import BrainVisualizer from './BrainVisualizer';
+import GeminiAssistant from './GeminiAssistant';
+import { API_URL } from '../config/api';
+
 
 // --- BANK NIFTY INTRADAY F&O INTELLIGENCE ---
 
@@ -18,19 +21,21 @@ const Insights = () => {
     const [newsData, setNewsData] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const getUrl = (path) => `${(API_URL || '').replace(/\/$/, '')}${path}`;
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const [mmiRes, predictRes] = await Promise.all([
-                    fetch('/api/market/mmi'),
-                    fetch('/api/ai/predict_hybrid?symbol=NSE:BANKNIFTY')
+                    fetch(getUrl('/api/market/mmi')),
+                    fetch(getUrl('/api/ai/predict_hybrid?symbol=NSE:BANKNIFTY'))
                 ]);
 
                 const mmi = await mmiRes.json();
                 const predict = await predictRes.json();
 
                 // Fetch News separately to not block critical data
-                fetch('/api/news')
+                fetch(getUrl('/api/news'))
                     .then(res => res.json())
                     .then(data => setNewsData(data))
                     .catch(err => console.error("News fetch error", err));
@@ -151,7 +156,7 @@ const Insights = () => {
                             <div className="flex justify-between items-center mb-0.5">
                                 <span className="text-[7px] text-slate-500 font-black uppercase">Intelligence Confidence</span>
                                 <span className={`text-[8px] font-mono font-bold ${predictData?.confidence >= 70 ? 'text-cyan-400' : 'text-slate-400'}`}>
-                                    {predictData?.confidence?.toFixed(1) ?? "0.0"}%
+                                    {(Number(predictData?.confidence) || 0).toFixed(1)}%
                                 </span>
                             </div>
                             <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
@@ -257,8 +262,14 @@ const Insights = () => {
                     </div>
                 </div>
             </HUDCard>
+
+            {/* Bottom Component: Gemini 2.5 AI Assistant */}
+            <div className="mt-6">
+                <GeminiAssistant marketContext={predictData} isOpenInitial={true} />
+            </div>
         </div>
     );
 };
+
 
 export default Insights;

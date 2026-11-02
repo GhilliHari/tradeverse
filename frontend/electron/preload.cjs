@@ -1,0 +1,8 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  platform: process.platform,
+  version: process.versions.electron,
+  sendNotification: (title, body) => ipcRenderer.send('notify', { title, body }),
+  toggleDevTools: () => ipcRenderer.send('toggle-devtools')
+});

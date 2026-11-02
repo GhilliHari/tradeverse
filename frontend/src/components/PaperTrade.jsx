@@ -4,23 +4,8 @@ import {
     XCircle, Clock, CheckCircle, AlertTriangle, Zap, Bot
 } from 'lucide-react';
 import { workerSetInterval, workerClearInterval } from '../utils/workerTimer';
+import { getApiUrl, API_URL } from '../config/api';
 
-const getApiUrl = () => {
-    try {
-        const saved = localStorage.getItem('tradeverse_api_url');
-        if (saved) {
-            if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && saved.includes('trycloudflare.com')) {
-                localStorage.removeItem('tradeverse_api_url');
-            } else {
-                return saved.replace(/\/$/, '');
-            }
-        }
-    } catch (e) { }
-    return import.meta.env.VITE_API_URL || "";
-};
-const API_URL = getApiUrl();
-
-const GITHUB_RAW_SUMMARY_URL = 'https://raw.githubusercontent.com/GhilliHari/tradeverse/main/backend/observatory_data/latest_summary.json';
 
 const PaperTrade = ({ token, symbol, ltp }) => {
     const [action, setAction] = useState('BUY');
@@ -32,136 +17,35 @@ const PaperTrade = ({ token, symbol, ltp }) => {
     const [isAuto, setIsAuto] = useState(true);
     const [isTurbo, setIsTurbo] = useState(true);
     const [autoLogs, setAutoLogs] = useState([]);
-    const [syncing, setSyncing] = useState(false);
-    const [githubStatus, setGithubStatus] = useState({
-        repo: 'GhilliHari/tradeverse',
-        latest_commit: 'main',
-        source: 'GitHub Sync'
-    });
-    const [summary, setSummary] = useState({
-        date: '',
-        open_count: 0,
-        closed_today_count: 0,
-        wins: 0,
-        losses: 0,
-        win_rate: 0,
-        total_pnl: 0,
-        recent_closed: [],
-        all_time_closed: 0,
-        all_time_pnl: 0
-    });
 
     const showToast = (msg, type = 'info') => {
         setToast({ msg, type });
         setTimeout(() => setToast(null), 3000);
     };
 
-    const applyPaperSummary = (sumData) => {
-        if (!sumData) return;
-        setSummary(sumData);
-        if (sumData.recent_closed && sumData.recent_closed.length > 0) {
-            const recentFormatted = sumData.recent_closed.slice(0, 6).map(t => {
-                const ts = (t.timestamp || '').slice(11, 19) || '15:25:00';
-                const pnlStr = t.pnl >= 0 ? `+₹${Number(t.pnl).toFixed(0)}` : `-₹${Math.abs(Number(t.pnl)).toFixed(0)}`;
-                return `[${ts}] ${t.symbol}: ₹${t.entry_price} → ₹${t.exit_price} (${pnlStr})`;
-            });
-            setAutoLogs(prev => prev.length > 0 ? prev : recentFormatted);
-        }
-    };
-
-    const fetchFromGitHubFallback = async () => {
-        try {
-            const res = await fetch(`${GITHUB_RAW_SUMMARY_URL}?t=${Date.now()}`);
-            if (res.ok) {
-                const data = await res.json();
-                if (data.paper_summary) {
-                    applyPaperSummary(data.paper_summary);
-                }
-                setGithubStatus({
-                    repo: data.repo || 'GhilliHari/tradeverse',
-                    latest_commit: 'GitHub Cloud',
-                    source: 'GitHub Cloud Fallback'
-                });
-            }
-        } catch (err) {
-            console.error("GitHub fallback fetch failed", err);
-        }
-    };
-
     const fetchPositions = async () => {
         try {
-            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            const [posRes, sumRes, ghRes] = await Promise.all([
-                fetch(`${API_URL}/api/paper/positions`, { headers }),
-                fetch(`${API_URL}/api/paper/summary`, { headers }),
-                fetch(`${API_URL}/api/github/status`, { headers }).catch(() => null)
-            ]);
-            if (posRes.ok) {
-                const posData = await posRes.json();
-                setPositions(Array.isArray(posData) ? posData : []);
-            }
-            if (sumRes.ok) {
-                const sumData = await sumRes.json();
-                applyPaperSummary(sumData);
-            } else {
-                await fetchFromGitHubFallback();
-            }
-            if (ghRes && ghRes.ok) {
-                const ghData = await ghRes.json();
-                setGithubStatus({
-                    repo: ghData.repo || 'GhilliHari/tradeverse',
-                    latest_commit: ghData.latest_commit || 'main',
-                    source: ghData.is_synced ? 'GitHub Synced' : 'GitHub Active'
-                });
-            }
-        } catch (e) {
-            await fetchFromGitHubFallback();
-        }
-    };
-
-    const handleSyncMarketHours = async () => {
-        setSyncing(true);
-        try {
-            const res = await fetch(`${API_URL}/api/observatory/backfill?days=14&push_github=true`, {
-                method: 'POST',
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            const res = await fetch(`${API_URL}/api/paper/positions`, {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (res.ok) {
-                const data = await res.json();
-                const ghCommit = data.github_backup?.commit_hash ? ` • GitHub #${data.github_backup.commit_hash}` : '';
-                showToast(`Synced & Backed up to GitHub${ghCommit}`, 'success');
-                await fetchPositions();
-            } else {
-                await fetchFromGitHubFallback();
-                showToast('Loaded backup directly from GitHub!', 'info');
-            }
+            const data = await res.json();
+            setPositions(data);
         } catch (e) {
-            await fetchFromGitHubFallback();
-            showToast('Loaded backup directly from GitHub!', 'info');
+            console.error("Failed to fetch positions", e);
         }
-        setSyncing(false);
     };
 
     useEffect(() => {
-        fetchPositions();
+        if (token) fetchPositions();
         const interval = workerSetInterval(fetchPositions, 5000);
         return () => workerClearInterval(interval);
     }, [token]);
 
-    // Auto-Trading Logic during Market Hours (09:15 - 15:30 IST)
+    // Auto-Trading Logic
     useEffect(() => {
         let autoInterval;
         if (isAuto) {
-            const isMarketOpenNow = () => {
-                const now = new Date();
-                const day = now.getDay();
-                if (day === 0 || day === 6) return false;
-                const mins = now.getHours() * 60 + now.getMinutes();
-                return mins >= (9 * 60 + 15) && mins <= (15 * 60 + 30);
-            };
-
             const runAutoCycle = async () => {
-                if (!isMarketOpenNow()) return;
                 try {
                     const res = await fetch(`${API_URL}/api/trading/autopilot`, {
                         method: 'POST',
@@ -181,17 +65,18 @@ const PaperTrade = ({ token, symbol, ltp }) => {
                     if (result.status === 'EXECUTED') {
                         showToast(`Auto-Trade: ${result.signal} Executed!`, 'success');
                         fetchPositions();
-                        setAutoLogs(prev => [`[${new Date().toLocaleTimeString()}] EXECUTED: ${result.signal} @ ${ltp}`, ...prev.slice(0, 5)]);
+                        setAutoLogs(prev => [`[${new Date().toLocaleTimeString()}] EXECUTED: ${result.signal} @ ${ltp}`, ...prev.slice(0, 4)]);
                     } else if (result.status === 'HOLD') {
-                        setAutoLogs(prev => [`[${new Date().toLocaleTimeString()}] SCANNED: HOLD (Signal Weak)`, ...prev.slice(0, 5)]);
+                        // Optional: Log holds
+                        setAutoLogs(prev => [`[${new Date().toLocaleTimeString()}] SCANNED: HOLD (Signal Weak)`, ...prev.slice(0, 4)]);
                     }
                 } catch (e) {
                     console.error("Auto-Trade Failed", e);
                 }
             };
 
-            runAutoCycle();
-            autoInterval = workerSetInterval(runAutoCycle, 15000);
+            runAutoCycle(); // Immediate run
+            autoInterval = workerSetInterval(runAutoCycle, 5000); // Run every 5 seconds (Turbo Simulation)
         }
         return () => workerClearInterval(autoInterval);
     }, [isAuto, symbol, token, ltp]);
@@ -261,6 +146,37 @@ const PaperTrade = ({ token, symbol, ltp }) => {
         }
     };
 
+    const [simResult, setSimResult] = useState(null);
+    const [simLoading, setSimLoading] = useState(false);
+
+    const runGannAstroSimulation = async () => {
+        setSimLoading(true);
+        try {
+            const res = await fetch(`${API_URL}/api/observatory/run_prediction_simulation`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    symbol: symbol || "BANKNIFTY",
+                    technique: "Gann Sq9 + Financial Astrology + VWAP + RSI(14) 54/46 Confluence"
+                })
+            });
+            const data = await res.json();
+            if (data.status === 'SUCCESS') {
+                setSimResult(data.prediction);
+                showToast(`🚀 Prediction Simulation Executed & Logged to Observatory!`, 'success');
+                setAutoLogs(prev => [`[${new Date().toLocaleTimeString()}] OBSERVATORY RECORD: ${data.prediction.prediction.signal} @ ${data.prediction.prediction.strike}`, ...prev.slice(0, 4)]);
+            } else {
+                showToast("Simulation execution failed", "error");
+            }
+        } catch (e) {
+            showToast("Server connection error", "error");
+        }
+        setSimLoading(false);
+    };
+
     return (
         <div className="space-y-6">
             {toast && (
@@ -269,55 +185,70 @@ const PaperTrade = ({ token, symbol, ltp }) => {
                 </div>
             )}
 
-            {/* Market-Hours Simulation Summary Bar */}
-            <div className="bg-slate-900/60 backdrop-blur-sm p-4 rounded-2xl border border-indigo-500/20 shadow-xl flex flex-wrap items-center justify-between gap-4">
-                <div className="flex flex-wrap items-center gap-6">
-                    <div>
-                        <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Session Date</p>
-                        <p className="text-sm font-mono font-bold text-white">{summary.date || 'Latest'}</p>
+            {/* GANN + ASTRO CONFLUENCE SIMULATION RUNNER BANNER */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/80 to-purple-950/80 border border-indigo-500/40 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/40">
+                        <Zap className="w-6 h-6 animate-pulse" />
                     </div>
                     <div>
-                        <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Closed Trades</p>
-                        <p className="text-sm font-mono font-bold text-indigo-400">
-                            {summary.closed_today_count} <span className="text-[10px] text-slate-500">({summary.wins}W / {summary.losses}L)</span>
-                        </p>
-                    </div>
-                    <div>
-                        <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Win Rate</p>
-                        <p className="text-sm font-mono font-bold text-emerald-400">{Number(summary.win_rate || 0).toFixed(1)}%</p>
-                    </div>
-                    <div>
-                        <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Session P&L</p>
-                        <p className={`text-sm font-mono font-bold ${Number(summary.total_pnl || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {Number(summary.total_pnl || 0) >= 0 ? '+' : ''}₹{Number(summary.total_pnl || 0).toLocaleString('en-IN')}
-                        </p>
-                    </div>
-                    <div>
-                        <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">All-Time P&L ({summary.all_time_closed || 0})</p>
-                        <p className={`text-sm font-mono font-bold ${Number(summary.all_time_pnl || 0) >= 0 ? 'text-cyan-400' : 'text-red-400'}`}>
-                            {Number(summary.all_time_pnl || 0) >= 0 ? '+' : ''}₹{Number(summary.all_time_pnl || 0).toLocaleString('en-IN')}
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-black uppercase text-cyan-300 tracking-wider">
+                                GANN + ASTRO + VWAP + RSI 54 PREDICTION SIMULATION ENGINE
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                                PIPED TO OBSERVATORY
+                            </span>
+                        </div>
+                        <p className="text-xs text-slate-300 mt-0.5">
+                            Simulate active trades for <strong>{symbol || 'BANKNIFTY'}</strong> using high-conviction confluence rules. Results automatically stream to <strong>Observatory</strong> for multi-day pattern & win-rate analysis.
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
-                            {githubStatus.source} ({githubStatus.repo} #{githubStatus.latest_commit})
-                        </span>
-                    </div>
-                    <button
-                        onClick={handleSyncMarketHours}
-                        disabled={syncing}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/30 text-indigo-300 text-xs font-bold transition-all"
-                        title="Replay missed market hours and sync all backup data with GitHub"
-                    >
-                        <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
-                        <span>{syncing ? 'Syncing GitHub...' : 'Sync & Backup to GitHub'}</span>
-                    </button>
-                </div>
+                <button
+                    onClick={runGannAstroSimulation}
+                    disabled={simLoading}
+                    className="w-full md:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/30 transition-all transform active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
+                >
+                    <Bot className={`w-4 h-4 ${simLoading ? 'animate-spin' : ''}`} />
+                    <span>{simLoading ? 'RUNNING SIMULATION...' : '🚀 RUN PREDICTION SIMULATION'}</span>
+                </button>
             </div>
+
+            {/* LIVE SIMULATION RESULT CALLOUT */}
+            {simResult && (
+                <div className="p-4 rounded-2xl bg-slate-900 border border-emerald-500/40 font-mono text-xs space-y-2 animate-in fade-in duration-300">
+                    <div className="flex justify-between items-center border-b border-emerald-500/30 pb-2">
+                        <span className="font-black text-emerald-400 flex items-center gap-1.5">
+                            <CheckCircle className="w-4 h-4 text-emerald-400" />
+                            SIMULATION EXECUTED & STORED IN OBSERVATORY // {simResult.symbol}
+                        </span>
+                        <span className="text-[10px] text-slate-400">{simResult.timestamp}</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-[11px]">
+                        <div className="p-2 rounded bg-black/60 border border-slate-800">
+                            <span className="text-slate-400 block text-[9px]">RECOMMENDED STRIKE</span>
+                            <span className="text-white font-black">{simResult.prediction.strike}</span>
+                        </div>
+                        <div className="p-2 rounded bg-black/60 border border-slate-800">
+                            <span className="text-slate-400 block text-[9px]">CONFLUENCE SCORE</span>
+                            <span className="text-emerald-300 font-black">{simResult.prediction.confidence * 100}% (HIGH)</span>
+                        </div>
+                        <div className="p-2 rounded bg-black/60 border border-slate-800">
+                            <span className="text-slate-400 block text-[9px]">MARKET CONTEXT</span>
+                            <span className="text-cyan-300 font-bold">RSI: {simResult.market_context.rsi_14} | {simResult.market_context.gann_angle}</span>
+                        </div>
+                        <div className="p-2 rounded bg-black/60 border border-slate-800">
+                            <span className="text-slate-400 block text-[9px]">OBSERVATORY PnL</span>
+                            <span className={`font-black ${simResult.actual_outcome.pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                ₹{simResult.actual_outcome.pnl} ({simResult.actual_outcome.pnl_pct}%)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Trading Panel */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -500,64 +431,6 @@ const PaperTrade = ({ token, symbol, ltp }) => {
                             })
                         )}
                     </div>
-                </div>
-            </div>
-
-            {/* Completed Market-Hours Simulation Trades */}
-            <div className="bg-slate-900/50 backdrop-blur-sm p-6 rounded-2xl border border-indigo-500/20 shadow-xl">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
-                            <CheckCircle className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-bold text-white">Completed Market-Hours Simulation Trades</h3>
-                            <p className="text-xs text-slate-400">
-                                Automatically executed & settled during market hours (09:15–15:30 IST), including offline system replay
-                            </p>
-                        </div>
-                    </div>
-                    <span className="text-xs font-mono text-slate-400">
-                        Showing latest {summary.recent_closed?.length || 0} of {summary.closed_today_count || 0} session trades
-                    </span>
-                </div>
-
-                <div className="max-h-[360px] overflow-y-auto space-y-2 pr-1">
-                    {(!summary.recent_closed || summary.recent_closed.length === 0) ? (
-                        <div className="text-center py-8 text-slate-500 text-sm">
-                            No completed simulation trades yet. Click "Sync Market Hours" to replay missed sessions.
-                        </div>
-                    ) : (
-                        summary.recent_closed.map((trade, idx) => {
-                            const isProfit = Number(trade.pnl || 0) >= 0;
-                            const timeLabel = (trade.timestamp || '').replace('T', ' ').slice(0, 19);
-                            return (
-                                <div
-                                    key={`${trade.trade_id || idx}-${idx}`}
-                                    className="bg-slate-800/40 hover:bg-slate-800/70 transition-colors rounded-xl p-3 border border-slate-700/50 grid grid-cols-1 md:grid-cols-5 gap-2 items-center"
-                                >
-                                    <div className="text-xs font-mono text-slate-400">
-                                        {timeLabel}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400">
-                                            {trade.side || 'BUY'}
-                                        </span>
-                                        <span className="font-bold text-sm text-white font-mono">{trade.symbol}</span>
-                                    </div>
-                                    <div className="text-xs font-mono text-slate-300">
-                                        Qty {trade.quantity} • ₹{Number(trade.entry_price || 0).toFixed(2)} → ₹{Number(trade.exit_price || 0).toFixed(2)}
-                                    </div>
-                                    <div className="text-[11px] text-slate-400 truncate" title={trade.reasoning}>
-                                        {trade.reasoning}
-                                    </div>
-                                    <div className={`text-right font-mono font-bold text-sm ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {isProfit ? '+' : ''}₹{Number(trade.pnl || 0).toFixed(2)}
-                                    </div>
-                                </div>
-                            );
-                        })
-                    )}
                 </div>
             </div>
         </div>

@@ -6,10 +6,8 @@ import {
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, AreaChart } from 'recharts';
 import HUDCard from './ui/HUDCard';
 import ScrambleText from './ui/ScrambleText';
+import { getApiUrl, API_URL } from '../config/api';
 
-const API_URL = (typeof window !== 'undefined' && window.location.protocol === 'file:')
-    ? 'http://localhost:8000'
-    : (import.meta.env.VITE_API_URL || '');
 
 const StatusBadge = ({ status }) => {
     const config = {

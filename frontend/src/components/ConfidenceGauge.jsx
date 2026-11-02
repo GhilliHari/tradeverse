@@ -45,7 +45,7 @@ const ConfidenceGauge = ({ score, label = "AI CONFIDENCE" }) => {
                     />
                 </svg>
                 <div className="absolute flex flex-col items-center">
-                    <span className="text-sm font-black text-white">{Math.round(percentage)}%</span>
+                    <span className="text-xs font-black text-white">{(Number(percentage) || 0).toFixed(1)}%</span>
                 </div>
             </div>
             <span className="text-[10px] font-bold text-slate-500 tracking-widest mt-1">{label}</span>

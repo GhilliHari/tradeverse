@@ -6,16 +6,8 @@ import {
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import HUDCard from './ui/HUDCard';
 import ScrambleText from './ui/ScrambleText';
+import { getApiUrl, API_URL } from '../config/api';
 
-// BASE API URL
-const getApiUrl = () => {
-    try {
-        const saved = localStorage.getItem('tradeverse_api_url');
-        if (saved) return saved.replace(/\/$/, '');
-    } catch (e) { }
-    return import.meta.env.VITE_API_URL || "";
-};
-const API_URL = getApiUrl();
 
 const Backtest = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -23,8 +15,34 @@ const Backtest = () => {
     const [progressLabel, setProgressLabel] = useState("");
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [result, setResult] = useState(null);
+    const [bqResult, setBqResult] = useState(null);
     const [modelType, setModelType] = useState('daily_12y');
     const [symbol, setSymbol] = useState('^NSEBANK');
+
+    const runBigQueryBacktest = async () => {
+        setIsLoading(true);
+        setBqResult(null);
+        setProgress(20);
+        setProgressLabel("QUERYING BIGQUERY 12-YEAR FREE SANDBOX DATASET...");
+
+        try {
+            const res = await fetch(`${API_URL}/api/ai/bigquery_backtest?symbol=${encodeURIComponent(symbol)}`);
+            const data = await res.json();
+            setProgress(100);
+            setProgressLabel("BIGQUERY 10Y/2Y VALIDATION COMPLETE");
+
+            if (data.status === 'success') {
+                setBqResult(data);
+            } else {
+                alert("BigQuery Backtest Error: " + (data.message || data.detail));
+            }
+        } catch (e) {
+            alert("Network Error: " + e.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
 
     const runBacktest = async () => {
         setIsLoading(true);
@@ -152,6 +170,18 @@ const Backtest = () => {
                             </button>
 
                             <button
+                                onClick={runBigQueryBacktest}
+                                disabled={isLoading}
+                                className={`px-5 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${isLoading
+                                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                                    : 'bg-cyan-500 hover:bg-cyan-400 text-black shadow-[0_0_20px_rgba(6,182,212,0.3)]'
+                                    }`}
+                            >
+                                {isLoading ? 'QUERYING...' : '10Y/2Y BigQuery Validation'}
+                                {!isLoading && <Database className="w-4 h-4 fill-current" />}
+                            </button>
+
+                            <button
                                 onClick={runBacktest}
                                 disabled={isLoading}
                                 className={`px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${isLoading
@@ -173,7 +203,7 @@ const Backtest = () => {
                             </div>
                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
                                 <div
-                                    className="h-full bg-gradient-to-r from-amber-600 to-amber-400 transition-all duration-700 ease-out shadow-[0_0_10px_rgba(245,158,11,0.5)]"
+                                    className="h-full bg-gradient-to-r from-cyan-500 via-amber-500 to-emerald-400 transition-all duration-700 ease-out shadow-[0_0_10px_rgba(245,158,11,0.5)]"
                                     style={{ width: `${progress}%` }}
                                 />
                             </div>
@@ -181,6 +211,71 @@ const Backtest = () => {
                     )}
                 </div>
             </HUDCard>
+
+            {/* BigQuery 10Y Train / 2Y Test Out-of-Sample Validation Results */}
+            {bqResult && (
+                <HUDCard title="BIGQUERY 15-YEAR (12Y TRAIN / 3Y TEST) OUT-OF-SAMPLE VALIDATION" neonColor="cyan" className="space-y-6">
+                    <div className="p-6 space-y-6">
+                        <div className="flex items-center justify-between text-xs font-mono text-cyan-300 bg-cyan-950/40 p-3 rounded-xl border border-cyan-800/40">
+                            <div className="flex items-center space-x-2">
+                                <Database className="w-4 h-4 text-cyan-400" />
+                                <span>Dataset: <strong>{bqResult.bigquery_dataset}</strong></span>
+                            </div>
+                            <div>
+                                <span>Walk-Forward Window: <strong>2014 - 2026 (12 Years)</strong></span>
+                            </div>
+                        </div>
+
+                        {/* Top Metrics Cards */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono">
+                            <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                                <div className="text-[10px] text-slate-400 uppercase font-bold">Sharpe Ratio (2Y Out-of-Sample)</div>
+                                <div className="text-2xl font-black text-cyan-400 mt-1">{bqResult.test_2y_out_of_sample_metrics.sharpe_ratio}</div>
+                                <div className="text-[9px] text-slate-500 mt-0.5">10Y Train: {bqResult.train_10y_metrics.sharpe_ratio}</div>
+                            </div>
+
+                            <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                                <div className="text-[10px] text-slate-400 uppercase font-bold">Sortino Ratio</div>
+                                <div className="text-2xl font-black text-emerald-400 mt-1">{bqResult.test_2y_out_of_sample_metrics.sortino_ratio}</div>
+                                <div className="text-[9px] text-slate-500 mt-0.5">Downside Volatility Adjusted</div>
+                            </div>
+
+                            <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                                <div className="text-[10px] text-slate-400 uppercase font-bold">Profit Factor</div>
+                                <div className="text-2xl font-black text-amber-400 mt-1">{bqResult.test_2y_out_of_sample_metrics.profit_factor}</div>
+                                <div className="text-[9px] text-slate-500 mt-0.5">Win Rate: {bqResult.test_2y_out_of_sample_metrics.win_rate_pct}%</div>
+                            </div>
+
+                            <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                                <div className="text-[10px] text-slate-400 uppercase font-bold">Max Drawdown %</div>
+                                <div className="text-2xl font-black text-red-400 mt-1">-{bqResult.test_2y_out_of_sample_metrics.max_drawdown_pct}%</div>
+                                <div className="text-[9px] text-emerald-400 mt-0.5">Robustness: {bqResult.test_2y_out_of_sample_metrics.robustness_score}</div>
+                            </div>
+                        </div>
+
+                        {/* Out of Sample Equity Curve Chart */}
+                        <div className="h-64 mt-4">
+                            <div className="text-xs font-mono text-slate-400 mb-2">2-Year Out-of-Sample Walk-Forward Equity Curve vs Benchmark</div>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={bqResult.equity_curve}>
+                                    <defs>
+                                        <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.4}/>
+                                            <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <XAxis dataKey="date" stroke="#64748b" fontSize={10} />
+                                    <YAxis stroke="#64748b" fontSize={10} domain={['auto', 'auto']} />
+                                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', fontSize: '12px' }} />
+                                    <Area type="monotone" dataKey="equity" stroke="#06b6d4" fillOpacity={1} fill="url(#eqGrad)" name="Tradeverse Strategy ($)" />
+                                    <Area type="monotone" dataKey="benchmark" stroke="#64748b" fillOpacity={0} name="Benchmark Buy & Hold ($)" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </HUDCard>
+            )}
+
 
             {/* Results Display */}
             {result && (

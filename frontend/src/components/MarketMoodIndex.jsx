@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import HUDCard from './ui/HUDCard';
+import { API_URL } from '../config/api';
 
 const MarketMoodIndex = () => {
     const [mmiData, setMmiData] = useState({
@@ -11,7 +12,8 @@ const MarketMoodIndex = () => {
     useEffect(() => {
         const fetchMMI = async () => {
             try {
-                const response = await fetch('/api/market/mmi');
+                const url = `${(API_URL || '').replace(/\/$/, '')}/api/market/mmi`;
+                const response = await fetch(url);
                 const data = await response.json();
                 setMmiData({ ...data, status: 'live' });
             } catch (error) {

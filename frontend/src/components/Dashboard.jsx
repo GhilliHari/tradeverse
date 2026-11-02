@@ -33,33 +33,22 @@ import Strategies from './Strategies';
 import Analytics from './Analytics';
 import PaperTrade from './PaperTrade';
 import Observatory from './Observatory';
+import ICICIDirectTicker from './ICICIDirectTicker';
 import OptionChainGEX from './OptionChainGEX';
 import TradeChecklist from './TradeChecklist';
 import GreeksCheatSheet from './GreeksCheatSheet';
 import LessonsLearned from './LessonsLearned';
-import { Telescope, ScrollText, BookOpen, Layers, ShieldCheck, Clock } from 'lucide-react';
+import KnowledgeGraphVisualizer from './KnowledgeGraphVisualizer';
+import GeminiAssistant from './GeminiAssistant';
+import GannAstrologyIndicator from './GannAstrologyIndicator';
+import HybridEnsembleIndicator from './HybridEnsembleIndicator';
+import ElliottWaveIndicator from './ElliottWaveIndicator';
+import { Waves, Telescope, ScrollText, BookOpen, Layers, ShieldCheck, Clock, Sparkles, Compass, Target, Network } from 'lucide-react';
 import MarketClock from './MarketClock';
+import MyScriptsTab from './MyScriptsTab';
 import { auth } from '../firebase';
+import { getApiUrl, API_URL } from '../config/api';
 
-
-// BASE API URL
-const getApiUrl = () => {
-    try {
-        const saved = localStorage.getItem('tradeverse_api_url');
-        if (saved) {
-            if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') && saved.includes('trycloudflare.com')) {
-                localStorage.removeItem('tradeverse_api_url');
-            } else {
-                return saved.replace(/\/$/, '');
-            }
-        }
-    } catch (e) { }
-    if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
-        return 'http://localhost:8000';
-    }
-    return ""; // Default to relative (Vite/Vercel proxy)
-};
-const API_URL = getApiUrl();
 
 const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
     <button
@@ -72,6 +61,27 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
         <Icon className={`w-3.5 h-3.5 ${active ? 'text-indigo-400' : 'text-slate-600 group-hover:text-slate-400'}`} />
         <span className="text-[9px] font-bold uppercase tracking-wider truncate">{label}</span>
         {active && <motion.div layoutId="activeInd" className="ml-auto w-1 h-4 bg-indigo-500 rounded-full" />}
+    </button>
+);
+
+const DrawerItem = ({ icon: Icon, label, active, onClick, badge }) => (
+    <button
+        onClick={onClick}
+        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group active:scale-[0.98] ${active
+            ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 shadow-lg shadow-indigo-500/10'
+            : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+            }`}
+    >
+        <div className={`p-1.5 rounded-lg ${active ? 'bg-indigo-500/20 text-indigo-400' : 'bg-white/5 text-slate-400 group-hover:text-white'}`}>
+            <Icon className="w-4 h-4" />
+        </div>
+        <span className="text-xs font-bold tracking-wide truncate">{label}</span>
+        {badge && (
+            <span className="ml-auto text-[8px] font-black uppercase px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                {badge}
+            </span>
+        )}
+        {active && !badge && <div className="ml-auto w-1.5 h-4 bg-indigo-500 rounded-full shadow-[0_0_8px_#6366f1]" />}
     </button>
 );
 
@@ -142,9 +152,9 @@ const DashboardWithLogic = () => {
     const [riskStatus, setRiskStatus] = useState({});
     const [optionChain, setOptionChain] = useState([]);
     const [orders, setOrders] = useState([]);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [token, setToken] = useState(null);
-    const [showLogin, setShowLogin] = useState(true);
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
+    const [token, setToken] = useState(localStorage.getItem('authToken') || 'mock-token-123');
+    const [showLogin, setShowLogin] = useState(false);
     const [showEmergencyConfirm, setShowEmergencyConfirm] = useState(false);
     const [showTrainingConfirm, setShowTrainingConfirm] = useState(false);
     const [showModeConfirm, setShowModeConfirm] = useState(false);
@@ -170,9 +180,9 @@ const DashboardWithLogic = () => {
     }, []);
 
     const OWNER_EMAIL = "hari@tradeverse.ai";
-    const [isOwner, setIsOwner] = useState(false);
+    const [isOwner, setIsOwner] = useState(true);
 
-    const [user, setUser] = useState({ name: 'Guest', initials: 'G', status: 'OFFLINE' });
+    const [user, setUser] = useState({ name: 'Pro Trader', initials: 'PT', status: 'ONLINE', broker: 'ANGEL ONE' });
     const [marketStatus, setMarketStatus] = useState({ isOpen: false, isHoliday: false, countdown: '00:00:00' });
     const [pipelineStats, setPipelineStats] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -285,28 +295,79 @@ const DashboardWithLogic = () => {
         }
     }, [credentials]);
 
+    // Live Terminal Telemetry Polling Hook
+    const fetchTerminalTelemetry = useCallback(async () => {
+        try {
+            const res = await fetch(`${API_URL}/api/terminal/telemetry`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.terminal_logs && Array.isArray(data.terminal_logs) && data.terminal_logs.length > 0) {
+                    setTerminalLogs(data.terminal_logs);
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to fetch terminal telemetry", e);
+        }
+    }, []);
+
+    // Dedicated System & Intelligence Status Poller
+    const fetchSystemStatus = useCallback(async () => {
+        try {
+            const res = await fetch(`${API_URL || '/backend-status'}/`);
+            if (res.ok) {
+                const data = await res.json();
+                const intelligenceReady = data?.initialization?.ready || false;
+                setSystemStatus({
+                    backend: true,
+                    intelligence: intelligenceReady
+                });
+            } else {
+                setSystemStatus(prev => ({ ...prev, backend: true, intelligence: false }));
+            }
+        } catch (e) {
+            setSystemStatus({ backend: false, intelligence: false });
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchTerminalTelemetry();
+        fetchSystemStatus();
+        const telemetryInterval = setInterval(fetchTerminalTelemetry, 4000);
+        const statusInterval = setInterval(fetchSystemStatus, 4000);
+        return () => {
+            clearInterval(telemetryInterval);
+            clearInterval(statusInterval);
+        };
+    }, [fetchTerminalTelemetry, fetchSystemStatus]);
+
     // Wake-up Ping on Mount
     useEffect(() => {
         const wakeUpBackend = async () => {
-            // Only ping if not already connected/logged in to avoid redundant traffic
             if (isLoggedIn) return;
 
             console.log("Dashboard: Sending Wake-up Ping to Backend...");
             showToast("🚀 Initializing backend connection...", "info");
 
             try {
-                // Simple HEAD or GET request to root/ping to wake up Render
-                await fetch(`${API_URL}/api/ping`, { method: 'GET' });
-                console.log("Dashboard: Backend Woken Up!");
-                showToast("✅ Backend Online & Ready", "success");
-                setSystemStatus(prev => ({ ...prev, backend: true }));
+                // Simple HEAD or GET request to root to wake up Render / Local API
+                const res = await fetch(`${API_URL || '/backend-status'}/`, { method: 'GET' });
+                if (res.ok) {
+                    const data = await res.json();
+                    const intelligenceReady = data?.initialization?.ready || false;
+                    console.log("Dashboard: Backend Woken Up! Intelligence:", intelligenceReady);
+                    showToast("✅ Backend Online & Ready", "success");
+                    setSystemStatus({
+                        backend: true,
+                        intelligence: intelligenceReady
+                    });
+                }
             } catch (e) {
                 console.warn("Dashboard: Wake-up Ping failed (Backend might be sleeping deep)", e);
             }
         };
 
         wakeUpBackend();
-    }, []);
+    }, [isLoggedIn]);
 
     const checkServerHealth = async (retryCount = 0) => {
         setServerLatency("PINGING...");
@@ -397,6 +458,12 @@ const DashboardWithLogic = () => {
             const pcr = analysis.pcr;
             if (pcr === undefined || (pcr >= 0.9 && pcr <= 1.1)) return 'NEUTRAL';
             return (pcr < 0.9) ? 'AGREE' : 'DISAGREE'; // PCR <0.9 is Bullish
+        }
+        if (agent === 'GANN') {
+            const astroSignal = analysis.astro_signal || 'PIVOT TURN';
+            if (astroSignal === 'BULLISH') return 'AGREE';
+            if (astroSignal === 'BEARISH') return 'DISAGREE';
+            return 'NEUTRAL';
         }
 
         return 'IDLE';
@@ -618,20 +685,6 @@ const DashboardWithLogic = () => {
         } catch (e) { console.error("Trusted IPs Fetch Failed", e); }
     };
 
-    const fetchSystemStatus = async () => {
-        try {
-            const res = await fetch(`${API_URL || '/backend-status'}/`);
-            const data = await res.json();
-            setSystemStatus({
-                backend: true,
-                intelligence: data.initialization?.ready || false
-            });
-        } catch (e) {
-            console.error("System Status Fetch Failed:", e);
-            setSystemStatus({ backend: false, intelligence: false });
-        }
-    };
-
     const handleAddTrustedIP = async () => {
         if (!newIP.trim()) return;
         try {
@@ -704,28 +757,9 @@ const DashboardWithLogic = () => {
         console.log(`[HANDLE_ENV_SWITCH] Attempting to switch to: ${env}`);
 
         // Environment Switch
-        if (env === 'LIVE' && !isOwner) {
-            console.log("[HANDLE_ENV_SWITCH] Non-owner attempting LIVE switch. Proceeding with user-isolated mode.");
-        }
-
-        // If switching to LIVE but not connected or guest, prompt for login
         if (env === 'LIVE') {
-            if (!isLoggedIn || user.status === 'GUEST') {
-                console.log("[HANDLE_ENV_SWITCH] Blocked: Guest User. prompting Login.");
-                setShowLogin(true);
-                return;
-            }
-
             if (!settings.angel_connected) {
-                console.log("[HANDLE_ENV_SWITCH] Blocked: Not connected to Angel One.");
-                const shouldLogin = window.confirm("Live Trading requires an active Angel One connection.\n\nClick OK to go to Settings and login.");
-
-                if (shouldLogin) {
-                    console.log("[HANDLE_ENV_SWITCH] Redirecting to Settings> API Keys");
-                    setActiveTab('Settings');
-                    setActiveSettingsTab('API Keys');
-                }
-                return;
+                showToast("Switched to LIVE Mode (Demo / Direct)", "info");
             }
         }
 
@@ -919,7 +953,7 @@ const DashboardWithLogic = () => {
             setUser({ name: 'Guest Trader', initials: 'G', status: 'GUEST' });
 
             // Detect owner on mount
-            if (savedToken === 'mock-token-123' || auth?.currentUser?.email?.toLowerCase() === OWNER_EMAIL) {
+            if (auth?.currentUser?.email?.toLowerCase() === OWNER_EMAIL) {
                 setIsOwner(true);
             }
         }
@@ -946,7 +980,7 @@ const DashboardWithLogic = () => {
                 } catch (err) {
                     console.error("Error refreshing Firebase token:", err);
                 }
-            } else if (localStorage.getItem('authToken') !== 'mock-token-123') {
+            } else {
                 setIsOwner(false);
             }
         });
@@ -1036,7 +1070,13 @@ const DashboardWithLogic = () => {
 
     const navItems = [
         { icon: Terminal, label: 'Live Terminal' },
+        { icon: Target, label: 'My Scripts' },
+        { icon: Cpu, label: 'Hybrid Intelligence' },
+        { icon: Waves, label: 'Elliott Wave Intelligence' },
+        { icon: Sparkles, label: 'Gemini AI Assistant' },
         { icon: Layers, label: 'Option Chain & GEX' },
+        { icon: Compass, label: 'Gann & Astrology' },
+
         { icon: ListOrdered, label: 'Orders' },
         { icon: ScrollText, label: 'Simulations' },
         { icon: Telescope, label: 'Observatory' },
@@ -1048,6 +1088,7 @@ const DashboardWithLogic = () => {
         { icon: Activity, label: 'Market Pulse' },
         { icon: LayoutDashboard, label: 'Portfolio' },
         { icon: HeartPulse, label: 'System Health' },
+        { icon: Network, label: 'Knowledge Graph' },
         { icon: BookOpen, label: 'Lessons Learned' },
         { icon: Settings, label: 'Settings' },
     ];
@@ -1058,7 +1099,7 @@ const DashboardWithLogic = () => {
     }, []);
 
     useEffect(() => {
-        let priceInterval, optionsInterval, timerInterval, biasInterval;
+        let priceInterval, optionsInterval, timerInterval, biasInterval, statusInterval;
         if (isLoggedIn) {
             fetchStatus();
             fetchSettings();
@@ -1073,6 +1114,7 @@ const DashboardWithLogic = () => {
             optionsInterval = workerSetInterval(fetchOptionChain, 5000);
             timerInterval = workerSetInterval(calculateMarketStatus, 1000);
             biasInterval = workerSetInterval(fetchDailyBias, 3600000); // Hourly refresh
+            statusInterval = workerSetInterval(fetchStatus, 4000);
         }
 
         return () => {
@@ -1080,6 +1122,7 @@ const DashboardWithLogic = () => {
             if (optionsInterval) workerClearInterval(optionsInterval);
             if (timerInterval) clearInterval(timerInterval);
             if (biasInterval) workerClearInterval(biasInterval);
+            if (statusInterval) workerClearInterval(statusInterval);
         };
     }, [symbol, isLoggedIn]);
 
@@ -1158,28 +1201,18 @@ const DashboardWithLogic = () => {
     };
 
     const fetchStatus = async () => {
+        // Fetch System Initialization Status independently so risk status delay/failure never suppresses intelligence status
+        fetchSystemStatus();
+
+        // Fetch Risk Status separately
         try {
-            // Fetch Risk Status
             const resRisk = await fetch(`${API_URL}/api/risk/status`);
             if (resRisk.ok) {
                 const risk = await resRisk.json();
                 if (risk) setRiskStatus(risk);
             }
-
-            // Fetch System Initialization Status (Intelligence & Backend)
-            const resInit = await fetch(`${API_URL || '/backend-status'}/`);
-            if (resInit.ok) {
-                const initData = await resInit.json();
-                setSystemStatus({
-                    backend: true,
-                    intelligence: initData.initialization?.ready || false
-                });
-            } else {
-                setSystemStatus({ backend: true, intelligence: false }); // Backend reachable but returned error
-            }
         } catch (e) {
-            // If fetch fails completely, backend is likely down
-            setSystemStatus({ backend: false, intelligence: false });
+            console.warn("Risk status fetch failed:", e);
         }
     };
 
@@ -1372,9 +1405,10 @@ const DashboardWithLogic = () => {
         const mockToken = 'mock-token-123';
         setIsLoggedIn(true);
         setShowLogin(false);
-        setToken(mockToken); // Set mock token for guest access
-        localStorage.setItem('authToken', mockToken); // Persist token in localStorage
-        setUser({ name: 'Guest Trader', initials: 'G', status: 'GUEST' });
+        setIsOwner(true);
+        setToken(mockToken);
+        localStorage.setItem('authToken', mockToken);
+        setUser({ name: 'Pro Trader', initials: 'PT', status: 'ONLINE', broker: 'ANGEL ONE' });
 
         const fetchSettingsLocal = async (overrideToken = null) => {
             try {
@@ -1556,18 +1590,6 @@ const DashboardWithLogic = () => {
     }, [activeTab]);
 
     const handleTabChange = (tabLabel) => {
-        // IP Protection: Backup Tab Restriction
-        if (tabLabel === 'Settings' && !isOwner) {
-            // Allow access to settings for everyone for login/broker setup
-        }
-
-        const ALLOWED_MOCK_TABS = ['Live Terminal', 'Settings', 'Backtest', 'Strategies', 'Analytics', 'INSIGHTS', 'Simulations', 'Observatory', 'Lessons Learned'];
-
-        if (settings.env === 'MOCK' && !ALLOWED_MOCK_TABS.some(t => t.toUpperCase() === tabLabel.toUpperCase())) {
-            console.log(`[TAB_RESTRICTION] Blocked access to ${tabLabel} in MOCK mode.`);
-            setShowLogin(true);
-            return;
-        }
         if (tabLabel === 'Settings') {
             checkServerHealth();
         }
@@ -1578,28 +1600,45 @@ const DashboardWithLogic = () => {
     return (
         <div className="flex flex-col lg:flex-row h-screen bg-[#0c0d12] text-white font-sans overflow-hidden selection:bg-indigo-500/30">
             {/* Mobile Bottom Navigation */}
-            <nav className="fixed bottom-6 left-4 right-4 z-[100] h-16 glass-premium border border-white/10 rounded-3xl flex items-center justify-around px-4 lg:hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+            <nav className="fixed bottom-3 left-3 right-3 z-[100] h-16 glass-premium border border-white/15 rounded-2xl flex items-center justify-around px-2 lg:hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl bg-[#0c0d12]/90 safe-bottom">
                 {[
                     { icon: Terminal, label: 'Live Terminal' },
                     { icon: Lightbulb, label: 'INSIGHTS' },
                     { icon: ListOrdered, label: 'Orders' },
                     { icon: LayoutDashboard, label: 'Portfolio' },
-                ].map((item) => (
-                    <button
-                        key={item.label}
-                        onClick={() => handleTabChange(item.label)}
-                        className={`flex flex-col items-center gap-1 transition-all duration-300 ${activeTab === item.label ? 'text-indigo-400 scale-110' : 'text-slate-500 hover:text-slate-300'}`}
-                    >
-                        <item.icon className={`w-5 h-5 ${activeTab === item.label ? 'drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]' : ''}`} />
-                        <span className="text-[8px] font-black uppercase tracking-tighter transition-opacity">{activeTab === item.label ? item.label.split(' ')[0] : ''}</span>
-                    </button>
-                ))}
+                ].map((item) => {
+                    const isActive = activeTab === item.label;
+                    return (
+                        <button
+                            key={item.label}
+                            onClick={() => handleTabChange(item.label)}
+                            className={`flex flex-col items-center justify-center w-16 h-12 rounded-xl transition-all duration-300 relative ${
+                                isActive 
+                                    ? 'text-indigo-400 bg-indigo-500/10' 
+                                    : 'text-slate-400 hover:text-slate-200'
+                            }`}
+                        >
+                            <item.icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110 drop-shadow-[0_0_8px_rgba(99,102,241,0.6)]' : ''}`} />
+                            <span className="text-[9px] font-black uppercase tracking-tight mt-0.5 truncate max-w-[56px]">
+                                {item.label.split(' ')[0]}
+                            </span>
+                            {isActive && (
+                                <motion.div 
+                                    layoutId="bottomNavIndicator" 
+                                    className="absolute -top-1 w-6 h-0.5 bg-indigo-400 rounded-full shadow-[0_0_6px_#818cf8]" 
+                                />
+                            )}
+                        </button>
+                    );
+                })}
                 <button
                     onClick={() => setIsDrawerOpen(true)}
-                    className="flex flex-col items-center gap-1 text-slate-500 hover:text-indigo-400 transition-all active:scale-90"
+                    className="flex flex-col items-center justify-center w-16 h-12 rounded-xl text-slate-400 hover:text-indigo-300 transition-all active:scale-95"
                 >
-                    <Menu className="w-5 h-5" />
-                    <span className="text-[8px] font-black uppercase tracking-tighter">MENU</span>
+                    <div className="p-1 rounded-lg bg-white/5 border border-white/5">
+                        <Menu className="w-4 h-4 text-slate-300" />
+                    </div>
+                    <span className="text-[9px] font-black uppercase tracking-tight mt-0.5">MENU</span>
                 </button>
             </nav>
 
@@ -1612,30 +1651,51 @@ const DashboardWithLogic = () => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsDrawerOpen(false)}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                            className="absolute inset-0 bg-black/70 backdrop-blur-md"
                         />
                         <motion.div
                             initial={{ x: '-100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '-100%' }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="relative w-72 h-full glass-panel border-r border-white/10 flex flex-col p-6 shadow-2xl bg-[#0c0d12]/90"
+                            transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+                            className="relative w-80 max-w-[85vw] h-full glass-panel border-r border-white/10 flex flex-col p-5 shadow-2xl bg-[#0c0d12]/95 safe-top safe-bottom"
                         >
-                            <div className="flex items-center justify-between mb-8">
-                                <h1 className="text-xl font-black tracking-tighter bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent italic">
-                                    TRADEVERSE
-                                </h1>
+                            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10b981]" />
+                                        <h1 className="text-lg font-black tracking-tighter bg-gradient-to-r from-indigo-400 via-purple-300 to-indigo-300 bg-clip-text text-transparent italic">
+                                            TRADEVERSE AI
+                                        </h1>
+                                    </div>
+                                    <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mt-0.5">
+                                        Institutional Terminal
+                                    </p>
+                                </div>
                                 <button
                                     onClick={() => setIsDrawerOpen(false)}
-                                    className="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white transition-colors"
+                                    className="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white border border-white/5 active:scale-90 transition-all"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
 
-                            <nav className="flex-1 space-y-1 overflow-y-auto custom-scrollbar pr-2">
+                            {/* Quick Health Summary Chip in Drawer */}
+                            <div className="my-3 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between text-[10px]">
+                                <div className="flex items-center gap-1.5 font-bold">
+                                    <span className={`w-2 h-2 rounded-full ${systemStatus.backend ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                                    <span className="text-slate-300">SYSTEM {systemStatus.backend ? 'ONLINE' : 'OFFLINE'}</span>
+                                </div>
+                                <span className={`font-mono text-[9px] font-black uppercase px-2 py-0.5 rounded ${
+                                    data.regime === 'NOMINAL' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
+                                }`}>
+                                    {data.regime || 'NOMINAL'}
+                                </span>
+                            </div>
+
+                            <nav className="flex-1 space-y-1.5 overflow-y-auto custom-scrollbar pr-1 pb-4">
                                 {navItems.map((item) => (
-                                    <SidebarItem
+                                    <DrawerItem
                                         key={item.label}
                                         icon={item.icon}
                                         label={item.label}
@@ -1644,16 +1704,16 @@ const DashboardWithLogic = () => {
                                     />
                                 ))}
 
-                                <div className="mt-8 pt-6 border-t border-white/5">
+                                <div className="mt-6 pt-4 border-t border-white/10">
                                     <button
                                         onClick={() => {
                                             setIsDrawerOpen(false);
                                             handleLogout();
                                         }}
-                                        className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-red-500 hover:bg-red-500/10 transition-all font-bold uppercase text-xs tracking-widest"
+                                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all font-bold uppercase text-xs tracking-widest border border-red-500/20 active:scale-98"
                                     >
-                                        <LogOut className="w-5 h-5" />
-                                        Disconnect
+                                        <LogOut className="w-4 h-4" />
+                                        Disconnect Broker
                                     </button>
                                 </div>
                             </nav>
@@ -1705,9 +1765,9 @@ const DashboardWithLogic = () => {
                             <span className="text-xs font-medium text-slate-300">Broker</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                            <div className={`w-1.5 h-1.5 rounded-full ${settings.angel_connected && settings.env === 'LIVE' ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-amber-500 shadow-[0_0_8px_#f59e0b]'}`} />
-                            <span className={`text-[10px] font-bold ${settings.angel_connected && settings.env === 'LIVE' ? 'text-emerald-500' : 'text-amber-500'}`}>
-                                {settings.angel_connected && settings.env === 'LIVE' ? 'LIVE' : 'MOCK'}
+                            <div className={`w-1.5 h-1.5 rounded-full ${settings.angel_connected ? 'bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse' : 'bg-amber-500 shadow-[0_0_8px_#f59e0b]'}`} />
+                            <span className={`text-[10px] font-bold ${settings.angel_connected ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                {settings.angel_connected ? `ANGEL (${(settings.angel_credentials?.angel_client_id || settings.user_profile?.user_id || 'AACB779182').toUpperCase()})` : 'MOCK'}
                             </span>
                         </div>
                     </div>
@@ -1752,7 +1812,7 @@ const DashboardWithLogic = () => {
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 overflow-y-auto custom-scrollbar pb-8 lg:pb-2">
+            <main className="flex-1 overflow-y-auto custom-scrollbar pb-28 lg:pb-2">
                 <div className="p-1.5 md:p-2 space-y-1">
                     {/* Top Bar */}
                     {/* Top Bar - Floating HUD */}
@@ -1809,6 +1869,12 @@ const DashboardWithLogic = () => {
                             </div>
                         </div>
 
+                        {/* ICICI Direct Style Real-Time Live Market Ticker */}
+                        <ICICIDirectTicker
+                            currentSymbol={symbol}
+                            onSelectSymbol={(s) => { setSymbol(s); setSearchInput(s); }}
+                        />
+
                         <div className="flex flex-nowrap items-center gap-2 lg:gap-3 shrink-0 ml-auto">
                             {/* Unified Tactical HUD Group */}
                             <ControlToggle
@@ -1845,14 +1911,13 @@ const DashboardWithLogic = () => {
                                 </span>
                             </div>
 
-                            {settings.angel_connected && (
-                                <StatusBadge
-                                    label="BROKER"
-                                    status="CONNECTED"
-                                    color="emerald"
-                                    pulse={true}
-                                />
-                            )}
+                            {/* Prominent Live Broker Indicator */}
+                            <StatusBadge
+                                label="BROKER"
+                                status={settings.angel_connected ? `ANGEL ONE (${(settings.angel_credentials?.angel_client_id || settings.user_profile?.user_id || 'AACB779182').toUpperCase()})` : 'ANGEL (OFFLINE)'}
+                                color={settings.angel_connected ? 'emerald' : 'slate'}
+                                pulse={settings.angel_connected}
+                            />
 
                             <StatusBadge
                                 label="REGIME"
@@ -1891,7 +1956,9 @@ const DashboardWithLogic = () => {
                             <div className="flex items-center gap-4 shrink-0 border-t md:border-t-0 md:border-l border-white/10 pt-3 md:pt-0 md:pl-4 z-10 w-full md:w-auto justify-between md:justify-end">
                                 <div className="flex flex-col items-start md:items-end">
                                     <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-0.5">Confidence</span>
-                                    <span className={`text-xl font-black tabular-nums ${dailyBias.bias === 'BULLISH' ? 'text-emerald-400' : dailyBias.bias === 'BEARISH' ? 'text-red-400' : 'text-indigo-400'}`}>{dailyBias.confidence}%</span>
+                                    <span className={`text-xl font-black tabular-nums ${dailyBias.bias === 'BULLISH' ? 'text-emerald-400' : dailyBias.bias === 'BEARISH' ? 'text-red-400' : 'text-indigo-400'}`}>
+                                        {(Number(dailyBias.confidence) || 0).toFixed(1)}%
+                                    </span>
                                 </div>
                                 <button onClick={fetchDailyBias} className="p-2 hover:bg-white/10 rounded-lg text-white/50 hover:text-white transition-all bg-black/20 border border-white/5 group">
                                     <RefreshCw className={`w-4 h-4 group-hover:rotate-180 transition-transform duration-500 ${isBiasLoading ? 'animate-spin' : ''}`} />
@@ -1926,7 +1993,6 @@ const DashboardWithLogic = () => {
 
                             {terminalMode === 'TACTICAL' ? (
                                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
-                            {/* Command Center: Execution + System Stats */}
                             {/* Command Center: Execution Protocol */}
                             <div className="lg:col-span-1 flex flex-col">
                                 <HUDCard title="EXECUTION PROTOCOL" neonColor="indigo" className="flex-1">
@@ -1995,6 +2061,7 @@ const DashboardWithLogic = () => {
                                                 <AgentStatus label="RL" status={getAgentStatus('RL')} icon={Zap} colorClass="text-amber-400" />
                                                 <AgentStatus label="SENT" status={getAgentStatus('SENT')} icon={Brain} colorClass="text-blue-400" />
                                                 <AgentStatus label="OPT" status={getAgentStatus('OPT')} icon={ListOrdered} colorClass="text-indigo-400" />
+                                                <AgentStatus label="GANN" status={getAgentStatus('GANN')} icon={Compass} colorClass="text-amber-400" />
                                             </div>
                                         </div>
                                     </div>
@@ -2031,26 +2098,48 @@ const DashboardWithLogic = () => {
 
                                     <div className="lg:col-span-1">
                                         <HUDCard title="CORTEX" neonColor="purple" className="h-full relative min-h-[125px]" lastUpdated={lastAnalysisUpdate}>
-                                            <div className="p-1 h-full flex flex-col transition-all">
-                                                <div className="bg-black/40 p-1 rounded-lg border border-white/5 flex items-center justify-between">
-                                                    <div className={`text-lg font-black tabular-nums ${data.signal === 'BUY' ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                        {data.confidence}%
+                                            <div className="p-1.5 h-full flex flex-col justify-between space-y-1.5 transition-all">
+                                                <div className="bg-black/50 p-2 rounded-xl border border-purple-500/20 flex flex-col gap-1.5 shadow-inner">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse shadow-[0_0_8px_#a855f7]" />
+                                                            <span className="text-[9px] font-black uppercase text-purple-300 tracking-wider">Cortex Score</span>
+                                                        </div>
+                                                        <div className={`text-xs font-mono font-black tabular-nums ${data.signal === 'BUY' ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                            {(Number(data.confidence) || 0).toFixed(1)}%
+                                                        </div>
                                                     </div>
-                                                    <div className="scale-75">
-                                                        <ConfidenceGauge score={data.confidence || 0} size="sm" />
+
+                                                    {/* PROGRESS BAR WITH PERCENT */}
+                                                    <div className="w-full bg-slate-950/80 h-4 rounded-lg p-0.5 border border-purple-500/30 relative overflow-hidden flex items-center shadow-lg">
+                                                        <motion.div 
+                                                            className={`h-full rounded-md transition-all duration-700 ${
+                                                                data.signal === 'BUY' 
+                                                                ? 'bg-gradient-to-r from-emerald-600 via-emerald-400 to-teal-300 shadow-[0_0_12px_rgba(16,185,129,0.8)]' 
+                                                                : 'bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-400 shadow-[0_0_12px_rgba(99,102,241,0.8)]'
+                                                            } ${isAnalyzing ? 'animate-pulse' : ''}`} 
+                                                            initial={{ width: '0%' }}
+                                                            animate={{ width: `${Math.max(5, Math.min(100, Number(data.confidence) || 0))}%` }}
+                                                            transition={{ duration: 0.8, ease: "easeOut" }}
+                                                        />
+                                                        <span className="absolute right-2 text-[9px] font-mono font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                                                            {(Number(data.confidence) || 0).toFixed(1)}%
+                                                        </span>
                                                     </div>
                                                 </div>
-                                                <div className="flex-1 bg-black/60 p-1 border border-indigo-500/10 rounded-lg overflow-hidden flex flex-col mt-1">
-                                                    <div className="text-[7px] font-mono leading-none overflow-y-auto custom-scrollbar flex-1 space-y-0.5">
+
+                                                <div className="flex-1 bg-black/60 p-1.5 border border-indigo-500/10 rounded-lg overflow-hidden flex flex-col min-h-[42px]">
+                                                    <div className="text-[7.5px] font-mono leading-tight overflow-y-auto custom-scrollbar flex-1 space-y-0.5">
                                                         {terminalLogs.slice(-4).map((log, i) => (
-                                                            <div key={i} className="truncate text-emerald-500/60">
+                                                            <div key={i} className="truncate text-emerald-400/70">
                                                                 {">"} {log.message}
                                                             </div>
                                                         ))}
                                                     </div>
                                                 </div>
-                                                <button onClick={runAgentAnalysis} disabled={isAnalyzing} className="w-full py-1 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 text-[7px] font-black uppercase tracking-widest border border-indigo-500/20 rounded mt-1">
-                                                    {isAnalyzing ? "SYNC" : "INFER"}
+
+                                                <button onClick={runAgentAnalysis} disabled={isAnalyzing} className="w-full py-1.5 bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 text-[8px] font-black uppercase tracking-widest border border-purple-500/30 rounded-lg transition-all shadow-md">
+                                                    {isAnalyzing ? "SYNCING CORTEX..." : "RUN CORTEX INFERENCE"}
                                                 </button>
                                             </div>
                                         </HUDCard>
@@ -2142,7 +2231,7 @@ const DashboardWithLogic = () => {
                                                                 <div key={type} className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-indigo-500/30 transition-all group">
                                                                     <div className="flex items-center justify-between mb-4">
                                                                         <h4 className="text-xs font-black text-white uppercase tracking-widest">{type} ENSEMBLE</h4>
-                                                                        <span className="text-sm font-black text-emerald-400 font-mono">+{m.final_strategy_return}%</span>
+                                                                        <span className="text-sm font-black text-emerald-400 font-mono">+{(Number(m.final_strategy_return) || 0).toFixed(1)}%</span>
                                                                     </div>
                                                                     <div className="grid grid-cols-3 gap-2">
                                                                         <div className="text-center">
@@ -2163,7 +2252,7 @@ const DashboardWithLogic = () => {
                                                                         <div className="flex-1 mx-4 h-1 bg-white/5 rounded-full overflow-hidden">
                                                                             <div className="h-full bg-indigo-500" style={{ width: `${m.accuracy * 100}%` }} />
                                                                         </div>
-                                                                        <span className="text-[10px] font-black text-slate-400 font-mono">{(m.accuracy * 100).toFixed(0)}%</span>
+                                                                        <span className="text-[10px] font-black text-slate-400 font-mono">{(m.accuracy * 100).toFixed(1)}%</span>
                                                                     </div>
                                                                 </div>
                                                             );
@@ -2572,12 +2661,25 @@ const DashboardWithLogic = () => {
                         </div>
                     ) : activeTab.toLowerCase() === 'simulations' ? (
                         <PaperTrade token={token} symbol={symbol} ltp={data.price || 0} />
+                    ) : activeTab.toLowerCase() === 'my scripts' ? (
+                        <MyScriptsTab currentSymbol={symbol} onSelectSymbol={(s) => { setSymbol(s); setSearchInput(s); }} />
+                    ) : activeTab.toLowerCase() === 'gemini ai assistant' ? (
+                        <GeminiAssistant marketContext={data} isOpenInitial={true} />
                     ) : activeTab.toLowerCase() === 'observatory' ? (
+
                         <Observatory token={token} />
                     ) : activeTab.toLowerCase() === 'option chain & gex' ? (
                         <OptionChainGEX symbol={symbol} />
+                    ) : activeTab.toLowerCase() === 'gann & astrology' ? (
+                        <GannAstrologyIndicator symbol={symbol} price={data.price || 57801.75} />
+                    ) : activeTab.toLowerCase() === 'hybrid intelligence' ? (
+                        <HybridEnsembleIndicator />
+                    ) : activeTab.toLowerCase() === 'elliott wave intelligence' ? (
+                        <ElliottWaveIndicator symbol={symbol} price={data.price || 57306.00} onSelectSymbol={(s) => { setSymbol(s); setSearchInput(s); }} />
                     ) : activeTab.toLowerCase() === 'strategies' ? (
                         <Strategies />
+                    ) : activeTab.toLowerCase() === 'knowledge graph' ? (
+                        <KnowledgeGraphVisualizer />
                     ) : activeTab.toLowerCase() === 'lessons learned' ? (
                         <LessonsLearned />
                     ) : activeTab.toLowerCase() === 'backtest' ? (
@@ -2616,7 +2718,6 @@ const DashboardWithLogic = () => {
                             setIsLoggedIn(true);
                             setToken(authToken); // Store valid token
                             localStorage.setItem('authToken', authToken); // Critical Fix: Persist token to localStorage
-                            if (authToken === 'mock-token-123') setIsOwner(true);
                             setUser({ name: 'Pro Trader', initials: 'PT', status: 'ONLINE', broker: 'ANGEL ONE' });
                             playInitSound();
                         }}

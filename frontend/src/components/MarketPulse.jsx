@@ -6,6 +6,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, PieChart, Pie, Tooltip } from 'recharts';
 import HUDCard from './ui/HUDCard';
 import ScrambleText from './ui/ScrambleText';
+import { API_URL } from '../config/api';
 
 // --- MARKET PULSE DATA ---
 
@@ -76,12 +77,13 @@ const MarketPulse = () => {
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
-        const apiBase = (typeof window !== 'undefined' && window.location.protocol === 'file:') ? 'http://localhost:8000' : '';
         const fetchData = async () => {
             try {
-                const response = await fetch(`${apiBase}/api/market/pulse`);
-                const json = await response.json();
-                setData(json);
+                const response = await fetch(`${API_URL}/api/market/pulse`);
+                if (response.ok) {
+                    const json = await response.json();
+                    setData(json);
+                }
             } catch (error) {
                 console.error("Pulse Fetch Failed:", error);
             } finally {
@@ -92,27 +94,28 @@ const MarketPulse = () => {
         fetchData();
         const interval = setInterval(fetchData, 10000); // 10s polling fallback
         
-        // WebSocket logic (Local or 24/7 Cloud Render WebSocket)
+        // WebSocket logic (Optional future upgrade integration)
         let ws = null;
         try {
-            if (typeof window !== 'undefined') {
-                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                const wsUrl = isLocal
-                    ? 'ws://localhost:8000/ws/market-pulse'
-                    : 'wss://tradeverse-1-aosu.onrender.com/ws/market-pulse';
-                ws = new WebSocket(wsUrl);
-                ws.onmessage = (event) => {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsHost = window.location.host;
+            ws = new WebSocket(`${wsProtocol}//${wsHost}/ws/market-pulse`);
+            ws.onmessage = (event) => {
+                try {
                     const msg = JSON.parse(event.data);
                     if (msg.type === 'PREDICTION_UPDATE') {
                         console.log("WS Pulse Update:", msg);
                     }
-                };
-            }
-        } catch (e) { }
+                } catch (e) {}
+            };
+            ws.onerror = () => { /* fallback to polling smoothly */ };
+        } catch (e) {}
 
         return () => {
             clearInterval(interval);
-            if (ws) ws.close();
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.close();
+            }
         };
     }, []);
 
