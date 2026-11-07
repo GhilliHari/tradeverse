@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-06T15:35:17.709039",
+  "updated_at": "2026-11-07T15:35:20.502971",
   "repo": "GhilliHari/tradeverse",
   "branch": "main",
   "raw_base_url": "https://raw.githubusercontent.com/GhilliHari/tradeverse/main",
@@ -82,7 +82,7 @@
     "USDINRX_1d.csv",
     "USDINRX_NSEI_BZF_DXY.NYB_1d.csv"
   ],
-  "paper_trades_entries": 3177,
-  "all_time_closed_trades": 1584,
-  "all_time_pnl": 797696.8
+  "paper_trades_entries": 3201,
+  "all_time_closed_trades": 1600,
+  "all_time_pnl": 829726.0
 }
