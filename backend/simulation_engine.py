@@ -247,6 +247,62 @@ class SimulationEngine:
                 "pattern": pattern_score
             }
         }
+
+    def evaluate_live_intraday_signal(self, symbol: str = "^NSEBANK", broker=None) -> Dict:
+        """
+        Fetches live 5-minute candles for `symbol` and evaluates the 5m Intraday Sniper confluence
+        (EMA-9, EMA-21, VWAP, RSI-14, MACD, 3-bar momentum).
+        """
+        try:
+            from data_pipeline import DataPipeline
+            import pandas as pd
+            yf_symbol = symbol
+            if "BANK" in symbol.upper():
+                yf_symbol = "^NSEBANK"
+            elif "FIN" in symbol.upper():
+                yf_symbol = "^CNXFIN"
+            elif "MID" in symbol.upper():
+                yf_symbol = "^NSMIDCP"
+            elif "NIFTY" in symbol.upper() or "NSEI" in symbol.upper():
+                yf_symbol = "^NSEI"
+
+            pipeline = DataPipeline(symbol=yf_symbol, interval="5m")
+            pipeline.fetch_data()
+            if pipeline.raw_data is None or len(pipeline.raw_data) < 5:
+                return {"signal": "HOLD", "confidence": 0.0, "spot_price": 0.0, "reason": "Insufficient 5m data"}
+
+            df_5m = pipeline.raw_data.copy()
+            df_5m['EMA_9'] = df_5m['Close'].ewm(span=9, adjust=False).mean()
+            df_5m['EMA_21'] = df_5m['Close'].ewm(span=21, adjust=False).mean()
+            delta = df_5m['Close'].diff()
+            gain = (delta.where(delta > 0, 0)).rolling(14, min_periods=1).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(14, min_periods=1).mean()
+            df_5m['RSI'] = 100 - (100 / (1 + (gain / (loss + 1e-9))))
+            vol_s = df_5m['Volume'] if 'Volume' in df_5m.columns and (df_5m['Volume'] > 0).any() else pd.Series(1.0, index=df_5m.index)
+            df_5m['VWAP'] = (df_5m['Close'] * vol_s).cumsum() / (vol_s.cumsum() + 1e-9)
+            exp1 = df_5m['Close'].ewm(span=12, adjust=False).mean()
+            exp2 = df_5m['Close'].ewm(span=26, adjust=False).mean()
+            macd = exp1 - exp2
+            df_5m['MACD_Hist'] = macd - macd.ewm(span=9, adjust=False).mean()
+            df_5m['Ret_3'] = df_5m['Close'].pct_change(3).fillna(0.0)
+
+            spot_price = float(df_5m['Close'].iloc[-1])
+            vix_val = self._get_vix(broker=broker)
+            eval_res = self._evaluate_intraday_bar_signal(df_5m, len(df_5m) - 1, vix_val)
+            row = df_5m.iloc[-1]
+            eval_res["spot_price"] = round(spot_price, 2)
+            eval_res["rsi"] = round(float(row.get("RSI", 50.0)), 1)
+            eval_res["ema_9"] = round(float(row.get("EMA_9", spot_price)), 2)
+            eval_res["ema_21"] = round(float(row.get("EMA_21", spot_price)), 2)
+            eval_res["vwap"] = round(float(row.get("VWAP", spot_price)), 2)
+            eval_res["reason"] = (
+                f"5m Confluence ({eval_res['regime']}): Spot ₹{spot_price:,.1f}, "
+                f"EMA9 ₹{eval_res['ema_9']:,.1f}, EMA21 ₹{eval_res['ema_21']:,.1f}, RSI {eval_res['rsi']}"
+            )
+            return eval_res
+        except Exception as e:
+            logger.debug(f"evaluate_live_intraday_signal error for {symbol}: {e}")
+            return {"signal": "HOLD", "confidence": 0.0, "spot_price": 0.0, "reason": str(e)}
     
     async def capture_prediction(self, intelligence_layer, symbol: str = "BANKNIFTY") -> Optional[Dict]:
         """

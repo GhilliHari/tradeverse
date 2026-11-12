@@ -114,6 +114,8 @@ class SmartExecutionEngine:
                 order_type="LIMIT",
                 price=current_limit_price
             )
+            if not placed_order_id or str(placed_order_id) == "None":
+                raise RuntimeError("Broker returned empty order_id (None) during initial limit order placement.")
             attempts_taken = 1
             logger.info(f"⚡ [SmartExec] Initial Limit Order placed: ID {placed_order_id} @ ₹{current_limit_price:.2f}")
 

@@ -11,10 +11,11 @@ class RiskEngine:
     Automated Risk Guardrails for Tradeverse.
     Enforces daily loss limits, crash protection, and cool-off periods.
     """
-    def __init__(self, daily_loss_limit: float = 1000.0, max_position_size: float = 7000.0, max_open_positions: int = 1):
-        self.daily_loss_limit = daily_loss_limit
-        self.max_position_size = max_position_size
-        self.max_open_positions = max_open_positions
+    def __init__(self, daily_loss_limit: Optional[float] = None, max_position_size: Optional[float] = None, max_open_positions: Optional[int] = None):
+        from config import config
+        self.daily_loss_limit = float(daily_loss_limit if daily_loss_limit is not None else getattr(config, "DAILY_LOSS_LIMIT", 1000.0))
+        self.max_position_size = float(max_position_size if max_position_size is not None else getattr(config, "MAX_POSITION_SIZE", 10000.0))
+        self.max_open_positions = int(max_open_positions if max_open_positions is not None else getattr(config, "MAX_OPEN_POSITIONS", 1))
         self.current_daily_loss = 0.0
         self.circuit_breaker_active = False
         self.kill_switch = KillSwitch()

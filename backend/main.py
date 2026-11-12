@@ -3530,25 +3530,25 @@ async def execute_autopilot(
     # If the Daily Swing model returns HOLD, evaluate today's live 5m EMA9/EMA21/VWAP/RSI/MACD confluence
     if signal == "HOLD" and simulation_engine and simulation_engine.is_trading_day(datetime.now()):
         try:
-            df_5m = await asyncio.to_thread(simulation_engine._fetch_today_intraday_5m_df, symbol)
-            if df_5m is not None and len(df_5m) >= 5:
-                intra_action, intra_conf, intra_reason = simulation_engine._evaluate_intraday_bar_signal(
-                    df_5m, len(df_5m) - 1, base_direction=0
-                )
-                if intra_action in ("BUY_CE", "BUY_PE") and float(intra_conf or 0.0) >= 0.70:
-                    spot_now = float(df_5m["close"].iloc[-1])
-                    step = 100 if "BANK" in symbol.upper() else 50
-                    atm_strike = int(round(spot_now / step) * step)
-                    opt_t = "CE" if intra_action == "BUY_CE" else "PE"
-                    signal = intra_action
-                    analysis["final_signal"] = signal
-                    analysis["confidence"] = round(float(intra_conf) * 100.0, 1)
-                    analysis["trade_recommendation"] = {
-                        "strike": atm_strike,
-                        "option_type": opt_t,
-                        "reasoning": f"Intraday 5m Sniper ({int(float(intra_conf)*100)}%): {intra_reason}",
-                    }
-                    logger.info(f"⚡ [Autopilot] 5m Intraday Sniper triggered {signal} @ Strike {atm_strike}{opt_t} ({intra_reason})")
+            intra_eval = await asyncio.to_thread(simulation_engine.evaluate_live_intraday_signal, symbol)
+            intra_action = intra_eval.get("signal", "HOLD")
+            intra_conf = float(intra_eval.get("confidence") or 0.0)
+            intra_reason = intra_eval.get("reason", "5m Intraday Confluence")
+            if intra_action in ("BUY_CE", "BUY_PE") and intra_conf >= 0.65:
+                spot_now = float(intra_eval.get("spot_price") or 0.0)
+                step = 100 if "BANK" in symbol.upper() else 50
+                atm_strike = int(round(spot_now / step) * step) if spot_now > 0 else 0
+                opt_t = "CE" if intra_action == "BUY_CE" else "PE"
+                signal = intra_action
+                analysis["final_signal"] = signal
+                analysis["confidence"] = round(intra_conf * 100.0, 1)
+                analysis["regime"] = intra_eval.get("regime", "TRENDING_INTRADAY")
+                analysis["trade_recommendation"] = {
+                    "strike": atm_strike,
+                    "option_type": opt_t,
+                    "reasoning": f"Intraday 5m Sniper ({int(intra_conf*100)}%): {intra_reason}",
+                }
+                logger.info(f"⚡ [Autopilot] 5m Intraday Sniper triggered {signal} @ Strike {atm_strike}{opt_t} ({intra_reason})")
         except Exception as ie:
             logger.debug(f"Intraday 5m sniper fallback check skipped: {ie}")
 
@@ -3661,21 +3661,22 @@ async def execute_autopilot(
     except Exception:
         ltp_val = 0.0
 
-    # 3c. Dynamic OTM Strike Stepping if ATM Lot Cost exceeds MAX_POSITION_SIZE (₹10,000) or Available Cash
-    max_budget = float(getattr(config, "MAX_POSITION_SIZE", 10000.0) or 10000.0)
+    # 3c. Dynamic OTM Strike Stepping if ATM Lot Cost exceeds 96% of MAX_POSITION_SIZE (₹9,600 buffer for charges/chasing)
+    max_budget = float(getattr(config, "MAX_POSITION_SIZE", 10000.0) or 10000.0) * 0.96
     if not is_mock_broker and hasattr(broker, "get_funds"):
         try:
             funds_info = await asyncio.to_thread(broker.get_funds)
             if isinstance(funds_info, dict) and funds_info.get("status"):
                 avail_cash = float(funds_info.get("availablecash") or 0.0)
                 if avail_cash > 0:
-                    max_budget = min(max_budget, avail_cash)
+                    max_budget = min(max_budget, avail_cash * 0.96)
         except Exception:
             pass
 
     if base_index and strike > 0 and ltp_val > 0 and (ltp_val * quantity > max_budget):
         strike_step = 100 if base_index == "BANKNIFTY" else 50
-        for step_idx in range(1, 6):
+        stepped_ok = False
+        for step_idx in range(1, 20):
             cand_strike = strike + (step_idx * strike_step) if opt_type == "CE" else strike - (step_idx * strike_step)
             cand_short = f"{base_index}{cand_strike}{opt_type}"
             cand_exch, cand_sym = target_exchange, cand_short
@@ -3697,9 +3698,42 @@ async def execute_autopilot(
                     resolved_symbol = cand_sym
                     ltp_val = c_ltp
                     quantity = lot_size
+                    stepped_ok = True
                     break
             except Exception:
                 continue
+
+        # If BANKNIFTY 1-lot (30 qty) still exceeds max_budget, check NIFTY 50 options (weekly expiry, lower lot cost)
+        if not stepped_ok and base_index == "BANKNIFTY":
+            try:
+                nf_q = broker.ltp("NSE:NIFTY")
+                nf_spot = float((nf_q.get("NSE:NIFTY") or {}).get("last_price") or 0.0)
+                if nf_spot > 0:
+                    nf_base = int(round(nf_spot / 50.0) * 50)
+                    for step_idx in range(0, 12):
+                        cand_strike = nf_base + (step_idx * 50) if opt_type == "CE" else nf_base - (step_idx * 50)
+                        cand_short = f"NIFTY{cand_strike}{opt_type}"
+                        c_ex, c_sym, c_tok = broker._get_token_and_exchange(f"NFO:{cand_short}")
+                        if not (c_sym and c_tok):
+                            continue
+                        nf_lot = int(broker.get_lot_size("NFO", cand_short) or 75) if hasattr(broker, "get_lot_size") else 75
+                        c_key = f"{c_ex}:{c_sym}"
+                        c_res = broker.ltp(c_key)
+                        c_ltp = float((c_res.get(c_key) or c_res.get(c_sym) or {}).get("last_price", 0.0) or 0.0)
+                        if c_ltp > 5.0 and (c_ltp * nf_lot) <= max_budget:
+                            logger.info(
+                                f"🎯 [Autopilot] Capital-fitted to NIFTY option {c_sym} "
+                                f"(₹{c_ltp} x {nf_lot} = ₹{c_ltp * nf_lot:.0f} <= ₹{max_budget:.0f})"
+                            )
+                            target_symbol = cand_short
+                            target_exchange = c_ex
+                            resolved_symbol = c_sym
+                            ltp_val = c_ltp
+                            lot_size = nf_lot
+                            quantity = nf_lot
+                            break
+            except Exception as nfe:
+                logger.debug(f"NIFTY capital-fit fallback skipped: {nfe}")
 
     # Check open positions count to avoid duplicate stacking on the same contract
     open_positions_count = len(active_live_positions)
