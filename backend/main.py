@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Body, Depends, Request, BackgroundTa
 from pydantic import BaseModel
 
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 import importlib.metadata
 # Polyfill for Python 3.9 compatibility with some google-auth/api-core versions
 if not hasattr(importlib.metadata, 'packages_distributions'):

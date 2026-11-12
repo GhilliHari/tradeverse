@@ -67,7 +67,7 @@ class AngelClient:
     def _login(self):
         try:
             # Dynamic IP Detection
-            default_ip = "106.193.147.98"
+            default_ip = "152.57.198.248"
             try:
                 import requests, re
                 resp = requests.get("https://api.ipify.org", timeout=5)
