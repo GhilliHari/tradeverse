@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-11-12T06:58:03.602155",
+  "updated_at": "2026-11-12T15:35:10.481615",
   "repo": "GhilliHari/tradeverse",
   "branch": "main",
   "raw_base_url": "https://raw.githubusercontent.com/GhilliHari/tradeverse/main",
-  "latest_session_date": "2026-11-11",
-  "observatory_files_count": 39,
+  "latest_session_date": "2026-11-12",
+  "observatory_files_count": 40,
   "observatory_files": [
     "simulation_2026-08-14.json",
     "simulation_2026-08-18.json",
@@ -44,7 +44,8 @@
     "simulation_2026-11-05.json",
     "simulation_2026-11-06.json",
     "simulation_2026-11-09.json",
-    "simulation_2026-11-11.json"
+    "simulation_2026-11-11.json",
+    "simulation_2026-11-12.json"
   ],
   "market_cache_files_count": 35,
   "market_cache_files": [
@@ -84,7 +85,7 @@
     "USDINRX_1d.csv",
     "USDINRX_NSEI_BZF_DXY.NYB_1d.csv"
   ],
-  "paper_trades_entries": 3615,
-  "all_time_closed_trades": 1807,
-  "all_time_pnl": 931873.8
+  "paper_trades_entries": 3871,
+  "all_time_closed_trades": 1933,
+  "all_time_pnl": 972638.85
 }
