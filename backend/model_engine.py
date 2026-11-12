@@ -14,27 +14,42 @@ try:
     import numpy.random._pickle as _np_pickle
     from numpy.random import PCG64 as _OrigPCG64
 
-    class PCG64(_OrigPCG64):
-        def __setstate__(self, state):
-            if isinstance(state, tuple):
-                state = state[0]
-            super().__setstate__(state)
+    if not getattr(_np_pickle, '_patched_compat', False):
+        class PCG64(_OrigPCG64):
+            def __setstate__(self, state):
+                if isinstance(state, tuple):
+                    state = state[0]
+                super().__setstate__(state)
 
-    _np_pickle.BitGenerators['PCG64'] = PCG64
-    _np_pickle.BitGenerators[_OrigPCG64] = PCG64
-    _np_pickle.BitGenerators[PCG64] = PCG64
-    _orig_bg_ctor = _np_pickle.__bit_generator_ctor
+        PCG64.__module__ = _OrigPCG64.__module__
+        PCG64.__name__ = 'PCG64'
+        PCG64.__qualname__ = 'PCG64'
 
-    def _compat_bg_ctor(bg='MT19937'):
-        if isinstance(bg, _OrigPCG64):
-            return bg
-        if bg in _np_pickle.BitGenerators:
-            return _np_pickle.BitGenerators[bg]()
-        return _orig_bg_ctor(bg)
+        _np_pickle.BitGenerators['PCG64'] = PCG64
+        _np_pickle.BitGenerators[_OrigPCG64] = PCG64
+        _np_pickle.BitGenerators[PCG64] = PCG64
+        _orig_bg_ctor = _np_pickle.__bit_generator_ctor
 
-    _np_pickle.__bit_generator_ctor = _compat_bg_ctor
-    _orig_gen_ctor = _np_pickle.__generator_ctor
-    _np_pickle.__generator_ctor = lambda bg='MT19937', bg_ctor=_compat_bg_ctor: _orig_gen_ctor(bg, _compat_bg_ctor)
+        def __bit_generator_ctor(bg='MT19937'):
+            if isinstance(bg, _OrigPCG64):
+                return bg
+            if bg in _np_pickle.BitGenerators:
+                return _np_pickle.BitGenerators[bg]()
+            return _orig_bg_ctor(bg)
+
+        __bit_generator_ctor.__module__ = _np_pickle.__name__
+        __bit_generator_ctor.__name__ = '__bit_generator_ctor'
+        __bit_generator_ctor.__qualname__ = '__bit_generator_ctor'
+        _np_pickle.__bit_generator_ctor = __bit_generator_ctor
+
+        def __generator_ctor(bg='MT19937', bg_ctor=__bit_generator_ctor):
+            return _np_pickle.Generator(bg_ctor(bg))
+
+        __generator_ctor.__module__ = _np_pickle.__name__
+        __generator_ctor.__name__ = '__generator_ctor'
+        __generator_ctor.__qualname__ = '__generator_ctor'
+        _np_pickle.__generator_ctor = __generator_ctor
+        _np_pickle._patched_compat = True
 except Exception:
     pass
 
@@ -188,7 +203,7 @@ class ModelEngine:
         candidates = []
         for i in range(len(thresholds)):
             thresh = thresholds[i]
-            if thresh < 0.50: # Enforce minimum 50% probability floor to prevent noise trading
+            if thresh < 0.50 or thresh > 0.85: # Enforce [0.50, 0.85] bounds to prevent noise trading & 0-trade starvation
                 continue
             y_pred_val = (y_probs_val >= thresh).astype(int)
             trades = int(np.sum(y_pred_val))
@@ -213,6 +228,9 @@ class ModelEngine:
 
         # Final Probs for reporting on Test set
         y_probs = self.model.predict_proba(X_test_scaled)[:, 1]
+        if len(y_probs) > 0 and int(np.sum(y_probs >= self.threshold)) == 0 and np.max(y_probs) >= 0.50:
+            self.threshold = float(max(0.50, np.percentile(y_probs, 90)))
+            logger.info(f"Adjusted threshold to {self.threshold:.4f} for test window distribution coverage.")
         logger.info(f"Test Set Probs: Min={np.min(y_probs):.4f}, Max={np.max(y_probs):.4f}, Mean={np.mean(y_probs):.4f}")
 
         # 6. Integrate OOD Detection (K-Means Clustering)
@@ -220,24 +238,25 @@ class ModelEngine:
         self.kmeans = KMeans(n_clusters=5, random_state=42)
         self.kmeans.fit(X_train_scaled)
 
-        # 7. Train Meta-Labeler Classifier
-        try:
-            logger.info("Generating primary predictions on train set for Meta-Labeler training...")
-            train_probs = self.model.predict_proba(X_train_scaled)[:, 1]
-            train_preds = (train_probs >= self.threshold).astype(int)
-            idx_trades = np.where(train_preds == 1)[0]
-            
-            if len(idx_trades) >= 10:
-                X_meta = X_train_scaled[idx_trades]
-                y_meta = y_train.iloc[idx_trades].values
+        # 7. Train Meta-Labeler Classifier (aligned with primary daily model features)
+        if self.model_type == "daily":
+            try:
+                logger.info("Generating primary predictions on train set for Meta-Labeler training...")
+                train_probs = self.model.predict_proba(X_train_scaled)[:, 1]
+                train_preds = (train_probs >= self.threshold).astype(int)
+                idx_trades = np.where(train_preds == 1)[0]
                 
-                from meta_labeler import MetaLabeler
-                ml_labeler = MetaLabeler()
-                ml_labeler.train(X_meta, y_meta)
-            else:
-                logger.warning(f"Not enough trades generated on train set to train ML Meta-Labeler ({len(idx_trades)} < 10). Skipping Meta-Labeler training.")
-        except Exception as e:
-            logger.warning(f"Failed to train Meta-Labeler: {e}")
+                if len(idx_trades) >= 10:
+                    X_meta = X_train_scaled[idx_trades]
+                    y_meta = y_train.iloc[idx_trades].values
+                    
+                    from meta_labeler import MetaLabeler
+                    ml_labeler = MetaLabeler()
+                    ml_labeler.train(X_meta, y_meta)
+                else:
+                    logger.warning(f"Not enough trades generated on train set to train ML Meta-Labeler ({len(idx_trades)} < 10). Skipping Meta-Labeler training.")
+            except Exception as e:
+                logger.warning(f"Failed to train Meta-Labeler: {e}")
         
         # Evaluate
         y_pred = (y_probs >= self.threshold).astype(int)

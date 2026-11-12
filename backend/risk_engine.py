@@ -11,12 +11,14 @@ class RiskEngine:
     Automated Risk Guardrails for Tradeverse.
     Enforces daily loss limits, crash protection, and cool-off periods.
     """
-    def __init__(self, daily_loss_limit: float = 5000.0, max_position_size: float = 100000.0):
+    def __init__(self, daily_loss_limit: float = 1000.0, max_position_size: float = 7000.0, max_open_positions: int = 1):
         self.daily_loss_limit = daily_loss_limit
         self.max_position_size = max_position_size
+        self.max_open_positions = max_open_positions
         self.current_daily_loss = 0.0
         self.circuit_breaker_active = False
         self.kill_switch = KillSwitch()
+        self.processed_trade_ids = set()
         
         # --- NEW: Institutional Cool-off ---
         self.last_loss_time = None
@@ -48,21 +50,37 @@ class RiskEngine:
 
         # --- NEW: EOD Trading Block ---
         now = datetime.now()
-        if now.hour == 15 and now.minute >= 15:
+        if now.hour == 15 and now.minute >= 15 and not order_details.get("is_exit"):
              return {"allowed": False, "reason": "MARKET CLOSING: New entries blocked after 3:15 PM."}
 
-        order_value = order_details.get("quantity", 0) * order_details.get("price", 0)
+        qty = float(order_details.get("quantity") or 0)
+        price = float(order_details.get("price") or 0.0)
+        if qty <= 0:
+            return {"allowed": False, "reason": "Order quantity must be greater than 0."}
+
+        if order_details.get("require_live_price") and price <= 0.0:
+            return {"allowed": False, "reason": "Live order rejected: verified broker LTP is 0.0 (untradable or unmapped contract)."}
+
+        open_count = int(order_details.get("open_positions_count") or 0)
+        if not order_details.get("is_exit") and open_count >= self.max_open_positions:
+            return {"allowed": False, "reason": f"Max open positions limit ({self.max_open_positions}) reached."}
+
+        order_value = qty * price
 
         if order_value > self.max_position_size:
             return {"allowed": False, "reason": f"Order value ({order_value}) exceeds max position size."}
 
         return {"allowed": True, "reason": "Safe to proceed."}
 
-    def update_pnl(self, realized_pnl: float):
+    def update_pnl(self, realized_pnl: float, trade_id: Optional[str] = None):
         """
         Updates the daily PnL and checks if the loss limit is breached.
         Also triggers a cool-off period if a significant loss occurs.
         """
+        if trade_id:
+            if trade_id in self.processed_trade_ids:
+                return
+            self.processed_trade_ids.add(trade_id)
         if realized_pnl < 0:
             loss_amt = abs(realized_pnl)
             self.current_daily_loss += loss_amt
@@ -104,6 +122,7 @@ class RiskEngine:
             "current_daily_loss": self.current_daily_loss,
             "circuit_breaker_status": "HALTED" if self.circuit_breaker_active else "NOMINAL",
             "max_position_size": self.max_position_size,
+            "max_open_positions": self.max_open_positions,
             "cool_off_active": cool_off_active,
             "cool_off_remaining": remaining_str
         }

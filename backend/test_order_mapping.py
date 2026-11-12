@@ -1,5 +1,4 @@
 
-import pytest
 from unittest.mock import MagicMock, patch
 from angel_client import AngelClient
 
@@ -78,9 +77,44 @@ class TestOrderMapping:
         assert order_params['exchange'] == "NFO"
         print("SUCCESS: BANKNIFTY correctly resolved to tradable Future BANKNIFTY24FEB20FUT/123456")
 
+    @patch('angel_client.SmartConnect')
+    def test_nfo_option_shorthand_mapping(self, MockSmartConnect):
+        mock_api = MockSmartConnect.return_value
+        mock_api.generateSession.return_value = {
+            'status': True,
+            'data': {'jwtToken': 'mock_jwt', 'refreshToken': 'mock_refresh'}
+        }
+        mock_api.getProfile.return_value = {'status': True, 'data': {'clientcode': 'AACB779182', 'name': 'HARIDOSS LOGANATHAN'}}
+        mock_api.orderBook.return_value = {'status': True, 'data': []}
+        mock_api.placeOrder.return_value = "OPT_ORDER_789"
+        mock_api.searchScrip.return_value = {
+            'status': True,
+            'data': [{'tradingsymbol': 'BANKNIFTY26NOV2657900CE', 'symboltoken': '48291', 'exchange': 'NFO'}]
+        }
+
+        client = AngelClient("api_key", "client_id", "password", "totp")
+        client.place_order(
+            variety="NORMAL",
+            exchange="NFO",
+            tradingsymbol="BANKNIFTY57900CE",
+            transaction_type="BUY",
+            quantity=15,
+            product="MIS",
+            order_type="LIMIT",
+            price=285.5
+        )
+
+        args, _ = mock_api.placeOrder.call_args
+        order_params = args[0]
+        assert order_params['tradingsymbol'] == "BANKNIFTY26NOV2657900CE"
+        assert order_params['symboltoken'] == "48291"
+        assert order_params['exchange'] == "NFO"
+        print("SUCCESS: NFO:BANKNIFTY57900CE resolved to BANKNIFTY26NOV2657900CE/48291")
+
 if __name__ == "__main__":
     # If run directly, run the tests without manual patch pass
     print("Running Symbol Mapping Tests...")
     t = TestOrderMapping()
     t.test_sbin_mapping()
     t.test_banknifty_mapping()
+    t.test_nfo_option_shorthand_mapping()

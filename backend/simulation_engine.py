@@ -42,8 +42,19 @@ class SimulationEngine:
         except Exception as bf_err:
             logger.warning(f"Startup market-hours backfill warning: {bf_err}")
 
+    def _get_lot_size(self, symbol: str) -> int:
+        """Standardized NSE index option lot size across Observatory and PaperManager."""
+        sym = (symbol or "BANKNIFTY").upper()
+        if "MID" in sym:
+            return 50
+        if "FIN" in sym:
+            return 25
+        if "BANK" in sym:
+            return 15
+        return 25
+
     def _load_pending_predictions(self):
-        """Restore any PENDING predictions from today's file on startup/restart."""
+        """Restore any PENDING predictions from today's file on startup/restart and resolve expired ones."""
         try:
             from paper_manager import paper_manager
             paper_manager.auto_close_stale_positions(hold_minutes=self.exit_duration // 60)
@@ -55,12 +66,92 @@ class SimulationEngine:
             if file_path.exists():
                 with open(file_path, 'r') as f:
                     data = json.load(f)
-                pending = [p for p in data.get("predictions", []) if p.get("status") == "PENDING"]
+                now = datetime.now()
+                updated_stale = False
+                pending = []
+                for p in data.get("predictions", []):
+                    if p.get("status") != "PENDING":
+                        continue
+                    try:
+                        entry_dt = datetime.fromisoformat(p["timestamp"])
+                        elapsed = (now - entry_dt).total_seconds()
+                    except Exception:
+                        elapsed = 0
+                    if elapsed >= self.exit_duration:
+                        self._resolve_stale_pending_prediction(p, entry_dt)
+                        updated_stale = True
+                    else:
+                        pending.append(p)
+                if updated_stale:
+                    with open(file_path, 'w') as f:
+                        json.dump(data, f, indent=2)
                 if pending:
-                    self.active_predictions.extend(pending)
+                    existing_keys = {(x.get("timestamp"), x.get("symbol")) for x in self.active_predictions}
+                    for p in pending:
+                        if (p.get("timestamp"), p.get("symbol")) not in existing_keys:
+                            self.active_predictions.append(p)
                     logger.info(f"🔭 Restored {len(pending)} pending predictions from {file_path.name}")
         except Exception as e:
             logger.warning(f"Could not restore pending predictions: {e}")
+
+    def _resolve_stale_pending_prediction(self, prediction: Dict, entry_dt: datetime):
+        """Synchronously resolve an expired PENDING prediction from closed paper trade or BSM pricing."""
+        pred_info = prediction.get("prediction", {})
+        signal = pred_info.get("signal", "HOLD")
+        entry_price = float(pred_info.get("entry_price", 0.0) or 0.0)
+        strike = int(pred_info.get("strike", 0) or 0)
+        sym = prediction.get("symbol", "BANKNIFTY")
+        lot_size = self._get_lot_size(sym)
+        exit_dt = entry_dt + timedelta(seconds=self.exit_duration)
+
+        if signal == "HOLD":
+            exit_price = 0.0
+            pnl = 0.0
+            pnl_pct = 0.0
+        else:
+            exit_price = None
+            ptid = prediction.get("paper_trade_id")
+            if ptid:
+                try:
+                    from paper_manager import paper_manager
+                    for h in paper_manager.get_history():
+                        if h.get("trade_id") == ptid and h.get("action") == "CLOSE":
+                            exit_price = float(h.get("exit_price", entry_price))
+                            if h.get("timestamp"):
+                                try:
+                                    exit_dt = datetime.fromisoformat(h["timestamp"])
+                                except Exception:
+                                    pass
+                            break
+                except Exception:
+                    pass
+            if exit_price is None:
+                spot = float(prediction.get("market_context", {}).get("spot_price", 0.0) or 0.0)
+                exit_price = self._get_option_ltp(sym, strike, signal, spot, broker=None)
+            pnl = round((exit_price - entry_price) * lot_size, 2)
+            pnl_pct = round(((exit_price - entry_price) / entry_price) * 100.0, 2) if entry_price > 0 else 0.0
+            if ptid:
+                try:
+                    from paper_manager import paper_manager
+                    paper_manager.close_trade(
+                        trade_id=ptid,
+                        exit_price=round(exit_price, 2),
+                        reasoning=f"OBSERVATORY AUTO-EXIT: PnL ₹{pnl:.2f} ({pnl_pct:+.2f}%)",
+                        timestamp=exit_dt.isoformat()
+                    )
+                except Exception:
+                    pass
+
+        prediction["actual_outcome"] = {
+            "exit_timestamp": exit_dt.isoformat(),
+            "exit_price": round(exit_price, 2),
+            "pnl": pnl,
+            "pnl_pct": pnl_pct,
+            "max_favorable": round(max(entry_price, exit_price), 2),
+            "max_adverse": round(min(entry_price, exit_price), 2),
+            "holding_period_minutes": self.exit_duration // 60
+        }
+        prediction["status"] = "COMPLETED"
 
     def is_trading_day(self, dt: datetime) -> bool:
         """Check if a given date is an NSE trading day (weekday, non-holiday)."""
@@ -69,7 +160,8 @@ class SimulationEngine:
         holidays = [
             '2026-01-26', '2026-03-03', '2026-03-17', '2026-04-02',
             '2026-04-03', '2026-04-14', '2026-05-01', '2026-08-15',
-            '2026-10-02', '2026-10-20', '2026-12-25'
+            '2026-10-02', '2026-10-20', '2026-11-10', '2026-11-24',
+            '2026-12-25'
         ]
         return dt.strftime('%Y-%m-%d') not in holidays
         
@@ -193,6 +285,14 @@ class SimulationEngine:
                 return None
             
             df_5m = pipeline.raw_data.copy()
+            latest_bar_ts = df_5m.index[-1]
+            if hasattr(latest_bar_ts, "date") and latest_bar_ts.date() < datetime.now().date():
+                logger.warning(
+                    f"Skipping stale simulation tick for {symbol}: latest 5m candle is from {latest_bar_ts} "
+                    f"(not today {datetime.now().strftime('%Y-%m-%d')})."
+                )
+                return None
+
             df_5m['EMA_9'] = df_5m['Close'].ewm(span=9, adjust=False).mean()
             df_5m['EMA_21'] = df_5m['Close'].ewm(span=21, adjust=False).mean()
             delta = df_5m['Close'].diff()
@@ -248,7 +348,7 @@ class SimulationEngine:
                     from paper_manager import paper_manager
                     opt_type = "CE" if signal == "BUY_CE" else "PE"
                     trade_symbol = f"NFO:{symbol}{strike_price}{opt_type}"
-                    lot_size = 15 if "BANK" in symbol else (40 if "FIN" in symbol else (75 if "MID" in symbol else 25))
+                    lot_size = self._get_lot_size(symbol)
                     entry_record = paper_manager.place_trade(
                         symbol=trade_symbol,
                         side="BUY",
@@ -396,10 +496,25 @@ class SimulationEngine:
     async def check_outcomes(self, intelligence_layer) -> int:
         """
         Check outcomes for pending predictions that have crossed their exit duration.
+        Also syncs any orphaned PENDING predictions from today's file on disk.
         
         Returns:
             Number of outcomes processed
         """
+        try:
+            today = datetime.now().strftime("%Y-%m-%d")
+            file_path = self.data_dir / f"simulation_{today}.json"
+            if file_path.exists():
+                with open(file_path, 'r') as f:
+                    disk_preds = json.load(f).get("predictions", [])
+                active_keys = {(p.get("timestamp"), p.get("symbol")) for p in self.active_predictions}
+                for dp in disk_preds:
+                    if dp.get("status") == "PENDING" and (dp.get("timestamp"), dp.get("symbol")) not in active_keys:
+                        self.active_predictions.append(dp)
+                        active_keys.add((dp.get("timestamp"), dp.get("symbol")))
+        except Exception:
+            pass
+
         if not self.active_predictions:
             return 0
         
@@ -452,8 +567,7 @@ class SimulationEngine:
                 broker=intelligence_layer.kite
             )
             
-            lot_sizes = {"BANKNIFTY": 15, "NIFTY": 25, "FINNIFTY": 25, "MIDCPNIFTY": 50}
-            lot_size = lot_sizes.get(sym, 15)
+            lot_size = self._get_lot_size(sym)
             
             if signal == "HOLD":
                 pnl = 0
@@ -904,6 +1018,19 @@ class SimulationEngine:
                 added_count += 1
 
         if added_count > 0:
+            # Re-read latest file before writing so concurrent live updates/completions are never overwritten
+            if file_path.exists() and not has_corrupted_vix:
+                try:
+                    with open(file_path, 'r') as f:
+                        latest_disk = json.load(f).get("predictions", [])
+                    merged_map = {(p.get("timestamp"), p.get("symbol")): p for p in retained_preds}
+                    for lp in latest_disk:
+                        k = (lp.get("timestamp"), lp.get("symbol"))
+                        if k not in merged_map or lp.get("status") == "COMPLETED":
+                            merged_map[k] = lp
+                    retained_preds = list(merged_map.values())
+                except Exception:
+                    pass
             retained_preds.sort(key=lambda x: x.get("timestamp", ""))
             with open(file_path, 'w') as f:
                 json.dump({"date": date_str, "predictions": retained_preds}, f, indent=2)
@@ -1043,6 +1170,8 @@ class SimulationEngine:
             "hold_count": len(completed) - len(active_trades)
         }
 
+    get_accuracy_summary = get_performance_summary
+
     def get_pattern_analytics(self, days: int = 90) -> Dict:
         """
         Scans all historical simulation files over past N days to detect performance patterns,
@@ -1169,4 +1298,9 @@ class SimulationEngine:
             "by_confidence": by_confidence,
             "available_dates": available_dates
         }
+
+
+# Global singleton instance
+simulation_engine = SimulationEngine(data_dir=str(Path(__file__).resolve().parent / "observatory_data"))
+
 

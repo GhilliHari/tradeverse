@@ -31,8 +31,9 @@ class Config:
     ACTIVE_BROKER = os.getenv("ACTIVE_BROKER", "ANGEL").upper()
     
     # Risk Settings
-    DAILY_LOSS_LIMIT = float(os.getenv("DAILY_LOSS_LIMIT", 10000.0))
-    MAX_POSITION_SIZE = float(os.getenv("MAX_POSITION_SIZE", 200000.0))
+    DAILY_LOSS_LIMIT = float(os.getenv("DAILY_LOSS_LIMIT", 1000.0))
+    MAX_POSITION_SIZE = float(os.getenv("MAX_POSITION_SIZE", 10000.0))
+    MAX_OPEN_POSITIONS = int(os.getenv("MAX_OPEN_POSITIONS", 1))
     
     # WhatsApp Notifications (CallMeBot)
     WHATSAPP_PHONE = os.getenv("WHATSAPP_PHONE", "")
@@ -47,6 +48,7 @@ class Config:
 
     def save(self):
         import json
+        from pathlib import Path
         data = {
             "ENV": self.ENV,
             "GEMINI_API_KEY": self.GEMINI_API_KEY,
@@ -56,26 +58,34 @@ class Config:
             "ANGEL_TOTP_KEY": self.ANGEL_TOTP_KEY,
             "ACTIVE_BROKER": self.ACTIVE_BROKER,
             "TRADING_MODE": self.TRADING_MODE,
+            "DAILY_LOSS_LIMIT": getattr(self, "DAILY_LOSS_LIMIT", 1000.0),
+            "MAX_POSITION_SIZE": getattr(self, "MAX_POSITION_SIZE", 7000.0),
+            "MAX_OPEN_POSITIONS": getattr(self, "MAX_OPEN_POSITIONS", 1),
             "WHATSAPP_PHONE": self.WHATSAPP_PHONE,
             "WHATSAPP_API_KEY": self.WHATSAPP_API_KEY,
             "TELEGRAM_BOT_TOKEN": self.TELEGRAM_BOT_TOKEN,
             "TELEGRAM_CHAT_ID": self.TELEGRAM_CHAT_ID
         }
-        with open("settings.json", "w") as f:
+        settings_path = Path(__file__).resolve().parent / "settings.json"
+        with open(settings_path, "w") as f:
             json.dump(data, f)
 
     def load(self):
         import json
-        if os.path.exists("settings.json"):
+        from pathlib import Path
+        settings_path = Path(__file__).resolve().parent / "settings.json"
+        if not settings_path.exists() and os.path.exists("settings.json"):
+            settings_path = Path("settings.json")
+        if settings_path.exists():
             try:
-                with open("settings.json", "r") as f:
+                with open(settings_path, "r") as f:
                     data = json.load(f)
                     for k, v in data.items():
                         # ONLY overwrite if not already set by Environment Variables and value is non-empty
                         env_key = f"TRADEVERSE_{k}" if k == "ENV" else k
                         if not os.getenv(env_key) and v not in ("", None):
                             setattr(self, k, v)
-                            logger.info(f"Loaded {k} from settings.json")
+                            logger.info(f"Loaded {k} from {settings_path.name}")
             except Exception as e:
                 logger.debug(f"Could not load settings.json: {e}")
 

@@ -7,27 +7,42 @@ try:
     import numpy.random._pickle as _np_pickle
     from numpy.random import PCG64 as _OrigPCG64
 
-    class PCG64(_OrigPCG64):
-        def __setstate__(self, state):
-            if isinstance(state, tuple):
-                state = state[0]
-            super().__setstate__(state)
+    if not getattr(_np_pickle, '_patched_compat', False):
+        class PCG64(_OrigPCG64):
+            def __setstate__(self, state):
+                if isinstance(state, tuple):
+                    state = state[0]
+                super().__setstate__(state)
 
-    _np_pickle.BitGenerators['PCG64'] = PCG64
-    _np_pickle.BitGenerators[_OrigPCG64] = PCG64
-    _np_pickle.BitGenerators[PCG64] = PCG64
-    _orig_bg_ctor = _np_pickle.__bit_generator_ctor
+        PCG64.__module__ = _OrigPCG64.__module__
+        PCG64.__name__ = 'PCG64'
+        PCG64.__qualname__ = 'PCG64'
 
-    def _compat_bg_ctor(bg='MT19937'):
-        if isinstance(bg, _OrigPCG64):
-            return bg
-        if bg in _np_pickle.BitGenerators:
-            return _np_pickle.BitGenerators[bg]()
-        return _orig_bg_ctor(bg)
+        _np_pickle.BitGenerators['PCG64'] = PCG64
+        _np_pickle.BitGenerators[_OrigPCG64] = PCG64
+        _np_pickle.BitGenerators[PCG64] = PCG64
+        _orig_bg_ctor = _np_pickle.__bit_generator_ctor
 
-    _np_pickle.__bit_generator_ctor = _compat_bg_ctor
-    _orig_gen_ctor = _np_pickle.__generator_ctor
-    _np_pickle.__generator_ctor = lambda bg='MT19937', bg_ctor=_compat_bg_ctor: _orig_gen_ctor(bg, _compat_bg_ctor)
+        def __bit_generator_ctor(bg='MT19937'):
+            if isinstance(bg, _OrigPCG64):
+                return bg
+            if bg in _np_pickle.BitGenerators:
+                return _np_pickle.BitGenerators[bg]()
+            return _orig_bg_ctor(bg)
+
+        __bit_generator_ctor.__module__ = _np_pickle.__name__
+        __bit_generator_ctor.__name__ = '__bit_generator_ctor'
+        __bit_generator_ctor.__qualname__ = '__bit_generator_ctor'
+        _np_pickle.__bit_generator_ctor = __bit_generator_ctor
+
+        def __generator_ctor(bg='MT19937', bg_ctor=__bit_generator_ctor):
+            return _np_pickle.Generator(bg_ctor(bg))
+
+        __generator_ctor.__module__ = _np_pickle.__name__
+        __generator_ctor.__name__ = '__generator_ctor'
+        __generator_ctor.__qualname__ = '__generator_ctor'
+        _np_pickle.__generator_ctor = __generator_ctor
+        _np_pickle._patched_compat = True
 except Exception:
     pass
 

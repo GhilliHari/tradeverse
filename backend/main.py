@@ -99,7 +99,11 @@ async def initialize_systems():
         # Offload blocking network/disk I/O to threads to prevent event loop freeze
         kite = await asyncio.to_thread(get_broker_client)
         
-        risk_engine = RiskEngine(daily_loss_limit=config.DAILY_LOSS_LIMIT, max_position_size=config.MAX_POSITION_SIZE)
+        risk_engine = RiskEngine(
+            daily_loss_limit=config.DAILY_LOSS_LIMIT,
+            max_position_size=config.MAX_POSITION_SIZE,
+            max_open_positions=getattr(config, "MAX_OPEN_POSITIONS", 1)
+        )
         
         # IntelligenceLayer init involves model loading and broker connection (heavy)
         from agent_layer import IntelligenceLayer
@@ -211,12 +215,116 @@ async def run_watchdog():
             logger.error(f"Watchdog Error: {e}")
             await asyncio.sleep(60)
 
+# Track active live broker positions for automated SL / Target / Time-Exit / EOD square-off
+active_live_positions: Dict[str, Dict] = {}
+
+async def monitor_live_positions_step():
+    """
+    Monitors open live broker positions for Stop-Loss (-15%), Target (+25%),
+    Max Hold Duration (15 min), and EOD Square-Off (15:20 IST), and feeds realized PnL to RiskEngine.
+    """
+    try:
+        broker = get_broker_client(config.OWNER_EMAIL)
+        if not broker or not hasattr(broker, "positions"):
+            return
+
+        positions = await asyncio.to_thread(broker.positions)
+        if not isinstance(positions, list):
+            return
+
+        now = datetime.now()
+        is_eod_squareoff = now.time() >= time(15, 20)
+
+        for pos in positions:
+            tsym = pos.get("tradingsymbol")
+            net_qty = int(pos.get("netqty", 0) or 0)
+            exch = pos.get("exchange", "NFO")
+            if not tsym:
+                continue
+
+            # If a previously tracked position was manually closed on broker, record realized PnL
+            if net_qty == 0:
+                if tsym in active_live_positions:
+                    active_live_positions.pop(tsym, None)
+                    realised_pnl = float(pos.get("realised") or pos.get("pnl") or 0.0)
+                    if risk_engine and realised_pnl != 0.0:
+                        risk_engine.update_pnl(realised_pnl, trade_id=f"CLOSED_{tsym}_{now.strftime('%Y%m%d')}")
+                continue
+
+            tracked = active_live_positions.get(tsym)
+            entry_price = float((tracked or {}).get("entry_price") or pos.get("buyavgprice") or 0.0)
+            entry_time = (tracked or {}).get("entry_time") or now
+            if tsym not in active_live_positions:
+                active_live_positions[tsym] = {
+                    "tradingsymbol": tsym,
+                    "exchange": exch,
+                    "quantity": abs(net_qty),
+                    "entry_price": entry_price,
+                    "entry_time": entry_time,
+                    "stop_loss_pct": -15.0,
+                    "target_pct": 25.0,
+                    "max_hold_minutes": 15,
+                }
+                tracked = active_live_positions[tsym]
+
+            ltp_val = float(pos.get("ltp") or 0.0)
+            if ltp_val <= 0.0:
+                ltp_key = f"{exch}:{tsym}"
+                ltp_res = await asyncio.to_thread(broker.ltp, ltp_key)
+                ltp_val = float((ltp_res.get(ltp_key) or {}).get("last_price", 0.0) or 0.0)
+
+            if entry_price <= 0.0 or ltp_val <= 0.0:
+                continue
+
+            pnl_pct = ((ltp_val - entry_price) / entry_price) * 100.0 if net_qty > 0 else ((entry_price - ltp_val) / entry_price) * 100.0
+            pnl_inr = (ltp_val - entry_price) * net_qty
+            elapsed_mins = (now - entry_time).total_seconds() / 60.0
+
+            exit_reason = None
+            if is_eod_squareoff:
+                exit_reason = f"EOD AUTO SQUARE-OFF (15:20 IST) | PnL: ₹{pnl_inr:+.2f} ({pnl_pct:+.1f}%)"
+            elif pnl_pct <= tracked.get("stop_loss_pct", -15.0):
+                exit_reason = f"STOP-LOSS HIT ({pnl_pct:+.1f}%) | PnL: ₹{pnl_inr:+.2f}"
+            elif pnl_pct >= tracked.get("target_pct", 25.0):
+                exit_reason = f"TARGET HIT ({pnl_pct:+.1f}%) | PnL: ₹{pnl_inr:+.2f}"
+            elif elapsed_mins >= tracked.get("max_hold_minutes", 15):
+                exit_reason = f"TIME-EXIT ({int(elapsed_mins)}m) | PnL: ₹{pnl_inr:+.2f} ({pnl_pct:+.1f}%)"
+
+            if exit_reason:
+                exit_side = "SELL" if net_qty > 0 else "BUY"
+                logger.warning(f"🛡️ [LivePositionMonitor] Exiting {exch}:{tsym} ({exit_side} x {abs(net_qty)}): {exit_reason}")
+                from smart_execution import smart_execution_engine
+                smart_execution_engine.set_broker(broker)
+                smart_execution_engine.notifier = notifier
+                exit_res = await smart_execution_engine.execute_smart_order(
+                    order_request={
+                        "tradingsymbol": tsym,
+                        "exchange": exch,
+                        "transaction_type": exit_side,
+                        "quantity": abs(net_qty),
+                        "product": "MIS",
+                        "target_price": ltp_val,
+                        "is_exit": True,
+                    },
+                    broker=broker,
+                    user_id=config.OWNER_EMAIL,
+                )
+                active_live_positions.pop(tsym, None)
+                if risk_engine:
+                    risk_engine.update_pnl(pnl_inr, trade_id=f"EXIT_{tsym}_{int(now.timestamp())}")
+                notifier.notify_sync(
+                    f"🛡️ *Live Auto-Exit ({tsym})*\n"
+                    f"Reason: {exit_reason}\n"
+                    f"Exit Status: `{exit_res.get('status')}`"
+                )
+    except Exception as e:
+        logger.debug(f"Live position monitor check error: {e}")
+
 async def run_autonomous_trading():
     """
-    Stand-alone loop that continuously executes trades during market hours 
-    without relying on the frontend 'Auto' toggle.
+    Stand-alone loop that continuously monitors open positions and executes trades during market hours
+    when TRADING_MODE == 'AUTO'.
     """
-    pending_auto_trades = False
     while True:
         try:
             # 1. Wait for system initialization
@@ -224,14 +332,15 @@ async def run_autonomous_trading():
                 await asyncio.sleep(30)
                 continue
                 
-            # 2. Market Hours check
+            # 2. Market Hours & Holiday check
             now = datetime.now()
             current_time = now.time()
             
             holidays = [
                 '2026-01-26', '2026-03-03', '2026-03-17', '2026-04-02', 
                 '2026-04-03', '2026-04-14', '2026-05-01', '2026-08-15', 
-                '2026-10-02', '2026-12-25'
+                '2026-10-02', '2026-10-20', '2026-11-10', '2026-11-24',
+                '2026-12-25'
             ]
             
             is_weekend = now.weekday() > 4
@@ -241,15 +350,20 @@ async def run_autonomous_trading():
             if is_weekend or is_holiday or not is_time_match:
                 await asyncio.sleep(60)
                 continue
+
+            # 3. Always monitor open live positions for Stop-Loss / Target / EOD Square-Off
+            await monitor_live_positions_step()
+
+            # 4. Only initiate new autonomous entries when TRADING_MODE is explicitly AUTO
+            if getattr(config, "TRADING_MODE", "MANUAL").upper() != "AUTO":
+                await asyncio.sleep(30)
+                continue
             
             logger.info("🤖 Autonomous Trading: Initiating execution cycle...")
             symbol = "^NSEBANK"
             qty = 15
             mode = "LIVE" if config.ENV == "LIVE" else "PAPER"
             
-            # Execute trade logic (directly invoking endpoint handler logic)
-            # Default to greedy=True in paper test mode if you want turbo by default, 
-            # here we'll follow general autopilot logic.
             res = await execute_autopilot(symbol=symbol, quantity=qty, mode=mode, greedy=False)
             status = res.get("status")
             if status == "EXECUTED":
@@ -552,9 +666,21 @@ async def place_smart_order(order_data: Dict = Body(...), user: dict = Depends(g
         )
         
         if telemetry.get("status") in ["COMPLETE", "FILLED", "MOCK_FILLED"]:
-            fill_p = telemetry.get("executed_price")
+            fill_p = float(telemetry.get("executed_price") or 0.0)
             slip_pts = telemetry.get("slippage_pts", 0.0)
             slip_inr = telemetry.get("slippage_inr", 0.0)
+            tsym = order_data.get("tradingsymbol", "")
+            if tsym and not order_data.get("is_exit"):
+                active_live_positions[tsym] = {
+                    "tradingsymbol": tsym,
+                    "exchange": order_data.get("exchange", "NFO"),
+                    "quantity": int(order_data.get("quantity", 1) or 1),
+                    "entry_price": fill_p,
+                    "entry_time": datetime.now(),
+                    "stop_loss_pct": float(order_data.get("stop_loss_pct", -15.0)),
+                    "target_pct": float(order_data.get("target_pct", 25.0)),
+                    "max_hold_minutes": int(order_data.get("max_hold_minutes", 15)),
+                }
             msg = (f"🎯 *Smart Order Filled ({user_id})*\n"
                    f"Symbol: `{order_data.get('tradingsymbol')}`\n"
                    f"Side: *{order_data.get('transaction_type')}* | Qty: `{order_data.get('quantity')}`\n"
@@ -1827,6 +1953,17 @@ def train_swarm_background():
         else:
             logger.info("[TRAIN_SWARM] Skipping Stage 5 (Lite Mode)")
         
+        # Reload in-memory engines so fresh artifacts take effect immediately
+        global engine_daily, engine_intraday, intelligence
+        engine_daily = None
+        engine_intraday = None
+        if intelligence is not None:
+            intelligence._model_engine = None
+            intelligence._tft_engine = None
+            intelligence._rl_agent = None
+            intelligence._regime_engine = None
+            intelligence._meta_labeler = None
+
         # Complete
         training_status.update({
             "is_training": False,
@@ -3174,8 +3311,32 @@ async def execute_autopilot(
             "analysis": analysis
         }
     
-    # 2. Map Signal to Transaction Type
-    tx_type = "BUY" if signal == "BUY" else "SELL"
+    # 2. Map Signal to Tradable NFO Option Contract (or Equity if non-index)
+    rec = analysis.get("trade_recommendation", {}) or {}
+    strike = int(rec.get("strike") or 0)
+    opt_type = rec.get("option_type")
+    if opt_type not in ["CE", "PE"]:
+        opt_type = "CE" if signal in ["BUY", "BUY_CE"] else "PE"
+
+    u_sym = symbol.upper().replace("NSE:", "").replace("NFO:", "")
+    base_index = None
+    if "BANK" in u_sym:
+        base_index = "BANKNIFTY"
+    elif "FIN" in u_sym:
+        base_index = "FINNIFTY"
+    elif "MID" in u_sym:
+        base_index = "MIDCPNIFTY"
+    elif "NIFTY" in u_sym or "NSEI" in u_sym:
+        base_index = "NIFTY"
+
+    if base_index and strike > 0:
+        target_exchange = "NFO"
+        target_symbol = f"{base_index}{strike}{opt_type}"
+        tx_type = "BUY"  # Long option premium (CE for bullish, PE for bearish)
+    else:
+        target_exchange = "NSE"
+        target_symbol = u_sym
+        tx_type = "BUY" if signal in ["BUY", "BUY_CE"] else "SELL"
     
     # 3. Execution based on Mode
     if mode == "PAPER":
@@ -3184,17 +3345,18 @@ async def execute_autopilot(
             # Fetch current price for paper execution
             ltp = 0
             try:
-                ltp = kite.ltp(symbol).get(symbol, {}).get('last_price', 0)
+                ltp_key = f"{target_exchange}:{target_symbol}"
+                ltp = kite.ltp(ltp_key).get(ltp_key, {}).get('last_price', 0)
             except:
                 pass # Fallback or use mock price
                 
             entry = paper_manager.place_trade(
-                symbol=symbol,
+                symbol=f"{target_exchange}:{target_symbol}",
                 side=tx_type,
                 quantity=quantity,
                 price=ltp,
                 type="MARKET",
-                reasoning=f"AUTO-PILOT: {analysis.get('trade_recommendation', {}).get('reasoning', 'AI Signal')}",
+                reasoning=f"AUTO-PILOT: {rec.get('reasoning', 'AI Signal')}",
                 mode="AUTO"
             )
             return {
@@ -3208,13 +3370,59 @@ async def execute_autopilot(
             return {"status": "ERROR", "reason": str(e), "analysis": analysis}
 
     # LIVE / MOCK BROKER EXECUTION
-    
+    # 3a. Stale Market Data Gate: never fire live orders if today's 5m candle feed is stale/closed
+    if not simulation_engine.is_trading_day(datetime.now()):
+        return {
+            "status": "MARKET_CLOSED_HOLIDAY",
+            "reason": f"Market is closed today ({datetime.now().strftime('%Y-%m-%d')} NSE holiday/weekend).",
+            "analysis": analysis,
+        }
+
+    broker = get_broker_client(config.OWNER_EMAIL)
+    is_mock_broker = broker is None or "Mock" in broker.__class__.__name__ or getattr(broker, "is_mock", False)
+
+    # Resolve shorthand option symbol to exact broker tradingsymbol if supported
+    resolved_symbol = target_symbol
+    if not is_mock_broker and hasattr(broker, "_get_token_and_exchange"):
+        res_exch, res_sym, res_tok = broker._get_token_and_exchange(f"{target_exchange}:{target_symbol}")
+        if res_sym and res_tok:
+            target_exchange = res_exch
+            resolved_symbol = res_sym
+
+    ltp_val = 0.0
+    try:
+        ltp_key = f"{target_exchange}:{resolved_symbol}"
+        ltp_res = broker.ltp(ltp_key)
+        ltp_val = float((ltp_res.get(ltp_key) or ltp_res.get(resolved_symbol) or {}).get("last_price", 0.0) or 0.0)
+    except Exception:
+        ltp_val = 0.0
+
+    # Check open positions count to avoid duplicate stacking on the same contract
+    open_positions_count = len(active_live_positions)
+    if not is_mock_broker and hasattr(broker, "positions"):
+        try:
+            live_pos = await asyncio.to_thread(broker.positions)
+            active_syms = {p.get("tradingsymbol") for p in live_pos if int(p.get("netqty", 0) or 0) != 0}
+            open_positions_count = len(active_syms)
+            if resolved_symbol in active_syms or target_symbol in active_syms:
+                return {
+                    "status": "SKIPPED_DUPLICATE_POSITION",
+                    "reason": f"Position already open for {resolved_symbol}.",
+                    "analysis": analysis,
+                }
+        except Exception:
+            pass
+
     # 3b. Risk Engine Validation (Only for Broker trades)
     order_data = {
-        "tradingsymbol": symbol,
+        "tradingsymbol": resolved_symbol,
         "transaction_type": tx_type,
         "quantity": quantity,
-        "exchange": "NSE"
+        "exchange": target_exchange,
+        "product": "MIS",
+        "price": ltp_val,
+        "require_live_price": not is_mock_broker,
+        "open_positions_count": open_positions_count,
     }
     
     risk_val = risk_engine.validate_order(order_data)
@@ -3225,21 +3433,36 @@ async def execute_autopilot(
             "analysis": analysis
         }
     
-    # 4. Final Execution
+    # 4. Final Execution via SmartExecutionEngine (Limit Chase + Slippage Cap)
     try:
-        order_id = kite.place_order(
-            variety="regular",
-            exchange="NSE",
-            tradingsymbol=symbol,
-            transaction_type=tx_type,
-            quantity=quantity,
-            product="MIS",
-            order_type="MARKET"
+        from smart_execution import smart_execution_engine
+        smart_execution_engine.set_broker(broker)
+        smart_execution_engine.notifier = notifier
+        telemetry = await smart_execution_engine.execute_smart_order(
+            order_request=order_data,
+            broker=broker,
+            user_id=config.OWNER_EMAIL
         )
+        exec_status = telemetry.get("status", "ERROR")
+        if exec_status in ["COMPLETE", "FILLED", "MOCK_FILLED"]:
+            fill_price = float(telemetry.get("executed_price") or ltp_val or 0.0)
+            active_live_positions[resolved_symbol] = {
+                "tradingsymbol": resolved_symbol,
+                "exchange": target_exchange,
+                "quantity": quantity,
+                "entry_price": fill_price,
+                "entry_time": datetime.now(),
+                "stop_loss_pct": -15.0,
+                "target_pct": 25.0,
+                "max_hold_minutes": 15,
+            }
         return {
-            "status": "EXECUTED",
-            "order_id": order_id,
+            "status": "EXECUTED" if exec_status in ["COMPLETE", "FILLED", "MOCK_FILLED"] else exec_status,
+            "order_id": telemetry.get("order_id"),
+            "telemetry": telemetry,
             "signal": signal,
+            "tradingsymbol": resolved_symbol,
+            "exchange": target_exchange,
             "analysis": analysis,
             "mode": "BROKER"
         }

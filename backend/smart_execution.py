@@ -50,11 +50,24 @@ class SmartExecutionEngine:
         step_wait_sec = float(order_request.get("step_wait_sec", 1.5))
         mode = order_request.get("mode", "SMART_LIMIT_CHASE")
 
-        # 1. Fetch current market price
+        # 1. Fetch current market price & check broker type
+        is_mock = self._is_mock_broker(active_broker)
         ltp = await self._fetch_live_ltp(active_broker, exchange, tradingsymbol)
-        ref_price = float(order_request.get("target_price") or ltp or 100.0)
+        explicit_target = float(order_request.get("target_price") or order_request.get("price") or 0.0)
+        ref_price = ltp if ltp > 0 else explicit_target
+
+        if not is_mock and ref_price <= 0:
+            err_msg = f"Aborted live execution for {exchange}:{tradingsymbol}: verified live broker LTP is unavailable (0.0)."
+            logger.error(f"🛑 [SmartExec] {err_msg}")
+            return {
+                "status": "REJECTED_NO_LIVE_LTP",
+                "error": err_msg,
+                "tradingsymbol": tradingsymbol,
+                "quantity": quantity
+            }
+
         if ref_price <= 0:
-            ref_price = ltp if ltp > 0 else 100.0
+            ref_price = 100.0  # Mock broker fallback only
 
         max_slippage_pts = max(1.0, round(ref_price * max_slippage_pct, 2))
         worst_acceptable_price = round(
@@ -68,7 +81,6 @@ class SmartExecutionEngine:
         )
 
         # 2. Check for Mock / Simulated Broker
-        is_mock = self._is_mock_broker(active_broker)
         if is_mock:
             return await self._execute_mock_smart_fill(
                 order_request=order_request,

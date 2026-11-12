@@ -2200,7 +2200,8 @@ const DashboardWithLogic = () => {
                                                             { name: 'RL Timing', key: 'RL_OPTIMIZER', icon: Brain },
                                                             { name: 'Regime Cluster', key: 'REGIME_ENGINE', icon: Shield }
                                                         ].map((stage) => {
-                                                            const isComplete = (['DAILY_STRATEGIST', 'INTRADAY_SNIPER', 'TFT_TRANSFORMER', 'RL_OPTIMIZER', 'REGIME_ENGINE'].indexOf(stage.key) < ['DAILY_STRATEGIST', 'INTRADAY_SNIPER', 'TFT_TRANSFORMER', 'RL_OPTIMIZER', 'REGIME_ENGINE'].indexOf(trainingStatus?.stage || 'IDLE'));
+                                                            const stageKeys = ['DAILY_STRATEGIST', 'INTRADAY_SNIPER', 'TFT_TRANSFORMER', 'RL_OPTIMIZER', 'REGIME_ENGINE'];
+                                                            const isComplete = trainingStatus?.stage === 'COMPLETE' || (stageKeys.indexOf(stage.key) < stageKeys.indexOf(trainingStatus?.stage || 'IDLE'));
                                                             const isActive = trainingStatus.stage === stage.key;
                                                             return (
                                                                 <div key={stage.key} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${isComplete ? 'bg-emerald-500/5 border-emerald-500/20 opacity-100' : isActive ? 'bg-purple-500/10 border-purple-500/40 animate-pulse' : 'bg-black/20 border-white/5 opacity-40'}`}>
