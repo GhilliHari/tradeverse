@@ -1002,20 +1002,20 @@ const DashboardWithLogic = () => {
         if (isAutoMode && token) {
             const sendHeartbeat = async () => {
                 try {
-                    await fetch(`${API_URL}/api/monitoring/heartbeat`, {
-                        method: 'POST',
+                    await fetch(`${API_URL}/api/cloud/pulse`, {
+                        method: 'GET',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                 } catch (e) {
-                    console.error("Heartbeat Failed:", e);
+                    console.error("Cloud Pulse Sync Failed:", e);
                 }
             };
 
             sendHeartbeat();
-            intervalId = workerSetInterval(sendHeartbeat, 5000);
-            addTerminalLog("Autopilot Heartbeat Active. System synced with cloud sentinel.", "system");
+            intervalId = workerSetInterval(sendHeartbeat, 15000);
+            addTerminalLog("24/7 Cloud Autopilot Active (iMac Offline Ready). Synced with Angel One Cloud Sentinel.", "system");
         } else if (token) {
-            addTerminalLog("Manual Control Mode Engage.", "system");
+            addTerminalLog("Manual Control Mode Engaged.", "system");
         }
 
         return () => workerClearInterval(intervalId);
@@ -1325,7 +1325,7 @@ const DashboardWithLogic = () => {
     const executeAutoPilot = async () => {
         if (!isLoggedIn || !marketStatus.isOpen) return;
         setIsAnalyzing(true);
-        console.log("AUTO-PILOT: Initiating Analysis & Execution Cycle...");
+        console.log("AUTO-PILOT: Syncing with 24/7 Cloud Autonomous Engine...");
         try {
             const res = await apiFetch(`${API_URL}/api/trading/autopilot`, {
                 method: 'POST',
@@ -1333,7 +1333,11 @@ const DashboardWithLogic = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ symbol: symbol, quantity: 1 })
+                body: JSON.stringify({
+                    symbol: symbol,
+                    quantity: 15,
+                    mode: settings.env === 'LIVE' ? 'LIVE' : 'PAPER'
+                })
             });
             const result = await res.json();
 
@@ -1418,33 +1422,21 @@ const DashboardWithLogic = () => {
                 const data = await res.json();
                 if (data.serverLatency) setServerLatency(data.serverLatency);
 
-                // Auto-Revert Logic: If backend says LIVE but no connection, force MOCK
-                let effectiveEnv = data.env;
-                if (data.env === 'LIVE' && !data.angel_connected) {
-                    console.warn("State Mismatch: ENV=LIVE but Angel Not Connected. Reverting to MOCK.");
-                    effectiveEnv = 'MOCK';
-
-                    // Sync backend asynchronously
-                    apiFetch(`${API_URL}/api/settings/update`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${overrideToken || token}`
-                        },
-                        body: JSON.stringify({ env: 'MOCK' })
-                    });
-                }
+                const effectiveEnv = data.env || 'LIVE';
 
                 setSettings({
                     angel_connected: data.angel_connected,
-                    active_broker: data.active_broker,
+                    active_broker: data.active_broker || 'ANGEL',
                     env: effectiveEnv
                 });
+                if (data.mode) {
+                    setIsAutoMode(data.mode === 'AUTO');
+                }
 
                 // Update User Profile based on effective Env
                 if (effectiveEnv === 'MOCK') {
                     setUser({ name: 'Guest Trader', initials: 'G', status: 'GUEST' });
-                } else if (effectiveEnv === 'LIVE' && data.angel_connected) {
+                } else {
                     setUser({ name: 'Pro Trader', initials: 'PT', status: 'ONLINE', broker: 'ANGEL ONE' });
                 }
 

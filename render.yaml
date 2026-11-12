@@ -31,5 +31,9 @@ services:
         value: AIzaSyAMxry7kyw7svsZumX6_hu7aGELVHamkm0
       - key: PORT
         value: 8000
+      - key: TZ
+        value: Asia/Kolkata
+      - key: OFFLINE_AUTONOMOUS_MODE
+        value: "true"
       - key: RENDER_EXTERNAL_URL
         value: https://tradeverse-1-aosu.onrender.com

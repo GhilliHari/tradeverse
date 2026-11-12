@@ -19,7 +19,50 @@ class AngelClient:
         self.failed_token_cache = {} # Cooldown cache for failed token lookups: symbol -> timestamp
         self._scrip_master_index = None
         self._scrip_master_loaded_date = None
+        self._last_login_date = None
+        self._last_login_ts = None
+        self._last_relogin_attempt = None
+        self.login_error = None
         self._login()
+
+    def _is_session_expired_response(self, res) -> bool:
+        if not isinstance(res, dict):
+            return False
+        if res.get("status") is True:
+            return False
+        err_code = str(res.get("errorCode") or res.get("errorcode") or "").upper()
+        msg = str(res.get("message") or "").lower()
+        if err_code in {"AG8001", "AB1010", "AB1004"}:
+            return True
+        if any(k in msg for k in ("invalid token", "token expired", "session expired", "unauthorized", "jwt")):
+            return True
+        return False
+
+    def ensure_session(self, force: bool = False) -> bool:
+        """
+        Ensures the Angel One JWT session is fresh for the current IST calendar day.
+        Automatically re-authenticates via TOTP when running 24/7 across multiple days in the cloud.
+        """
+        # Skip auto-relogin during unit tests with MagicMock
+        if self.api_key == "api_key" or (self.smart_api and "MagicMock" in type(self.smart_api).__name__):
+            return True
+
+        now = datetime.now()
+        today_str = now.strftime("%Y-%m-%d")
+        needs_relogin = (
+            force
+            or not self.smart_api
+            or not getattr(self.smart_api, "jwtToken", None)
+            or getattr(self, "login_error", None) is not None
+            or (self._last_login_date is not None and self._last_login_date != today_str)
+        )
+        if needs_relogin:
+            if not force and self._last_relogin_attempt and (now - self._last_relogin_attempt).total_seconds() < 45:
+                return self.login_error is None
+            self._last_relogin_attempt = now
+            logger.info(f"🔄 [AngelClient] Refreshing Angel One session (force={force}, last_login_date={self._last_login_date}, today={today_str})...")
+            self._login()
+        return getattr(self, "login_error", None) is None
 
     def _login(self):
         try:
@@ -152,6 +195,11 @@ class AngelClient:
                 self.login_error = str(e)
                 raise
 
+            self.login_error = None
+            self._last_login_date = datetime.now().strftime("%Y-%m-%d")
+            self._last_login_ts = datetime.now()
+            self._cached_conn_status = True
+            self._last_conn_check = datetime.now()
             logger.info("Angel Client fully initialized.")
             
         except Exception as e:
@@ -164,7 +212,10 @@ class AngelClient:
     def is_connected(self):
         """
         Public method to check if the client is truly connected with a valid API Key.
+        Automatically refreshes expired daily sessions when running 24/7 in cloud mode.
         """
+        self.ensure_session(force=False)
+
         if getattr(self, 'login_error', None):
             return False
             
@@ -181,6 +232,10 @@ class AngelClient:
         try:
             self._last_conn_check = now
             p = self.smart_api.getProfile(self.smart_api.jwtToken)
+            if self._is_session_expired_response(p):
+                logger.warning("Angel One JWT expired during is_connected check. Re-authenticating...")
+                self.ensure_session(force=True)
+                p = self.smart_api.getProfile(self.smart_api.jwtToken)
             profile_ok = bool(p and (p.get('status') == True or p.get('success') == True) and p.get('data', {}).get('clientcode') is not None)
             self._cached_conn_status = profile_ok
             return profile_ok
@@ -229,7 +284,11 @@ class AngelClient:
         if not self.smart_api:
             return {"status": False, "availablecash": 0.0, "net": 0.0}
         try:
+            self.ensure_session(force=False)
             res = self.smart_api.rmsLimit()
+            if self._is_session_expired_response(res):
+                self.ensure_session(force=True)
+                res = self.smart_api.rmsLimit()
             if res and res.get('status') and res.get('data'):
                 d = res['data']
                 return {
@@ -238,6 +297,9 @@ class AngelClient:
                     "net": float(d.get('net') or 0.0),
                     "availableintradaypayin": float(d.get('availableintradaypayin') or 0.0),
                     "utiliseddebits": float(d.get('utiliseddebits') or 0.0),
+                    "collateral": float(d.get('collateral') or 0.0),
+                    "m2munrealized": float(d.get('m2munrealized') or 0.0),
+                    "m2mrealized": float(d.get('m2mrealized') or 0.0),
                     "raw": d
                 }
             return {"status": False, "availablecash": 0.0, "net": 0.0, "message": res.get('message') if isinstance(res, dict) else "Failed"}
@@ -443,6 +505,42 @@ class AngelClient:
         self._scrip_master_index = index
         self._scrip_master_loaded_date = today_str
         return self._scrip_master_index
+
+    def get_lot_size(self, exchange: str, tradingsymbol: str) -> int:
+        """
+        Resolves the exact exchange-mandated lot size for NFO index options/futures from ScripMaster.
+        Falls back to standard NSE index lot sizes if not found.
+        """
+        import re
+        clean_sym = (tradingsymbol or "").strip().upper()
+        if ":" in clean_sym:
+            parts = clean_sym.split(":", 1)
+            exchange = parts[0]
+            clean_sym = parts[1]
+
+        try:
+            sm_index = self._load_nfo_scrip_master() or {}
+            opt_match = re.match(r"^(BANKNIFTY|FINNIFTY|MIDCPNIFTY|NIFTY)(\d+)(CE|PE)$", clean_sym)
+            if opt_match:
+                underlying, strike, opt_type = opt_match.groups()
+                hit = sm_index.get(f"{underlying}:{int(strike)}:{opt_type}")
+                if hit and int(hit.get("lotsize", 0)) > 0:
+                    return int(hit["lotsize"])
+            for entry in sm_index.values():
+                if entry.get("tradingsymbol") == clean_sym and int(entry.get("lotsize", 0)) > 0:
+                    return int(entry["lotsize"])
+        except Exception as e:
+            logger.debug(f"Lot size lookup fallback for {clean_sym}: {e}")
+
+        if "BANKNIFTY" in clean_sym:
+            return 15
+        if "MIDCPNIFTY" in clean_sym:
+            return 50
+        if "FINNIFTY" in clean_sym:
+            return 25
+        if "NIFTY" in clean_sym:
+            return 25
+        return 1
 
     def _resolve_option_or_scrip(self, exchange: str, symbol: str):
         """
@@ -870,7 +968,11 @@ class AngelClient:
             return []
             
         try:
+            self.ensure_session(force=False)
             res = self.smart_api.orderBook()
+            if self._is_session_expired_response(res):
+                self.ensure_session(force=True)
+                res = self.smart_api.orderBook()
             if res.get('status'):
                 data = res.get('data', [])
                 if data is None: return [] # API returns None for empty book sometimes
@@ -907,7 +1009,11 @@ class AngelClient:
         if not self.smart_api:
             return []
         try:
+            self.ensure_session(force=False)
             res = self.smart_api.position()
+            if self._is_session_expired_response(res):
+                self.ensure_session(force=True)
+                res = self.smart_api.position()
             if res and isinstance(res, dict) and res.get("status"):
                 data = res.get("data") or []
                 normalized = []

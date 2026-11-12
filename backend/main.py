@@ -218,6 +218,21 @@ async def run_watchdog():
 # Track active live broker positions for automated SL / Target / Time-Exit / EOD square-off
 active_live_positions: Dict[str, Dict] = {}
 
+# Track 24/7 Cloud Autonomous Trading State (runs headless even when iMac / Browser is OFF)
+autonomous_state: Dict[str, Any] = {
+    "cloud_autonomous_enabled": True,
+    "imac_required": False,
+    "pre_market_ready_date": None,
+    "last_cycle_at": None,
+    "last_signal": "IDLE",
+    "last_status": "WAITING_FOR_MARKET",
+    "last_reason": "System standing by for NSE market hours (09:15 - 15:30 IST)",
+    "cycles_today": 0,
+    "trades_today": 0,
+    "last_order_id": None,
+    "last_tradingsymbol": None,
+}
+
 async def monitor_live_positions_step():
     """
     Monitors open live broker positions for Stop-Loss (-15%), Target (+25%),
@@ -322,8 +337,11 @@ async def monitor_live_positions_step():
 
 async def run_autonomous_trading():
     """
-    Stand-alone loop that continuously monitors open positions and executes trades during market hours
-    when TRADING_MODE == 'AUTO'.
+    Stand-alone 24/7 Cloud Autonomous Trading loop that:
+    1. Performs Pre-Market Angel One TOTP Session Refresh & NFO Scrip Master warmup (08:45–09:14 IST)
+    2. Continuously monitors open positions (-15% SL, +25% Target, 15m Time-Exit, 15:20 IST EOD Square-Off)
+    3. Executes real-money autonomous trades during NSE market hours (09:15–15:30 IST) when TRADING_MODE == 'AUTO',
+       completely independent of whether the user's iMac or browser is on or off.
     """
     while True:
         try:
@@ -332,30 +350,64 @@ async def run_autonomous_trading():
                 await asyncio.sleep(30)
                 continue
                 
-            # 2. Market Hours & Holiday check
+            # 2. Market Hours & Holiday check (IST)
             now = datetime.now()
             current_time = now.time()
-            
-            holidays = [
-                '2026-01-26', '2026-03-03', '2026-03-17', '2026-04-02', 
-                '2026-04-03', '2026-04-14', '2026-05-01', '2026-08-15', 
-                '2026-10-02', '2026-10-20', '2026-11-10', '2026-11-24',
-                '2026-12-25'
-            ]
-            
-            is_weekend = now.weekday() > 4
-            is_holiday = now.strftime('%Y-%m-%d') in holidays
+            today_str = now.strftime("%Y-%m-%d")
+            is_trading_day = simulation_engine.is_trading_day(now)
+
+            # 2a. Pre-Market Morning Auto-Login & Readiness Check (08:45 - 09:14 IST on trading days)
+            if is_trading_day and time(8, 45) <= current_time < time(9, 15):
+                if autonomous_state.get("pre_market_ready_date") != today_str:
+                    try:
+                        logger.info("🌅 [CloudAutopilot] Running Pre-Market Angel One Session Refresh & ScripMaster Warmup...")
+                        broker = await asyncio.to_thread(get_broker_client, config.OWNER_EMAIL)
+                        if hasattr(broker, "ensure_session"):
+                            await asyncio.to_thread(broker.ensure_session, True)
+                        if hasattr(broker, "_load_nfo_scrip_master"):
+                            await asyncio.to_thread(broker._load_nfo_scrip_master)
+                        funds = await asyncio.to_thread(broker.get_funds) if hasattr(broker, "get_funds") else {}
+                        avail_cash = float(funds.get("availablecash") or 0.0)
+                        autonomous_state["pre_market_ready_date"] = today_str
+                        autonomous_state["cycles_today"] = 0
+                        autonomous_state["trades_today"] = 0
+                        autonomous_state["last_status"] = "PRE_MARKET_READY"
+                        autonomous_state["last_reason"] = f"Angel One connected. Available Cash: ₹{avail_cash:,.2f}"
+                        notifier.notify_sync(
+                            f"🌅 *Tradeverse 24/7 Cloud Autopilot Ready ({today_str})*\n"
+                            f"Broker: `{config.ACTIVE_BROKER}` (`{config.ENV}`)\n"
+                            f"Mode: `{config.TRADING_MODE}` (Offline Cloud Active)\n"
+                            f"Available Cash: *₹{avail_cash:,.2f}*\n"
+                            f"Max Position: `₹{config.MAX_POSITION_SIZE:,.0f}` | Daily Loss Cap: `₹{config.DAILY_LOSS_LIMIT:,.0f}`"
+                        )
+                    except Exception as pme:
+                        logger.warning(f"Pre-market warmup warning: {pme}")
+
             is_time_match = time(9, 15) <= current_time <= time(15, 30)
-            
-            if is_weekend or is_holiday or not is_time_match:
+            if not is_trading_day or not is_time_match:
+                autonomous_state["last_status"] = "MARKET_CLOSED" if not is_time_match else "HOLIDAY_OR_WEEKEND"
                 await asyncio.sleep(60)
                 continue
+
+            # Ensure Angel One session is refreshed if container started mid-day or crossed midnight
+            if autonomous_state.get("pre_market_ready_date") != today_str:
+                try:
+                    broker = await asyncio.to_thread(get_broker_client, config.OWNER_EMAIL)
+                    if hasattr(broker, "ensure_session"):
+                        await asyncio.to_thread(broker.ensure_session, False)
+                    autonomous_state["pre_market_ready_date"] = today_str
+                    autonomous_state["cycles_today"] = 0
+                    autonomous_state["trades_today"] = 0
+                except Exception:
+                    pass
 
             # 3. Always monitor open live positions for Stop-Loss / Target / EOD Square-Off
             await monitor_live_positions_step()
 
             # 4. Only initiate new autonomous entries when TRADING_MODE is explicitly AUTO
             if getattr(config, "TRADING_MODE", "MANUAL").upper() != "AUTO":
+                autonomous_state["last_status"] = "PAUSED_MANUAL_MODE"
+                autonomous_state["last_reason"] = "TRADING_MODE is MANUAL (monitoring open positions only)"
                 await asyncio.sleep(30)
                 continue
             
@@ -365,8 +417,17 @@ async def run_autonomous_trading():
             mode = "LIVE" if config.ENV == "LIVE" else "PAPER"
             
             res = await execute_autopilot(symbol=symbol, quantity=qty, mode=mode, greedy=False)
-            status = res.get("status")
+            status = res.get("status", "UNKNOWN")
+            autonomous_state["last_cycle_at"] = datetime.now().isoformat()
+            autonomous_state["last_signal"] = res.get("signal") or (res.get("analysis") or {}).get("final_signal", "HOLD")
+            autonomous_state["last_status"] = status
+            autonomous_state["last_reason"] = res.get("reason") or f"Status: {status}"
+            autonomous_state["cycles_today"] = int(autonomous_state.get("cycles_today", 0)) + 1
+
             if status == "EXECUTED":
+                autonomous_state["trades_today"] = int(autonomous_state.get("trades_today", 0)) + 1
+                autonomous_state["last_order_id"] = res.get("order_id")
+                autonomous_state["last_tradingsymbol"] = res.get("tradingsymbol")
                 logger.info(f"✅ Autonomous execution placed: {res}")
             else:
                 logger.debug(f"Autonomous cycle ran, signal: {status}")
@@ -376,6 +437,8 @@ async def run_autonomous_trading():
             
         except Exception as e:
             logger.error(f"Autonomous Trading Error: {e}")
+            autonomous_state["last_status"] = "ERROR"
+            autonomous_state["last_reason"] = str(e)
             await asyncio.sleep(60)
 
 async def keep_awake_pinger():
@@ -466,8 +529,164 @@ async def health_check():
         return {"status": "INITIALIZING"}
     return {"status": "READY"}
 
+@app.post("/api/heartbeat")
+async def receive_heartbeat(user: dict = Depends(get_current_user)):
     monitor.record_heartbeat(user.get('uid'))
-    return {"status": "pulse_received"}
+    return {
+        "status": "pulse_received",
+        "offline_autonomous_mode": getattr(config, "OFFLINE_AUTONOMOUS_MODE", True),
+        "trading_mode": config.TRADING_MODE,
+    }
+
+@app.get("/api/cloud/pulse")
+@app.post("/api/cloud/pulse")
+async def cloud_autonomous_pulse(trigger_cycle: bool = False):
+    """
+    External 24/7 Cloud Heartbeat & Autonomous Pulse Endpoint (called by GitHub Actions Cron & Dashboard).
+    Ensures the Render cloud server stays awake during NSE market hours even when the iMac is powered OFF,
+    verifies Angel One session health, monitors open positions, and triggers autonomous cycle if overdue.
+    """
+    now = datetime.now()
+    is_trading_day = simulation_engine.is_trading_day(now)
+    is_market_hours = is_trading_day and (time(9, 15) <= now.time() <= time(15, 30))
+
+    broker_connected = False
+    funds_summary = {"availablecash": 0.0, "net": 0.0}
+    try:
+        broker = await asyncio.to_thread(get_broker_client, config.OWNER_EMAIL)
+        if broker and hasattr(broker, "is_connected") and "Mock" not in broker.__class__.__name__:
+            broker_connected = await asyncio.to_thread(broker.is_connected)
+            if broker_connected and hasattr(broker, "get_funds"):
+                f_res = await asyncio.to_thread(broker.get_funds)
+                if isinstance(f_res, dict) and f_res.get("status"):
+                    funds_summary = {
+                        "availablecash": float(f_res.get("availablecash") or 0.0),
+                        "net": float(f_res.get("net") or 0.0),
+                        "utiliseddebits": float(f_res.get("utiliseddebits") or 0.0),
+                    }
+    except Exception as e:
+        logger.debug(f"Cloud pulse broker check error: {e}")
+
+    # If called during market hours, ensure open positions are monitored and trigger cycle if requested or stale (>90s)
+    triggered_result = None
+    if is_market_hours and initialization_status.get("ready") and intelligence:
+        try:
+            await monitor_live_positions_step()
+            last_ts_str = autonomous_state.get("last_cycle_at")
+            is_stale = True
+            if last_ts_str:
+                try:
+                    last_dt = datetime.fromisoformat(last_ts_str)
+                    is_stale = (now - last_dt).total_seconds() > 90
+                except Exception:
+                    is_stale = True
+            if (trigger_cycle or is_stale) and getattr(config, "TRADING_MODE", "MANUAL").upper() == "AUTO":
+                mode = "LIVE" if config.ENV == "LIVE" else "PAPER"
+                triggered_result = await execute_autopilot(symbol="^NSEBANK", quantity=15, mode=mode, greedy=False)
+                autonomous_state["last_cycle_at"] = datetime.now().isoformat()
+                autonomous_state["last_signal"] = triggered_result.get("signal") or (triggered_result.get("analysis") or {}).get("final_signal", "HOLD")
+                autonomous_state["last_status"] = triggered_result.get("status", "UNKNOWN")
+                autonomous_state["last_reason"] = triggered_result.get("reason") or f"Status: {triggered_result.get('status')}"
+                autonomous_state["cycles_today"] = int(autonomous_state.get("cycles_today", 0)) + 1
+        except Exception as ce:
+            logger.warning(f"Cloud pulse cycle trigger warning: {ce}")
+
+    return {
+        "status": "ONLINE",
+        "ist_time": now.strftime("%Y-%m-%d %H:%M:%S IST"),
+        "is_trading_day": is_trading_day,
+        "is_market_hours": is_market_hours,
+        "env": config.ENV,
+        "active_broker": config.ACTIVE_BROKER,
+        "trading_mode": config.TRADING_MODE,
+        "offline_autonomous_mode": getattr(config, "OFFLINE_AUTONOMOUS_MODE", True),
+        "imac_required": False,
+        "angel_connected": broker_connected,
+        "funds": funds_summary,
+        "active_live_positions": list(active_live_positions.values()),
+        "autonomous_state": autonomous_state,
+        "risk": risk_engine.get_risk_status() if risk_engine else {},
+        "triggered_cycle": triggered_result.get("status") if isinstance(triggered_result, dict) else None,
+    }
+
+@app.get("/api/broker/funds")
+async def get_broker_funds():
+    """
+    Returns real-time Angel One RMS funds, available cash, and risk limits.
+    """
+    try:
+        broker = await asyncio.to_thread(get_broker_client, config.OWNER_EMAIL)
+        is_mock = broker is None or "Mock" in broker.__class__.__name__
+        funds = {"status": False, "availablecash": 0.0, "net": 0.0, "utiliseddebits": 0.0}
+        if broker and hasattr(broker, "get_funds") and not is_mock:
+            funds = await asyncio.to_thread(broker.get_funds)
+        return {
+            "status": "success",
+            "env": config.ENV,
+            "broker": config.ACTIVE_BROKER,
+            "is_live": not is_mock and bool(funds.get("status")),
+            "availablecash": float(funds.get("availablecash") or 0.0),
+            "net": float(funds.get("net") or 0.0),
+            "utiliseddebits": float(funds.get("utiliseddebits") or 0.0),
+            "collateral": float(funds.get("collateral") or 0.0),
+            "max_position_size": config.MAX_POSITION_SIZE,
+            "daily_loss_limit": config.DAILY_LOSS_LIMIT,
+            "risk": risk_engine.get_risk_status() if risk_engine else {},
+        }
+    except Exception as e:
+        logger.error(f"Error fetching broker funds: {e}")
+        return {"status": "error", "message": str(e), "availablecash": 0.0, "net": 0.0}
+
+@app.get("/api/broker/positions")
+async def get_broker_positions():
+    """
+    Returns real-time Angel One positions enriched with automated SL / Target / Hold telemetry.
+    """
+    try:
+        broker = await asyncio.to_thread(get_broker_client, config.OWNER_EMAIL)
+        is_mock = broker is None or "Mock" in broker.__class__.__name__
+        raw_positions = []
+        if broker and hasattr(broker, "positions") and not is_mock:
+            raw_positions = await asyncio.to_thread(broker.positions) or []
+
+        enriched = []
+        total_pnl = 0.0
+        open_count = 0
+        for p in raw_positions:
+            tsym = p.get("tradingsymbol", "")
+            net_qty = int(p.get("netqty", 0) or 0)
+            buy_avg = float(p.get("buyavgprice") or 0.0)
+            ltp_val = float(p.get("ltp") or 0.0)
+            pnl_val = float(p.get("pnl") or 0.0)
+            if pnl_val == 0.0 and net_qty != 0 and buy_avg > 0 and ltp_val > 0:
+                pnl_val = (ltp_val - buy_avg) * net_qty
+            total_pnl += pnl_val
+            if net_qty != 0:
+                open_count += 1
+            tracked = active_live_positions.get(tsym, {})
+            enriched.append({
+                **p,
+                "pnl": round(pnl_val, 2),
+                "is_open": net_qty != 0,
+                "stop_loss_pct": tracked.get("stop_loss_pct", -15.0),
+                "target_pct": tracked.get("target_pct", 25.0),
+                "max_hold_minutes": tracked.get("max_hold_minutes", 15),
+                "entry_time": tracked.get("entry_time").isoformat() if hasattr(tracked.get("entry_time"), "isoformat") else str(tracked.get("entry_time", "")),
+            })
+
+        return {
+            "status": "success",
+            "env": config.ENV,
+            "broker": config.ACTIVE_BROKER,
+            "is_live": not is_mock,
+            "open_count": open_count,
+            "total_pnl": round(total_pnl, 2),
+            "positions": enriched,
+            "tracked_live_positions": list(active_live_positions.values()),
+        }
+    except Exception as e:
+        logger.error(f"Error fetching broker positions: {e}")
+        return {"status": "error", "message": str(e), "positions": [], "open_count": 0, "total_pnl": 0.0}
 
 @app.post("/api/settings/whatsapp/test")
 async def test_whatsapp(user: dict = Depends(get_current_user)):
@@ -2938,8 +3157,10 @@ async def get_settings(user: dict = Depends(get_current_user)):
     }
 
     return {
-        "env": settings.get("ENV", "MOCK"),
-        "active_broker": settings.get("ACTIVE_BROKER", "ANGEL"),
+        "env": settings.get("ENV", config.ENV),
+        "active_broker": settings.get("ACTIVE_BROKER", config.ACTIVE_BROKER),
+        "offline_autonomous_mode": getattr(config, "OFFLINE_AUTONOMOUS_MODE", True),
+        "autonomous_state": autonomous_state,
         "user_profile": profile,
         "angel_connected": is_live_connected,
         "is_owner": is_owner,
@@ -3304,6 +3525,33 @@ async def execute_autopilot(
         raise HTTPException(status_code=500, detail=f"Intelligence Layer Failure: {str(e)}")
     
     signal = analysis.get("final_signal", "HOLD")
+
+    # 1b. Intraday 5-Minute Sniper Confluence Fallback during Market Hours
+    # If the Daily Swing model returns HOLD, evaluate today's live 5m EMA9/EMA21/VWAP/RSI/MACD confluence
+    if signal == "HOLD" and simulation_engine and simulation_engine.is_trading_day(datetime.now()):
+        try:
+            df_5m = await asyncio.to_thread(simulation_engine._fetch_today_intraday_5m_df, symbol)
+            if df_5m is not None and len(df_5m) >= 5:
+                intra_action, intra_conf, intra_reason = simulation_engine._evaluate_intraday_bar_signal(
+                    df_5m, len(df_5m) - 1, base_direction=0
+                )
+                if intra_action in ("BUY_CE", "BUY_PE") and float(intra_conf or 0.0) >= 0.70:
+                    spot_now = float(df_5m["close"].iloc[-1])
+                    step = 100 if "BANK" in symbol.upper() else 50
+                    atm_strike = int(round(spot_now / step) * step)
+                    opt_t = "CE" if intra_action == "BUY_CE" else "PE"
+                    signal = intra_action
+                    analysis["final_signal"] = signal
+                    analysis["confidence"] = round(float(intra_conf) * 100.0, 1)
+                    analysis["trade_recommendation"] = {
+                        "strike": atm_strike,
+                        "option_type": opt_t,
+                        "reasoning": f"Intraday 5m Sniper ({int(float(intra_conf)*100)}%): {intra_reason}",
+                    }
+                    logger.info(f"⚡ [Autopilot] 5m Intraday Sniper triggered {signal} @ Strike {atm_strike}{opt_t} ({intra_reason})")
+        except Exception as ie:
+            logger.debug(f"Intraday 5m sniper fallback check skipped: {ie}")
+
     if signal == "HOLD":
         return {
             "status": "HOLD",
@@ -3389,6 +3637,22 @@ async def execute_autopilot(
             target_exchange = res_exch
             resolved_symbol = res_sym
 
+    # 3b. Align quantity with Exchange-Mandated Lot Size (e.g. 15 for BANKNIFTY, 25 for NIFTY)
+    lot_size = 1
+    if hasattr(broker, "get_lot_size"):
+        try:
+            lot_size = int(broker.get_lot_size(target_exchange, target_symbol) or 1)
+        except Exception:
+            lot_size = 15 if base_index == "BANKNIFTY" else (25 if base_index in ("NIFTY", "FINNIFTY") else 1)
+    elif base_index == "BANKNIFTY":
+        lot_size = 15
+    elif base_index in ("NIFTY", "FINNIFTY"):
+        lot_size = 25
+
+    if lot_size > 1:
+        lots = max(1, int(quantity or lot_size) // lot_size)
+        quantity = lots * lot_size
+
     ltp_val = 0.0
     try:
         ltp_key = f"{target_exchange}:{resolved_symbol}"
@@ -3396,6 +3660,46 @@ async def execute_autopilot(
         ltp_val = float((ltp_res.get(ltp_key) or ltp_res.get(resolved_symbol) or {}).get("last_price", 0.0) or 0.0)
     except Exception:
         ltp_val = 0.0
+
+    # 3c. Dynamic OTM Strike Stepping if ATM Lot Cost exceeds MAX_POSITION_SIZE (₹10,000) or Available Cash
+    max_budget = float(getattr(config, "MAX_POSITION_SIZE", 10000.0) or 10000.0)
+    if not is_mock_broker and hasattr(broker, "get_funds"):
+        try:
+            funds_info = await asyncio.to_thread(broker.get_funds)
+            if isinstance(funds_info, dict) and funds_info.get("status"):
+                avail_cash = float(funds_info.get("availablecash") or 0.0)
+                if avail_cash > 0:
+                    max_budget = min(max_budget, avail_cash)
+        except Exception:
+            pass
+
+    if base_index and strike > 0 and ltp_val > 0 and (ltp_val * quantity > max_budget):
+        strike_step = 100 if base_index == "BANKNIFTY" else 50
+        for step_idx in range(1, 6):
+            cand_strike = strike + (step_idx * strike_step) if opt_type == "CE" else strike - (step_idx * strike_step)
+            cand_short = f"{base_index}{cand_strike}{opt_type}"
+            cand_exch, cand_sym = target_exchange, cand_short
+            if not is_mock_broker and hasattr(broker, "_get_token_and_exchange"):
+                c_ex, c_sym, c_tok = broker._get_token_and_exchange(f"NFO:{cand_short}")
+                if c_sym and c_tok:
+                    cand_exch, cand_sym = c_ex, c_sym
+            try:
+                c_key = f"{cand_exch}:{cand_sym}"
+                c_res = broker.ltp(c_key)
+                c_ltp = float((c_res.get(c_key) or c_res.get(cand_sym) or {}).get("last_price", 0.0) or 0.0)
+                if c_ltp > 5.0 and (c_ltp * lot_size) <= max_budget:
+                    logger.info(
+                        f"🎯 [Autopilot] Stepped OTM from {resolved_symbol} (₹{ltp_val}) -> "
+                        f"{cand_sym} (₹{c_ltp} x {lot_size} = ₹{c_ltp * lot_size:.0f} <= ₹{max_budget:.0f})"
+                    )
+                    target_symbol = cand_short
+                    target_exchange = cand_exch
+                    resolved_symbol = cand_sym
+                    ltp_val = c_ltp
+                    quantity = lot_size
+                    break
+            except Exception:
+                continue
 
     # Check open positions count to avoid duplicate stacking on the same contract
     open_positions_count = len(active_live_positions)

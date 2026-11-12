@@ -22,18 +22,14 @@ class HeartbeatMonitor:
     def check_watchdog(self):
         """
         Checks all active heartbeat keys. 
-        If a user has AUTO mode enabled but no recent heartbeat, revert to MANUAL.
+        If a user has AUTO mode enabled but no recent heartbeat, revert to MANUAL,
+        UNLESS OFFLINE_AUTONOMOUS_MODE is enabled (for 24/7 Cloud Autonomous Trading when iMac is OFF).
         """
-        # Scan for all user settings to find who is in AUTO mode
-        # In a real DB we'd query "WHERE mode='AUTO'"
-        # In Redis, we iterate keys or maintain a set of "auto_users"
-        
-        # Optimization: When user enables AUTO, add to "set:auto_users"
-        # When disabling, remove from "set:auto_users"
-        # For now, let's iterate user settings keys if count is low, or just check heartbeat keys?
-        # Better: The frontend only sends heartbeat if in AUTO mode (mostly).
-        # Actually safer: Use a set "active_auto_users"
-        
+        from config import config
+        if getattr(config, "OFFLINE_AUTONOMOUS_MODE", True):
+            # In 24/7 Cloud Offline Mode, the server trades autonomously without requiring an open browser tab
+            return
+
         active_users = self.redis.smembers("set:active_auto_users")
         
         for user_id in active_users:

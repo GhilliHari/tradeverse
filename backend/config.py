@@ -1,5 +1,15 @@
 
 import os
+import time as _time
+
+# Enforce Indian Standard Time (IST) for NSE Market Hours across all Cloud/Docker environments
+os.environ.setdefault("TZ", "Asia/Kolkata")
+if hasattr(_time, "tzset"):
+    try:
+        _time.tzset()
+    except Exception:
+        pass
+
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -13,8 +23,11 @@ class Config:
     # IP Protection: Master Operator ID
     OWNER_EMAIL = os.getenv("OWNER_EMAIL", "Hari@tradeverse.ai")
 
-    # Environment: MOCK or LIVE
-    ENV = os.getenv("TRADEVERSE_ENV", "MOCK").upper()
+    # Environment: MOCK or LIVE (Defaults to LIVE for Angel One Cloud Trading)
+    ENV = os.getenv("TRADEVERSE_ENV", "LIVE").upper()
+    
+    # Offline Autonomous Cloud Mode (Runs 24/7 even when iMac / Browser is OFF)
+    OFFLINE_AUTONOMOUS_MODE = os.getenv("OFFLINE_AUTONOMOUS_MODE", "true").lower() in ("true", "1", "yes")
     
     # API Keys (Defaults to embedded operator key / GraphRAG fallback if not set in env)
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyAMxry7kyw7svsZumX6_hu7aGELVHamkm0")
@@ -43,14 +56,15 @@ class Config:
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
     TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
     
-    # Trading Mode: MANUAL or AUTO
-    TRADING_MODE = os.getenv("TRADING_MODE", "MANUAL").upper()
+    # Trading Mode: MANUAL or AUTO (Defaults to AUTO for headless cloud execution)
+    TRADING_MODE = os.getenv("TRADING_MODE", "AUTO").upper()
 
     def save(self):
         import json
         from pathlib import Path
         data = {
             "ENV": self.ENV,
+            "OFFLINE_AUTONOMOUS_MODE": getattr(self, "OFFLINE_AUTONOMOUS_MODE", True),
             "GEMINI_API_KEY": self.GEMINI_API_KEY,
             "ANGEL_CLIENT_ID": self.ANGEL_CLIENT_ID,
             "ANGEL_PASSWORD": self.ANGEL_PASSWORD,
@@ -59,7 +73,7 @@ class Config:
             "ACTIVE_BROKER": self.ACTIVE_BROKER,
             "TRADING_MODE": self.TRADING_MODE,
             "DAILY_LOSS_LIMIT": getattr(self, "DAILY_LOSS_LIMIT", 1000.0),
-            "MAX_POSITION_SIZE": getattr(self, "MAX_POSITION_SIZE", 7000.0),
+            "MAX_POSITION_SIZE": getattr(self, "MAX_POSITION_SIZE", 10000.0),
             "MAX_OPEN_POSITIONS": getattr(self, "MAX_OPEN_POSITIONS", 1),
             "WHATSAPP_PHONE": self.WHATSAPP_PHONE,
             "WHATSAPP_API_KEY": self.WHATSAPP_API_KEY,

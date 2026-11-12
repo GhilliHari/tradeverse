@@ -2,12 +2,23 @@
 FROM python:3.10-slim
 
 # Set environment variables
-ENV PYTHONUNBUFFERED=1     PYTHONDONTWRITEBYTECODE=1     PORT=8000
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=8000 \
+    TZ=Asia/Kolkata \
+    OFFLINE_AUTONOMOUS_MODE=true
 
 WORKDIR /app
 
-# Install system build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends     build-essential     curl     libgomp1     git     && rm -rf /var/lib/apt/lists/*
+# Install system build dependencies and timezone data for NSE market hours (IST)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    libgomp1 \
+    git \
+    tzdata \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy python dependencies file
 COPY requirements.txt .

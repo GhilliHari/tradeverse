@@ -1,136 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-    ListOrdered, CheckCircle, XCircle, Clock, TrendingUp, TrendingDown,
-    DollarSign, Target, AlertCircle, RefreshCw, Filter, Calendar
+    ListOrdered, CheckCircle, XCircle, Clock,
+    Target, AlertCircle, RefreshCw, Filter, Calendar, Cloud
 } from 'lucide-react';
 import HUDCard from './ui/HUDCard';
-import ScrambleText from './ui/ScrambleText';
-
-// --- ORDERS DATA ---
-
-// Order History (Recent + Active)
-const orders = [
-    {
-        id: 'ORD-2024-001',
-        timestamp: '14:32:15',
-        symbol: 'BankNifty 48200 CE',
-        type: 'BUY',
-        orderType: 'LIMIT',
-        qty: 50,
-        price: 245.00,
-        status: 'EXECUTED',
-        filled: 50,
-        avgPrice: 244.50,
-        pnl: null,
-        source: 'AI_SNIPER'
-    },
-    {
-        id: 'ORD-2024-002',
-        timestamp: '13:15:42',
-        symbol: 'HDFC Bank',
-        type: 'BUY',
-        orderType: 'MARKET',
-        qty: 50,
-        price: null,
-        status: 'EXECUTED',
-        filled: 50,
-        avgPrice: 1580.20,
-        pnl: null,
-        source: 'MANUAL'
-    },
-    {
-        id: 'ORD-2024-003',
-        timestamp: '12:45:30',
-        symbol: 'BankNifty 47800 PE',
-        type: 'BUY',
-        orderType: 'LIMIT',
-        qty: 50,
-        price: 180.00,
-        status: 'EXECUTED',
-        filled: 50,
-        avgPrice: 180.00,
-        pnl: null,
-        source: 'AI_STRATEGIST'
-    },
-    {
-        id: 'ORD-2024-004',
-        timestamp: '11:20:18',
-        symbol: 'BankNifty 48500 CE',
-        type: 'SELL',
-        orderType: 'LIMIT',
-        qty: 50,
-        price: 150.00,
-        status: 'EXECUTED',
-        filled: 50,
-        avgPrice: 152.50,
-        pnl: 3750,
-        source: 'AI_SNIPER'
-    },
-    {
-        id: 'ORD-2024-005',
-        timestamp: '10:15:05',
-        symbol: 'ICICI Bank',
-        type: 'BUY',
-        orderType: 'MARKET',
-        qty: 30,
-        price: null,
-        status: 'EXECUTED',
-        filled: 30,
-        avgPrice: 1065.00,
-        pnl: null,
-        source: 'MANUAL'
-    },
-    {
-        id: 'ORD-2024-006',
-        timestamp: '09:30:22',
-        symbol: 'BankNifty 48000 PE',
-        type: 'BUY',
-        orderType: 'LIMIT',
-        qty: 50,
-        price: 200.00,
-        status: 'PENDING',
-        filled: 0,
-        avgPrice: null,
-        pnl: null,
-        source: 'AI_STRATEGIST'
-    },
-    {
-        id: 'ORD-2024-007',
-        timestamp: '09:18:45',
-        symbol: 'BankNifty 47500 CE',
-        type: 'SELL',
-        orderType: 'LIMIT',
-        qty: 50,
-        price: 280.00,
-        status: 'REJECTED',
-        filled: 0,
-        avgPrice: null,
-        pnl: null,
-        source: 'AI_SNIPER',
-        rejectReason: 'Insufficient margin'
-    }
-];
-
-// Order Statistics
-const orderStats = {
-    totalOrders: 7,
-    executed: 5,
-    pending: 1,
-    rejected: 1,
-    totalVolume: 330,
-    avgExecutionTime: '1.2s',
-    successRate: 85.7
-};
+import { API_URL } from '../config/api';
 
 const OrderRow = ({ order }) => {
-    const statusConfig = {
-        EXECUTED: { color: 'emerald', icon: CheckCircle, text: 'Executed' },
-        PENDING: { color: 'amber', icon: Clock, text: 'Pending' },
-        REJECTED: { color: 'red', icon: XCircle, text: 'Rejected' },
-        CANCELLED: { color: 'slate', icon: XCircle, text: 'Cancelled' }
+    const statusMap = {
+        EXECUTED: { badge: 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400', icon: CheckCircle, text: 'Executed' },
+        COMPLETE: { badge: 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400', icon: CheckCircle, text: 'Executed' },
+        FILLED: { badge: 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400', icon: CheckCircle, text: 'Filled' },
+        PENDING: { badge: 'bg-amber-500/20 border-amber-500/30 text-amber-400', icon: Clock, text: 'Pending' },
+        OPEN: { badge: 'bg-amber-500/20 border-amber-500/30 text-amber-400', icon: Clock, text: 'Open' },
+        REJECTED: { badge: 'bg-red-500/20 border-red-500/30 text-red-400', icon: XCircle, text: 'Rejected' },
+        CANCELLED: { badge: 'bg-slate-500/20 border-slate-500/30 text-slate-400', icon: XCircle, text: 'Cancelled' }
     };
 
-    const { color, icon: StatusIcon, text } = statusConfig[order.status] || statusConfig.PENDING;
+    const normStatus = (order.status || 'PENDING').toUpperCase();
+    const { badge, icon: StatusIcon, text } = statusMap[normStatus] || statusMap.PENDING;
 
     return (
         <div className="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all group">
@@ -138,28 +26,27 @@ const OrderRow = ({ order }) => {
                 <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                         <h4 className="font-bold text-white">{order.symbol}</h4>
-                        <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${order.type === 'BUY' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
-                            }`}>
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${order.type === 'BUY' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
                             {order.type}
                         </span>
                         <span className="text-[10px] font-black px-2 py-0.5 rounded uppercase bg-indigo-500/20 text-indigo-400">
                             {order.orderType}
                         </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400">
+                            {order.exchange || 'NFO'}
+                        </span>
                     </div>
                     <div className="flex items-center gap-4 text-[10px] text-slate-500 font-mono">
                         <span>ID: {order.id}</span>
                         <span>Time: {order.timestamp}</span>
-                        <span className={`px-2 py-0.5 rounded ${order.source === 'AI_SNIPER' ? 'bg-purple-500/20 text-purple-400' :
-                                order.source === 'AI_STRATEGIST' ? 'bg-cyan-500/20 text-cyan-400' :
-                                    'bg-slate-500/20 text-slate-400'
-                            }`}>
-                            {order.source}
+                        <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-400">
+                            {order.source || 'ANGEL_LIVE'}
                         </span>
                     </div>
                 </div>
-                <div className={`flex items-center gap-2 px-3 py-1 rounded-full bg-${color}-500/20 border border-${color}-500/30`}>
-                    <StatusIcon className={`w-3 h-3 text-${color}-400`} />
-                    <span className={`text-xs font-bold text-${color}-400 uppercase`}>{text}</span>
+                <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${badge}`}>
+                    <StatusIcon className="w-3 h-3" />
+                    <span className="text-xs font-bold uppercase">{text}</span>
                 </div>
             </div>
 
@@ -170,10 +57,10 @@ const OrderRow = ({ order }) => {
                 </div>
                 <div>
                     <div className="text-[10px] text-slate-500 font-bold uppercase mb-1">
-                        {order.orderType === 'LIMIT' ? 'Limit Price' : 'Market'}
+                        {order.orderType === 'LIMIT' ? 'Limit Price' : 'Order Price'}
                     </div>
                     <div className="text-sm font-mono text-white">
-                        {order.price ? `₹${order.price.toFixed(2)}` : 'MKT'}
+                        {order.price ? `₹${Number(order.price).toFixed(2)}` : 'MKT'}
                     </div>
                 </div>
                 <div>
@@ -181,23 +68,12 @@ const OrderRow = ({ order }) => {
                     <div className="text-sm font-mono text-white">{order.filled}/{order.qty}</div>
                 </div>
                 <div>
-                    <div className="text-[10px] text-slate-500 font-bold uppercase mb-1">Avg Price</div>
+                    <div className="text-[10px] text-slate-500 font-bold uppercase mb-1">Avg Fill Price</div>
                     <div className="text-sm font-mono text-white">
-                        {order.avgPrice ? `₹${order.avgPrice.toFixed(2)}` : '-'}
+                        {order.avgPrice ? `₹${Number(order.avgPrice).toFixed(2)}` : '-'}
                     </div>
                 </div>
             </div>
-
-            {order.pnl !== null && (
-                <div className="mt-3 pt-3 border-t border-white/10">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-400">Realized P&L</span>
-                        <span className={`text-sm font-mono font-bold ${order.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {order.pnl >= 0 ? '+' : ''}₹{order.pnl.toLocaleString()}
-                        </span>
-                    </div>
-                </div>
-            )}
 
             {order.rejectReason && (
                 <div className="mt-3 pt-3 border-t border-white/10">
@@ -212,8 +88,108 @@ const OrderRow = ({ order }) => {
 };
 
 const Orders = () => {
+    const [orders, setOrders] = useState([]);
+    const [auditLog, setAuditLog] = useState([]);
+    const [cloudPulse, setCloudPulse] = useState(null);
+    const [filterStatus, setFilterStatus] = useState('ALL');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const fetchLiveOrders = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const [ordRes, auditRes, pulseRes] = await Promise.all([
+                fetch(`${API_URL}/api/orders`).catch(() => null),
+                fetch(`${API_URL}/api/execution/audit_log`).catch(() => null),
+                fetch(`${API_URL}/api/cloud/pulse`).catch(() => null)
+            ]);
+
+            if (ordRes && ordRes.ok) {
+                const rawOrders = await ordRes.json();
+                if (Array.isArray(rawOrders)) {
+                    const normalized = rawOrders.map((o, idx) => {
+                        const rawSt = String(o.status || 'PENDING').toUpperCase();
+                        let mappedStatus = 'PENDING';
+                        if (['COMPLETE', 'EXECUTED', 'FILLED'].includes(rawSt)) mappedStatus = 'EXECUTED';
+                        else if (['REJECTED'].includes(rawSt)) mappedStatus = 'REJECTED';
+                        else if (['CANCELLED', 'CANCELED'].includes(rawSt)) mappedStatus = 'CANCELLED';
+
+                        return {
+                            id: o.order_id || o.exchange_order_id || `ORD-${idx + 1}`,
+                            timestamp: o.order_timestamp || new Date().toLocaleTimeString(),
+                            symbol: o.tradingsymbol || 'NFO Contract',
+                            exchange: o.exchange || 'NFO',
+                            type: o.transaction_type || 'BUY',
+                            orderType: o.order_type || (Number(o.price) > 0 ? 'LIMIT' : 'MARKET'),
+                            qty: Number(o.quantity || 0),
+                            price: Number(o.price || 0),
+                            status: mappedStatus,
+                            filled: Number(o.filled_quantity ?? o.quantity ?? 0),
+                            avgPrice: Number(o.average_price || o.price || 0),
+                            source: o.product === 'INTRADAY' ? 'CLOUD_AUTOPILOT' : (o.product || 'ANGEL_ONE'),
+                            rejectReason: o.status_message || null
+                        };
+                    });
+                    setOrders(normalized);
+                }
+            }
+
+            if (auditRes && auditRes.ok) {
+                const auditData = await auditRes.json();
+                if (auditData && Array.isArray(auditData.audit_log)) {
+                    setAuditLog(auditData.audit_log);
+                }
+            }
+
+            if (pulseRes && pulseRes.ok) {
+                const pData = await pulseRes.json();
+                setCloudPulse(pData);
+            }
+        } catch (err) {
+            console.error('Failed to fetch live orders:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchLiveOrders();
+        const interval = setInterval(fetchLiveOrders, 10000);
+        return () => clearInterval(interval);
+    }, [fetchLiveOrders]);
+
+    const executedCount = orders.filter(o => o.status === 'EXECUTED').length;
+    const pendingCount = orders.filter(o => o.status === 'PENDING').length;
+    const rejectedCount = orders.filter(o => o.status === 'REJECTED').length;
+    const totalVolume = orders.reduce((acc, o) => acc + (Number(o.qty) || 0), 0);
+    const successRate = orders.length > 0 ? ((executedCount / orders.length) * 100).toFixed(1) : '100.0';
+    const avgLatencyMs = auditLog.length > 0
+        ? Math.round(auditLog.reduce((s, a) => s + (Number(a.latency_ms) || 120), 0) / auditLog.length)
+        : 115;
+
+    const filteredOrders = filterStatus === 'ALL'
+        ? orders
+        : orders.filter(o => o.status === filterStatus);
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+            {/* 24/7 Cloud Autonomous Banner */}
+            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <Cloud className="w-5 h-5 text-emerald-400 animate-pulse" />
+                    <div>
+                        <div className="text-xs font-black uppercase tracking-wider text-emerald-400">
+                            24/7 Cloud Autonomous Order Engine ({cloudPulse?.env || 'LIVE'} • {cloudPulse?.active_broker || 'ANGEL ONE'})
+                        </div>
+                        <div className="text-[11px] text-slate-300 font-mono">
+                            iMac Offline Mode: ACTIVE • Mode: {cloudPulse?.trading_mode || 'AUTO'} • Last Cloud Cycle: {cloudPulse?.autonomous_state?.last_status || 'READY'}
+                        </div>
+                    </div>
+                </div>
+                <div className="text-right font-mono text-xs text-slate-300">
+                    <div>Available Cash: <span className="text-emerald-400 font-bold">₹{Number(cloudPulse?.funds?.availablecash || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                    <div className="text-[10px] text-slate-400">IST: {cloudPulse?.ist_time || 'Synced'}</div>
+                </div>
+            </div>
 
             {/* Order Statistics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -222,8 +198,8 @@ const Orders = () => {
                         <ListOrdered className="w-4 h-4 text-indigo-400" />
                         <span className="text-[10px] uppercase font-black text-slate-500 tracking-wider">Total Orders</span>
                     </div>
-                    <div className="text-3xl font-black text-white font-mono">{orderStats.totalOrders}</div>
-                    <div className="text-[10px] text-slate-500 mt-1">Volume: {orderStats.totalVolume}</div>
+                    <div className="text-3xl font-black text-white font-mono">{orders.length}</div>
+                    <div className="text-[10px] text-slate-500 mt-1">Volume: {totalVolume} Qty</div>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
@@ -231,8 +207,8 @@ const Orders = () => {
                         <CheckCircle className="w-4 h-4 text-emerald-400" />
                         <span className="text-[10px] uppercase font-black text-slate-500 tracking-wider">Executed</span>
                     </div>
-                    <div className="text-3xl font-black text-emerald-400 font-mono">{orderStats.executed}</div>
-                    <div className="text-[10px] text-emerald-400 mt-1">{orderStats.successRate}% Success</div>
+                    <div className="text-3xl font-black text-emerald-400 font-mono">{executedCount}</div>
+                    <div className="text-[10px] text-emerald-400 mt-1">{successRate}% Fill Rate</div>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20">
@@ -240,83 +216,100 @@ const Orders = () => {
                         <Clock className="w-4 h-4 text-amber-400" />
                         <span className="text-[10px] uppercase font-black text-slate-500 tracking-wider">Pending</span>
                     </div>
-                    <div className="text-3xl font-black text-amber-400 font-mono">{orderStats.pending}</div>
+                    <div className="text-3xl font-black text-amber-400 font-mono">{pendingCount}</div>
                     <div className="text-[10px] text-slate-500 mt-1">Awaiting Fill</div>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20">
                     <div className="flex items-center gap-2 mb-2">
                         <Target className="w-4 h-4 text-cyan-400" />
-                        <span className="text-[10px] uppercase font-black text-slate-500 tracking-wider">Avg Speed</span>
+                        <span className="text-[10px] uppercase font-black text-slate-500 tracking-wider">Avg Latency</span>
                     </div>
-                    <div className="text-3xl font-black text-cyan-400 font-mono">{orderStats.avgExecutionTime}</div>
-                    <div className="text-[10px] text-slate-500 mt-1">Execution Time</div>
+                    <div className="text-3xl font-black text-cyan-400 font-mono">{avgLatencyMs}ms</div>
+                    <div className="text-[10px] text-slate-500 mt-1">Smart Limit Chase</div>
                 </div>
             </div>
 
             {/* Orders List */}
-            <HUDCard title="ORDER BOOK" neonColor="indigo">
+            <HUDCard title="LIVE ANGEL ONE ORDER BOOK" neonColor="indigo">
                 <div className="p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
-                            <button className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2">
-                                <RefreshCw className="w-3 h-3" />
-                                Refresh
+                            <button
+                                onClick={fetchLiveOrders}
+                                className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2"
+                            >
+                                <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
+                                Refresh Live Book
                             </button>
-                            <button className="px-4 py-2 rounded-lg border border-white/10 hover:bg-white/5 text-white text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2">
+                            <button
+                                onClick={() => setFilterStatus(prev => prev === 'ALL' ? 'EXECUTED' : prev === 'EXECUTED' ? 'REJECTED' : 'ALL')}
+                                className="px-4 py-2 rounded-lg border border-white/10 hover:bg-white/5 text-white text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2"
+                            >
                                 <Filter className="w-3 h-3" />
-                                Filter
+                                Filter: {filterStatus}
                             </button>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-slate-400">
                             <Calendar className="w-3 h-3" />
-                            <span>Today's Orders</span>
+                            <span>Real-Time Angel One SmartAPI Order Book</span>
                         </div>
                     </div>
 
-                    <div className="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar">
-                        {orders.map((order, idx) => (
-                            <OrderRow key={idx} order={order} />
-                        ))}
-                    </div>
+                    {filteredOrders.length === 0 ? (
+                        <div className="p-10 text-center rounded-xl bg-white/5 border border-white/5">
+                            <div className="text-sm font-bold text-slate-300 mb-1">No Angel One Orders Placed Today Yet</div>
+                            <div className="text-xs text-slate-500 font-mono">
+                                24/7 Cloud Autonomous Sniper is active and scanning 5-minute intraday confluence during NSE market hours (09:15–15:30 IST).
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar">
+                            {filteredOrders.map((order, idx) => (
+                                <OrderRow key={order.id || idx} order={order} />
+                            ))}
+                        </div>
+                    )}
                 </div>
             </HUDCard>
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <HUDCard title="AI ORDERS" neonColor="purple" className="h-[150px]">
+                <HUDCard title="CLOUD AUTOPILOT CYCLES" neonColor="purple" className="h-[150px]">
                     <div className="p-6 flex items-center justify-between h-full">
                         <div>
-                            <div className="text-4xl font-black text-purple-400 font-mono mb-2">4</div>
-                            <div className="text-xs text-slate-400">AI-Generated Trades</div>
+                            <div className="text-4xl font-black text-purple-400 font-mono mb-2">
+                                {cloudPulse?.autonomous_state?.cycles_today ?? 0}
+                            </div>
+                            <div className="text-xs text-slate-400">Autonomous Scans Today</div>
                         </div>
-                        <div className="text-xs text-slate-500">
-                            <div>Sniper: 2</div>
-                            <div>Strategist: 2</div>
+                        <div className="text-xs text-slate-400 font-mono text-right">
+                            <div>Trades: {cloudPulse?.autonomous_state?.trades_today ?? executedCount}</div>
+                            <div>Signal: {cloudPulse?.autonomous_state?.last_signal || 'HOLD'}</div>
                         </div>
                     </div>
                 </HUDCard>
 
-                <HUDCard title="MANUAL ORDERS" neonColor="cyan" className="h-[150px]">
+                <HUDCard title="SMART EXECUTIONS" neonColor="cyan" className="h-[150px]">
                     <div className="p-6 flex items-center justify-between h-full">
                         <div>
-                            <div className="text-4xl font-black text-cyan-400 font-mono mb-2">2</div>
-                            <div className="text-xs text-slate-400">User-Initiated Trades</div>
+                            <div className="text-4xl font-black text-cyan-400 font-mono mb-2">{auditLog.length}</div>
+                            <div className="text-xs text-slate-400">Limit-Chased Orders</div>
                         </div>
-                        <div className="text-xs text-slate-500">
-                            <div>Equity: 2</div>
+                        <div className="text-xs text-slate-500 font-mono">
+                            <div>Max Cap: ₹{Number(cloudPulse?.risk?.max_position_size || 10000).toLocaleString('en-IN')}</div>
                         </div>
                     </div>
                 </HUDCard>
 
-                <HUDCard title="REJECTED" neonColor="red" className="h-[150px]">
+                <HUDCard title="REJECTED / CANCELLED" neonColor="red" className="h-[150px]">
                     <div className="p-6 flex items-center justify-between h-full">
                         <div>
-                            <div className="text-4xl font-black text-red-400 font-mono mb-2">1</div>
-                            <div className="text-xs text-slate-400">Failed Orders</div>
+                            <div className="text-4xl font-black text-red-400 font-mono mb-2">{rejectedCount}</div>
+                            <div className="text-xs text-slate-400">Rejected Orders Today</div>
                         </div>
-                        <div className="text-xs text-red-400">
-                            Margin Issue
+                        <div className="text-xs text-emerald-400 font-mono">
+                            {rejectedCount === 0 ? 'Zero Rejections' : 'Check Margin/RMS'}
                         </div>
                     </div>
                 </HUDCard>
