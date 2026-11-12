@@ -295,12 +295,24 @@ class SimulationEngine:
             ema_21 = round(float(row.get("EMA_21", spot_price)), 2)
             vwap_val = round(float(row.get("VWAP", spot_price)), 2)
 
-            # Anti-Chop & Momentum Confirmation Filter:
+            # Anti-Chop, 15m Opening Range Breakout (ORH/ORL), & Momentum Confirmation Filter:
             # 1. Block flat RSI chop zone (45.0 <= RSI <= 55.0)
-            # 2. Require EMA-9 / EMA-21 separation (>= 0.04% of spot price)
-            # 3. Require price alignment with EMA-9 & EMA-21
+            # 2. Require EMA-9 / EMA-21 separation (>= 0.035% of spot price)
+            # 3. Require price alignment with EMA-9 & EMA-21 + RSI direction
+            # 4. Require breakout outside today's 09:15-09:30 IST 15m Opening Range (if available)
             ema_spread_pct = abs(ema_9 - ema_21) / (spot_price + 1e-9) * 100.0
             raw_sig = eval_res.get("signal", "HOLD")
+            orb_high, orb_low = None, None
+            try:
+                from datetime import time as dt_time
+                today_mask = df_5m.index.normalize() == df_5m.index[-1].normalize()
+                orb_slice = df_5m[today_mask & (df_5m.index.time >= dt_time(9, 15)) & (df_5m.index.time < dt_time(9, 30))]
+                if not orb_slice.empty:
+                    orb_high = float(orb_slice['High'].max())
+                    orb_low = float(orb_slice['Low'].min())
+            except Exception:
+                pass
+
             if raw_sig in ("BUY_CE", "BUY_PE"):
                 if 45.0 <= rsi_val <= 55.0:
                     eval_res["signal"] = "HOLD"
@@ -314,6 +326,12 @@ class SimulationEngine:
                 elif raw_sig == "BUY_PE" and not (spot_price < ema_9 and ema_9 <= ema_21 and rsi_val < 45.0):
                     eval_res["signal"] = "HOLD"
                     eval_res["regime"] = "WEAK_BEAR_CONFLUENCE"
+                elif raw_sig == "BUY_CE" and orb_high is not None and spot_price <= orb_high:
+                    eval_res["signal"] = "HOLD"
+                    eval_res["regime"] = "INSIDE_15M_ORB_RANGE"
+                elif raw_sig == "BUY_PE" and orb_low is not None and spot_price >= orb_low:
+                    eval_res["signal"] = "HOLD"
+                    eval_res["regime"] = "INSIDE_15M_ORB_RANGE"
 
             eval_res["spot_price"] = round(spot_price, 2)
             eval_res["rsi"] = rsi_val

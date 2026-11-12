@@ -62,6 +62,8 @@ class RiskEngine:
             self.last_reset_date = today_str
 
         if not order_details.get("is_exit"):
+            if now.hour == 9 and now.minute < 30:
+                return {"allowed": False, "reason": "OPENING RANGE GUARD: Waiting for 09:15-09:30 IST 15m opening range to settle."}
             if (now.hour == 14 and now.minute >= 35) or now.hour >= 15:
                 return {"allowed": False, "reason": "LATE-SESSION THETA GUARD: New option-buying entries blocked after 14:35 IST to avoid 3 PM institutional whipsaw & theta crush."}
             if getattr(self, "trades_today_count", 0) >= getattr(self, "max_trades_per_day", 2):

@@ -437,12 +437,13 @@ async def run_autonomous_trading():
                 await asyncio.sleep(30)
                 continue
             
-            logger.info("🤖 Autonomous Trading: Initiating execution cycle...")
-            symbol = "^NSEBANK"
-            qty = 15
+            logger.info("🤖 Autonomous Trading: Initiating execution cycle (scanning NIFTY -> BANKNIFTY)...")
             mode = "LIVE" if config.ENV == "LIVE" else "PAPER"
-            
-            res = await execute_autopilot(symbol=symbol, quantity=qty, mode=mode, greedy=False)
+            res = {"status": "HOLD", "reason": "No signal"}
+            for scan_sym, default_qty in [("^NSEI", 65), ("^NSEBANK", 30)]:
+                res = await execute_autopilot(symbol=scan_sym, quantity=default_qty, mode=mode, greedy=False)
+                if res.get("status") in ("EXECUTED", "SKIPPED_DUPLICATE_POSITION", "RISK_REJECTED"):
+                    break
             status = res.get("status", "UNKNOWN")
             autonomous_state["last_cycle_at"] = datetime.now().isoformat()
             autonomous_state["last_signal"] = res.get("signal") or (res.get("analysis") or {}).get("final_signal", "HOLD")
