@@ -212,6 +212,22 @@ class SmartExecutionEngine:
         if len(self.execution_audit_log) > 500:
             self.execution_audit_log = self.execution_audit_log[-500:]
 
+        if self.notifier and status in ["COMPLETE", "FILLED"]:
+            try:
+                emoji = "🟢 *LIVE BUY ORDER FILLED*" if tx_type == "BUY" else "🔴 *LIVE SELL / EXIT ORDER FILLED*"
+                msg = (
+                    f"{emoji}\n"
+                    f"• *Contract*: `{exchange}:{tradingsymbol}`\n"
+                    f"• *Action*: `{tx_type} {quantity} Qty`\n"
+                    f"• *Fill Price*: `₹{actual_fill:,.2f}` (Ref: `₹{ref_price:,.2f}`)\n"
+                    f"• *Order Value*: `₹{actual_fill * quantity:,.2f}`\n"
+                    f"• *Order ID*: `{placed_order_id}`\n"
+                    f"• *Slippage*: `{slippage_pts:+.2f} pts (₹{slippage_inr:+.2f})`"
+                )
+                self.notifier.notify_sync(msg)
+            except Exception as ne:
+                logger.debug(f"Notifier error in SmartExecutionEngine: {ne}")
+
         return telemetry
 
     async def execute_basket_with_margin_lock(

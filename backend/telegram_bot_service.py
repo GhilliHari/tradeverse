@@ -104,6 +104,15 @@ class TelegramBotService:
         chat_id = str(message.get("chat", {}).get("id"))
         text = message.get("text", "").strip()
 
+        # Auto-bind TELEGRAM_CHAT_ID on first message if not yet set
+        if not self.authorized_chat_id and chat_id:
+            config.TELEGRAM_CHAT_ID = chat_id
+            try:
+                config.save()
+            except Exception:
+                pass
+            logger.info(f"✅ Auto-registered Telegram Chat ID: {chat_id}")
+
         # Check authorization
         if self.authorized_chat_id and chat_id != self.authorized_chat_id:
             logger.warning(f"Unauthorized Telegram access attempt from Chat ID: {chat_id}")
