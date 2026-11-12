@@ -16,7 +16,10 @@ class RiskEngine:
         self.daily_loss_limit = float(daily_loss_limit if daily_loss_limit is not None else getattr(config, "DAILY_LOSS_LIMIT", 1000.0))
         self.max_position_size = float(max_position_size if max_position_size is not None else getattr(config, "MAX_POSITION_SIZE", 10000.0))
         self.max_open_positions = int(max_open_positions if max_open_positions is not None else getattr(config, "MAX_OPEN_POSITIONS", 1))
+        self.max_trades_per_day = int(getattr(config, "MAX_TRADES_PER_DAY", 2))
         self.current_daily_loss = 0.0
+        self.trades_today_count = 0
+        self.last_reset_date = datetime.now().strftime("%Y-%m-%d")
         self.circuit_breaker_active = False
         self.kill_switch = KillSwitch()
         self.processed_trade_ids = set()
@@ -49,10 +52,20 @@ class RiskEngine:
         if self.current_daily_loss >= self.daily_loss_limit:
             return {"allowed": False, "reason": "Daily loss limit reached."}
 
-        # --- NEW: EOD Trading Block ---
+        # --- NEW: Prime Intraday Entry Window & EOD Theta-Crush Block ---
         now = datetime.now()
-        if now.hour == 15 and now.minute >= 15 and not order_details.get("is_exit"):
-             return {"allowed": False, "reason": "MARKET CLOSING: New entries blocked after 3:15 PM."}
+        today_str = now.strftime("%Y-%m-%d")
+        if getattr(self, "last_reset_date", None) != today_str:
+            self.current_daily_loss = 0.0
+            self.trades_today_count = 0
+            self.circuit_breaker_active = False
+            self.last_reset_date = today_str
+
+        if not order_details.get("is_exit"):
+            if (now.hour == 14 and now.minute >= 35) or now.hour >= 15:
+                return {"allowed": False, "reason": "LATE-SESSION THETA GUARD: New option-buying entries blocked after 14:35 IST to avoid 3 PM institutional whipsaw & theta crush."}
+            if getattr(self, "trades_today_count", 0) >= getattr(self, "max_trades_per_day", 2):
+                return {"allowed": False, "reason": f"FEE DISCIPLINE CAP: Max daily trades ({self.max_trades_per_day}) reached for today."}
 
         qty = float(order_details.get("quantity") or 0)
         price = float(order_details.get("price") or 0.0)

@@ -290,14 +290,40 @@ class SimulationEngine:
             vix_val = self._get_vix(broker=broker)
             eval_res = self._evaluate_intraday_bar_signal(df_5m, len(df_5m) - 1, vix_val)
             row = df_5m.iloc[-1]
+            rsi_val = round(float(row.get("RSI", 50.0)), 1)
+            ema_9 = round(float(row.get("EMA_9", spot_price)), 2)
+            ema_21 = round(float(row.get("EMA_21", spot_price)), 2)
+            vwap_val = round(float(row.get("VWAP", spot_price)), 2)
+
+            # Anti-Chop & Momentum Confirmation Filter:
+            # 1. Block flat RSI chop zone (45.0 <= RSI <= 55.0)
+            # 2. Require EMA-9 / EMA-21 separation (>= 0.04% of spot price)
+            # 3. Require price alignment with EMA-9 & EMA-21
+            ema_spread_pct = abs(ema_9 - ema_21) / (spot_price + 1e-9) * 100.0
+            raw_sig = eval_res.get("signal", "HOLD")
+            if raw_sig in ("BUY_CE", "BUY_PE"):
+                if 45.0 <= rsi_val <= 55.0:
+                    eval_res["signal"] = "HOLD"
+                    eval_res["regime"] = "SIDEWAYS_CHOP_FILTERED"
+                elif ema_spread_pct < 0.035:
+                    eval_res["signal"] = "HOLD"
+                    eval_res["regime"] = "LOW_EMA_SPREAD_CHOP"
+                elif raw_sig == "BUY_CE" and not (spot_price > ema_9 and ema_9 >= ema_21 and rsi_val > 55.0):
+                    eval_res["signal"] = "HOLD"
+                    eval_res["regime"] = "WEAK_BULL_CONFLUENCE"
+                elif raw_sig == "BUY_PE" and not (spot_price < ema_9 and ema_9 <= ema_21 and rsi_val < 45.0):
+                    eval_res["signal"] = "HOLD"
+                    eval_res["regime"] = "WEAK_BEAR_CONFLUENCE"
+
             eval_res["spot_price"] = round(spot_price, 2)
-            eval_res["rsi"] = round(float(row.get("RSI", 50.0)), 1)
-            eval_res["ema_9"] = round(float(row.get("EMA_9", spot_price)), 2)
-            eval_res["ema_21"] = round(float(row.get("EMA_21", spot_price)), 2)
-            eval_res["vwap"] = round(float(row.get("VWAP", spot_price)), 2)
+            eval_res["rsi"] = rsi_val
+            eval_res["ema_9"] = ema_9
+            eval_res["ema_21"] = ema_21
+            eval_res["vwap"] = vwap_val
+            eval_res["ema_spread_pct"] = round(ema_spread_pct, 4)
             eval_res["reason"] = (
                 f"5m Confluence ({eval_res['regime']}): Spot ₹{spot_price:,.1f}, "
-                f"EMA9 ₹{eval_res['ema_9']:,.1f}, EMA21 ₹{eval_res['ema_21']:,.1f}, RSI {eval_res['rsi']}"
+                f"EMA9 ₹{ema_9:,.1f}, EMA21 ₹{ema_21:,.1f}, RSI {rsi_val}"
             )
             return eval_res
         except Exception as e:

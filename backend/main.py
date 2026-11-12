@@ -276,9 +276,12 @@ async def monitor_live_positions_step():
                     "quantity": abs(net_qty),
                     "entry_price": entry_price,
                     "entry_time": entry_time,
-                    "stop_loss_pct": -15.0,
-                    "target_pct": 25.0,
-                    "max_hold_minutes": 15,
+                    "peak_price": entry_price,
+                    "stop_loss_pct": -5.0,
+                    "target_pct": 10.0,
+                    "breakeven_trigger_pct": 2.5,
+                    "breakeven_lock_pct": 0.6,
+                    "max_hold_minutes": 25,
                 }
                 tracked = active_live_positions[tsym]
 
@@ -291,18 +294,41 @@ async def monitor_live_positions_step():
             if entry_price <= 0.0 or ltp_val <= 0.0:
                 continue
 
+            peak_price = float(tracked.get("peak_price") or entry_price)
+            if ltp_val > peak_price:
+                peak_price = ltp_val
+                tracked["peak_price"] = peak_price
+
+            peak_pct = ((peak_price - entry_price) / entry_price) * 100.0 if net_qty > 0 else ((entry_price - peak_price) / entry_price) * 100.0
             pnl_pct = ((ltp_val - entry_price) / entry_price) * 100.0 if net_qty > 0 else ((entry_price - ltp_val) / entry_price) * 100.0
             pnl_inr = (ltp_val - entry_price) * net_qty
             elapsed_mins = (now - entry_time).total_seconds() / 60.0
 
+            # Dynamic Breakeven & Ratcheting Trailing Stop-Loss:
+            # 1. Once position reaches +2.5% (e.g. +₹215 on a ₹8,600 lot), lock SL at +0.6% (covers brokerage + green exit)
+            # 2. Once position reaches +5.0%, trail SL 2.2% behind peak_pct
+            current_sl_pct = float(tracked.get("stop_loss_pct", -5.0))
+            be_trigger = float(tracked.get("breakeven_trigger_pct", 2.5))
+            be_lock = float(tracked.get("breakeven_lock_pct", 0.6))
+            if peak_pct >= be_trigger and current_sl_pct < be_lock:
+                current_sl_pct = be_lock
+                tracked["stop_loss_pct"] = current_sl_pct
+                logger.info(f"🔒 [LivePositionMonitor] Breakeven Lock activated for {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
+            if peak_pct >= 5.0:
+                trail_sl_pct = round(peak_pct - 2.2, 2)
+                if trail_sl_pct > current_sl_pct:
+                    current_sl_pct = trail_sl_pct
+                    tracked["stop_loss_pct"] = current_sl_pct
+                    logger.info(f"📈 [LivePositionMonitor] Trailing SL ratcheted up for {tsym} (Peak: +{peak_pct:.2f}% -> SL raised to +{current_sl_pct:.2f}%)")
+
             exit_reason = None
             if is_eod_squareoff:
                 exit_reason = f"EOD AUTO SQUARE-OFF (15:20 IST) | PnL: ₹{pnl_inr:+.2f} ({pnl_pct:+.1f}%)"
-            elif pnl_pct <= tracked.get("stop_loss_pct", -15.0):
-                exit_reason = f"STOP-LOSS HIT ({pnl_pct:+.1f}%) | PnL: ₹{pnl_inr:+.2f}"
-            elif pnl_pct >= tracked.get("target_pct", 25.0):
+            elif pnl_pct <= current_sl_pct:
+                exit_reason = f"STOP-LOSS / TRAILING-LOCK HIT ({pnl_pct:+.1f}% <= {current_sl_pct:+.1f}%) | PnL: ₹{pnl_inr:+.2f}"
+            elif pnl_pct >= tracked.get("target_pct", 10.0):
                 exit_reason = f"TARGET HIT ({pnl_pct:+.1f}%) | PnL: ₹{pnl_inr:+.2f}"
-            elif elapsed_mins >= tracked.get("max_hold_minutes", 15):
+            elif elapsed_mins >= tracked.get("max_hold_minutes", 25):
                 exit_reason = f"TIME-EXIT ({int(elapsed_mins)}m) | PnL: ₹{pnl_inr:+.2f} ({pnl_pct:+.1f}%)"
 
             if exit_reason:
@@ -3534,7 +3560,7 @@ async def execute_autopilot(
             intra_action = intra_eval.get("signal", "HOLD")
             intra_conf = float(intra_eval.get("confidence") or 0.0)
             intra_reason = intra_eval.get("reason", "5m Intraday Confluence")
-            if intra_action in ("BUY_CE", "BUY_PE") and intra_conf >= 0.65:
+            if intra_action in ("BUY_CE", "BUY_PE") and intra_conf >= 0.70:
                 spot_now = float(intra_eval.get("spot_price") or 0.0)
                 step = 100 if "BANK" in symbol.upper() else 50
                 atm_strike = int(round(spot_now / step) * step) if spot_now > 0 else 0
@@ -3784,15 +3810,20 @@ async def execute_autopilot(
         exec_status = telemetry.get("status", "ERROR")
         if exec_status in ["COMPLETE", "FILLED", "MOCK_FILLED"]:
             fill_price = float(telemetry.get("executed_price") or ltp_val or 0.0)
+            if risk_engine:
+                risk_engine.trades_today_count = int(getattr(risk_engine, "trades_today_count", 0)) + 1
             active_live_positions[resolved_symbol] = {
                 "tradingsymbol": resolved_symbol,
                 "exchange": target_exchange,
                 "quantity": quantity,
                 "entry_price": fill_price,
                 "entry_time": datetime.now(),
-                "stop_loss_pct": -15.0,
-                "target_pct": 25.0,
-                "max_hold_minutes": 15,
+                "peak_price": fill_price,
+                "stop_loss_pct": -5.0,
+                "target_pct": 10.0,
+                "breakeven_trigger_pct": 2.5,
+                "breakeven_lock_pct": 0.6,
+                "max_hold_minutes": 25,
             }
         return {
             "status": "EXECUTED" if exec_status in ["COMPLETE", "FILLED", "MOCK_FILLED"] else exec_status,
