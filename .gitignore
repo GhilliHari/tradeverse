@@ -65,3 +65,4 @@ firebase-debug.log
 .pytest_cache/
 .coverage
 htmlcov/
+backend/.env

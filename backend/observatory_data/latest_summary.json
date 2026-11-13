@@ -1,37 +1,37 @@
 {
-  "updated_at": "2026-11-12T15:35:10.481615",
+  "updated_at": "2026-11-13T15:35:16.929445",
   "repo": "GhilliHari/tradeverse",
   "branch": "main",
   "status": {
     "is_running": false,
     "is_market_hours": false,
     "offline_catchup_enabled": true,
-    "latest_session_date": "2026-11-12",
+    "latest_session_date": "2026-11-13",
     "active_predictions": 12,
-    "completed_today": 297
+    "completed_today": 356
   },
   "observatory_summary": {
-    "date": "2026-11-12",
-    "total_predictions": 305,
-    "completed": 297,
-    "pending": 8,
-    "active_trades_count": 138,
-    "win_rate": 59.4,
-    "avg_pnl": 325.62,
-    "total_pnl": 44935.9,
-    "profitable_count": 82,
-    "loss_count": 56,
-    "hold_count": 159
+    "date": "2026-11-13",
+    "total_predictions": 367,
+    "completed": 356,
+    "pending": 11,
+    "active_trades_count": 149,
+    "win_rate": 65.8,
+    "avg_pnl": 164.29,
+    "total_pnl": 24479.49,
+    "profitable_count": 98,
+    "loss_count": 51,
+    "hold_count": 207
   },
   "recent_predictions": [
     {
-      "timestamp": "2026-11-12T15:28:01.228532",
-      "paper_trade_id": null,
+      "timestamp": "2026-11-13T15:30:46.925833",
+      "paper_trade_id": "PAPER_1794564046925_0478",
       "prediction": {
-        "signal": "HOLD",
-        "strike": 73275,
-        "confidence": 0.4185,
-        "entry_price": 0.0,
+        "signal": "BUY_CE",
+        "strike": 72900,
+        "confidence": 0.96,
+        "entry_price": 419.7,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -40,56 +40,56 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.47
         },
         "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 73283.046875,
-        "vix": 16.6,
+        "spot_price": 72878.203125,
+        "vix": 15.54,
         "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 73280.5,
+              "price": 72875.7,
               "qty": 550
             },
             {
-              "price": 73278.0,
+              "price": 72873.2,
               "qty": 600
             },
             {
-              "price": 73275.5,
+              "price": 72870.7,
               "qty": 650
             },
             {
-              "price": 73273.0,
+              "price": 72868.2,
               "qty": 700
             },
             {
-              "price": 73270.5,
+              "price": 72865.7,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 73285.5,
+              "price": 72880.7,
               "qty": 550
             },
             {
-              "price": 73288.0,
+              "price": 72883.2,
               "qty": 600
             },
             {
-              "price": 73290.5,
+              "price": 72885.7,
               "qty": 650
             },
             {
-              "price": 73293.0,
+              "price": 72888.2,
               "qty": 700
             },
             {
-              "price": 73295.5,
+              "price": 72890.7,
               "qty": 750
             }
           ]
@@ -100,13 +100,13 @@
       "symbol": "MIDCPNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:27:28.002780",
-      "paper_trade_id": "PAPER_1794477448002_8d9d",
+      "timestamp": "2026-11-13T15:30:25.611567",
+      "paper_trade_id": "PAPER_1794564025611_44d2",
       "prediction": {
         "signal": "BUY_CE",
-        "strike": 30100,
-        "confidence": 0.8669,
-        "entry_price": 166.76,
+        "strike": 29900,
+        "confidence": 0.96,
+        "entry_price": 158.37,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -115,56 +115,56 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.47
         },
         "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 30054.44921875,
-        "vix": 16.6,
+        "spot_price": 29863.599609375,
+        "vix": 15.53,
         "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 30051.9,
+              "price": 29861.1,
               "qty": 550
             },
             {
-              "price": 30049.4,
+              "price": 29858.6,
               "qty": 600
             },
             {
-              "price": 30046.9,
+              "price": 29856.1,
               "qty": 650
             },
             {
-              "price": 30044.4,
+              "price": 29853.6,
               "qty": 700
             },
             {
-              "price": 30041.9,
+              "price": 29851.1,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 30056.9,
+              "price": 29866.1,
               "qty": 550
             },
             {
-              "price": 30059.4,
+              "price": 29868.6,
               "qty": 600
             },
             {
-              "price": 30061.9,
+              "price": 29871.1,
               "qty": 650
             },
             {
-              "price": 30064.4,
+              "price": 29873.6,
               "qty": 700
             },
             {
-              "price": 30066.9,
+              "price": 29876.1,
               "qty": 750
             }
           ]
@@ -175,13 +175,13 @@
       "symbol": "FINNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:26:49.615627",
-      "paper_trade_id": "PAPER_1794477409615_ad87",
+      "timestamp": "2026-11-13T15:30:06.956173",
+      "paper_trade_id": "PAPER_1794564006955_cffb",
       "prediction": {
         "signal": "BUY_CE",
-        "strike": 61600,
-        "confidence": 0.8867,
-        "entry_price": 323.48,
+        "strike": 61100,
+        "confidence": 0.9585,
+        "entry_price": 327.31,
         "model_scores": {
           "technical": -1.0,
           "tft": -1.0,
@@ -190,56 +190,56 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.47
         },
         "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 61467.94921875,
-        "vix": 16.62,
+        "spot_price": 61034.1015625,
+        "vix": 15.52,
         "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 61465.4,
+              "price": 61031.6,
               "qty": 550
             },
             {
-              "price": 61462.9,
+              "price": 61029.1,
               "qty": 600
             },
             {
-              "price": 61460.4,
+              "price": 61026.6,
               "qty": 650
             },
             {
-              "price": 61457.9,
+              "price": 61024.1,
               "qty": 700
             },
             {
-              "price": 61455.4,
+              "price": 61021.6,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 61470.4,
+              "price": 61036.6,
               "qty": 550
             },
             {
-              "price": 61472.9,
+              "price": 61039.1,
               "qty": 600
             },
             {
-              "price": 61475.4,
+              "price": 61041.6,
               "qty": 650
             },
             {
-              "price": 61477.9,
+              "price": 61044.1,
               "qty": 700
             },
             {
-              "price": 61480.4,
+              "price": 61046.6,
               "qty": 750
             }
           ]
@@ -250,13 +250,13 @@
       "symbol": "BANKNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:26:20.219589",
-      "paper_trade_id": "PAPER_1794477380219_a4cf",
+      "timestamp": "2026-11-13T15:29:30.910233",
+      "paper_trade_id": "PAPER_1794563970910_3366",
       "prediction": {
         "signal": "BUY_CE",
-        "strike": 25350,
-        "confidence": 0.9233,
-        "entry_price": 123.83,
+        "strike": 25200,
+        "confidence": 0.96,
+        "entry_price": 121.61,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -265,56 +265,56 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.47
         },
         "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 25275.25,
-        "vix": 16.61,
+        "spot_price": 25144.30078125,
+        "vix": 15.51,
         "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 25272.8,
+              "price": 25141.8,
               "qty": 550
             },
             {
-              "price": 25270.2,
+              "price": 25139.3,
               "qty": 600
             },
             {
-              "price": 25267.8,
+              "price": 25136.8,
               "qty": 650
             },
             {
-              "price": 25265.2,
+              "price": 25134.3,
               "qty": 700
             },
             {
-              "price": 25262.8,
+              "price": 25131.8,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 25277.8,
+              "price": 25146.8,
               "qty": 550
             },
             {
-              "price": 25280.2,
+              "price": 25149.3,
               "qty": 600
             },
             {
-              "price": 25282.8,
+              "price": 25151.8,
               "qty": 650
             },
             {
-              "price": 25285.2,
+              "price": 25154.3,
               "qty": 700
             },
             {
-              "price": 25287.8,
+              "price": 25156.8,
               "qty": 750
             }
           ]
@@ -325,13 +325,13 @@
       "symbol": "NIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:23:08.445426",
-      "paper_trade_id": null,
+      "timestamp": "2026-11-13T15:26:15.344166",
+      "paper_trade_id": "PAPER_1794563775342_3d27",
       "prediction": {
-        "signal": "HOLD",
-        "strike": 73300,
-        "confidence": 0.363,
-        "entry_price": 0.0,
+        "signal": "BUY_CE",
+        "strike": 72900,
+        "confidence": 0.8718,
+        "entry_price": 413.26,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -340,56 +340,56 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.55
         },
         "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 73312.046875,
-        "vix": 16.58,
+        "spot_price": 72868.6484375,
+        "vix": 15.48,
         "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 73309.5,
+              "price": 72866.1,
               "qty": 550
             },
             {
-              "price": 73307.0,
+              "price": 72863.6,
               "qty": 600
             },
             {
-              "price": 73304.5,
+              "price": 72861.1,
               "qty": 650
             },
             {
-              "price": 73302.0,
+              "price": 72858.6,
               "qty": 700
             },
             {
-              "price": 73299.5,
+              "price": 72856.1,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 73314.5,
+              "price": 72871.1,
               "qty": 550
             },
             {
-              "price": 73317.0,
+              "price": 72873.6,
               "qty": 600
             },
             {
-              "price": 73319.5,
+              "price": 72876.1,
               "qty": 650
             },
             {
-              "price": 73322.0,
+              "price": 72878.6,
               "qty": 700
             },
             {
-              "price": 73324.5,
+              "price": 72881.1,
               "qty": 750
             }
           ]
@@ -400,13 +400,13 @@
       "symbol": "MIDCPNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:22:39.352368",
-      "paper_trade_id": null,
+      "timestamp": "2026-11-13T15:25:45.266867",
+      "paper_trade_id": "PAPER_1794563745265_7d65",
       "prediction": {
-        "signal": "HOLD",
-        "strike": 30050,
-        "confidence": 0.4361,
-        "entry_price": 0.0,
+        "signal": "BUY_CE",
+        "strike": 29850,
+        "confidence": 0.96,
+        "entry_price": 161.03,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -415,56 +415,56 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.55
         },
         "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 30054.44921875,
-        "vix": 16.57,
+        "spot_price": 29820.55078125,
+        "vix": 15.49,
         "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 30051.9,
+              "price": 29818.1,
               "qty": 550
             },
             {
-              "price": 30049.4,
+              "price": 29815.6,
               "qty": 600
             },
             {
-              "price": 30046.9,
+              "price": 29813.1,
               "qty": 650
             },
             {
-              "price": 30044.4,
+              "price": 29810.6,
               "qty": 700
             },
             {
-              "price": 30041.9,
+              "price": 29808.1,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 30056.9,
+              "price": 29823.1,
               "qty": 550
             },
             {
-              "price": 30059.4,
+              "price": 29825.6,
               "qty": 600
             },
             {
-              "price": 30061.9,
+              "price": 29828.1,
               "qty": 650
             },
             {
-              "price": 30064.4,
+              "price": 29830.6,
               "qty": 700
             },
             {
-              "price": 30066.9,
+              "price": 29833.1,
               "qty": 750
             }
           ]
@@ -475,13 +475,13 @@
       "symbol": "FINNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:22:07.529940",
-      "paper_trade_id": null,
+      "timestamp": "2026-11-13T15:25:11.903466",
+      "paper_trade_id": "PAPER_1794563711902_4d1a",
       "prediction": {
-        "signal": "HOLD",
-        "strike": 61500,
-        "confidence": 0.46,
-        "entry_price": 0.0,
+        "signal": "BUY_CE",
+        "strike": 61100,
+        "confidence": 0.96,
+        "entry_price": 321.39,
         "model_scores": {
           "technical": -1.0,
           "tft": -1.0,
@@ -490,56 +490,56 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.55
         },
         "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 61467.94921875,
-        "vix": 16.58,
+        "spot_price": 61023.75,
+        "vix": 15.49,
         "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 61465.4,
+              "price": 61021.2,
               "qty": 550
             },
             {
-              "price": 61462.9,
+              "price": 61018.8,
               "qty": 600
             },
             {
-              "price": 61460.4,
+              "price": 61016.2,
               "qty": 650
             },
             {
-              "price": 61457.9,
+              "price": 61013.8,
               "qty": 700
             },
             {
-              "price": 61455.4,
+              "price": 61011.2,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 61470.4,
+              "price": 61026.2,
               "qty": 550
             },
             {
-              "price": 61472.9,
+              "price": 61028.8,
               "qty": 600
             },
             {
-              "price": 61475.4,
+              "price": 61031.2,
               "qty": 650
             },
             {
-              "price": 61477.9,
+              "price": 61033.8,
               "qty": 700
             },
             {
-              "price": 61480.4,
+              "price": 61036.2,
               "qty": 750
             }
           ]
@@ -550,13 +550,13 @@
       "symbol": "BANKNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:21:25.670300",
-      "paper_trade_id": "PAPER_1794477085669_f64e",
+      "timestamp": "2026-11-13T15:24:20.812837",
+      "paper_trade_id": "PAPER_1794563660811_02c0",
       "prediction": {
         "signal": "BUY_CE",
-        "strike": 25350,
-        "confidence": 0.906,
-        "entry_price": 123.83,
+        "strike": 25200,
+        "confidence": 0.96,
+        "entry_price": 118.51,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -565,56 +565,56 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.55
         },
         "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 25275.25,
-        "vix": 16.59,
+        "spot_price": 25139.25,
+        "vix": 15.43,
         "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 25272.8,
+              "price": 25136.8,
               "qty": 550
             },
             {
-              "price": 25270.2,
+              "price": 25134.2,
               "qty": 600
             },
             {
-              "price": 25267.8,
+              "price": 25131.8,
               "qty": 650
             },
             {
-              "price": 25265.2,
+              "price": 25129.2,
               "qty": 700
             },
             {
-              "price": 25262.8,
+              "price": 25126.8,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 25277.8,
+              "price": 25141.8,
               "qty": 550
             },
             {
-              "price": 25280.2,
+              "price": 25144.2,
               "qty": 600
             },
             {
-              "price": 25282.8,
+              "price": 25146.8,
               "qty": 650
             },
             {
-              "price": 25285.2,
+              "price": 25149.2,
               "qty": 700
             },
             {
-              "price": 25287.8,
+              "price": 25151.8,
               "qty": 750
             }
           ]
@@ -625,13 +625,13 @@
       "symbol": "NIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:17:12.080836",
-      "paper_trade_id": null,
+      "timestamp": "2026-11-13T15:21:08.458589",
+      "paper_trade_id": "PAPER_1794563468458_f413",
       "prediction": {
-        "signal": "HOLD",
-        "strike": 73300,
-        "confidence": 0.3861,
-        "entry_price": 0.0,
+        "signal": "BUY_CE",
+        "strike": 72900,
+        "confidence": 0.9467,
+        "entry_price": 414.13,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -640,81 +640,73 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.55
         },
         "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 73306.5,
-        "vix": 16.61,
+        "spot_price": 72874.0,
+        "vix": 15.41,
         "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 73304.0,
+              "price": 72871.5,
               "qty": 550
             },
             {
-              "price": 73301.5,
+              "price": 72869.0,
               "qty": 600
             },
             {
-              "price": 73299.0,
+              "price": 72866.5,
               "qty": 650
             },
             {
-              "price": 73296.5,
+              "price": 72864.0,
               "qty": 700
             },
             {
-              "price": 73294.0,
+              "price": 72861.5,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 73309.0,
+              "price": 72876.5,
               "qty": 550
             },
             {
-              "price": 73311.5,
+              "price": 72879.0,
               "qty": 600
             },
             {
-              "price": 73314.0,
+              "price": 72881.5,
               "qty": 650
             },
             {
-              "price": 73316.5,
+              "price": 72884.0,
               "qty": 700
             },
             {
-              "price": 73319.0,
+              "price": 72886.5,
               "qty": 750
             }
           ]
         }
       },
-      "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:33:16.342270",
-        "exit_price": 0.0,
-        "pnl": 0,
-        "pnl_pct": 0,
-        "max_favorable": 0.0,
-        "max_adverse": 0.0,
-        "holding_period_minutes": 15
-      },
-      "status": "COMPLETED",
+      "actual_outcome": null,
+      "status": "PENDING",
       "symbol": "MIDCPNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:16:49.380211",
-      "paper_trade_id": null,
+      "timestamp": "2026-11-13T15:20:45.144931",
+      "paper_trade_id": "PAPER_1794563445144_d516",
       "prediction": {
-        "signal": "HOLD",
-        "strike": 30050,
-        "confidence": 0.4461,
-        "entry_price": 0.0,
+        "signal": "BUY_CE",
+        "strike": 29850,
+        "confidence": 0.96,
+        "entry_price": 160.17,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -723,81 +715,73 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.55
         },
         "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 30054.44921875,
-        "vix": 16.61,
+        "spot_price": 29820.55078125,
+        "vix": 15.41,
         "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 30051.9,
+              "price": 29818.1,
               "qty": 550
             },
             {
-              "price": 30049.4,
+              "price": 29815.6,
               "qty": 600
             },
             {
-              "price": 30046.9,
+              "price": 29813.1,
               "qty": 650
             },
             {
-              "price": 30044.4,
+              "price": 29810.6,
               "qty": 700
             },
             {
-              "price": 30041.9,
+              "price": 29808.1,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 30056.9,
+              "price": 29823.1,
               "qty": 550
             },
             {
-              "price": 30059.4,
+              "price": 29825.6,
               "qty": 600
             },
             {
-              "price": 30061.9,
+              "price": 29828.1,
               "qty": 650
             },
             {
-              "price": 30064.4,
+              "price": 29830.6,
               "qty": 700
             },
             {
-              "price": 30066.9,
+              "price": 29833.1,
               "qty": 750
             }
           ]
         }
       },
-      "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:32:06.432712",
-        "exit_price": 0.0,
-        "pnl": 0,
-        "pnl_pct": 0,
-        "max_favorable": 0.0,
-        "max_adverse": 0.0,
-        "holding_period_minutes": 15
-      },
-      "status": "COMPLETED",
+      "actual_outcome": null,
+      "status": "PENDING",
       "symbol": "FINNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:16:32.745598",
-      "paper_trade_id": null,
+      "timestamp": "2026-11-13T15:20:23.337458",
+      "paper_trade_id": "PAPER_1794563423332_31a8",
       "prediction": {
-        "signal": "HOLD",
-        "strike": 61500,
-        "confidence": 0.4522,
-        "entry_price": 0.0,
+        "signal": "BUY_CE",
+        "strike": 61100,
+        "confidence": 0.96,
+        "entry_price": 320.07,
         "model_scores": {
           "technical": -1.0,
           "tft": -1.0,
@@ -806,81 +790,73 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.55
         },
         "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 61467.94921875,
-        "vix": 16.62,
+        "spot_price": 61023.75,
+        "vix": 15.41,
         "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 61465.4,
+              "price": 61021.2,
               "qty": 550
             },
             {
-              "price": 61462.9,
+              "price": 61018.8,
               "qty": 600
             },
             {
-              "price": 61460.4,
+              "price": 61016.2,
               "qty": 650
             },
             {
-              "price": 61457.9,
+              "price": 61013.8,
               "qty": 700
             },
             {
-              "price": 61455.4,
+              "price": 61011.2,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 61470.4,
+              "price": 61026.2,
               "qty": 550
             },
             {
-              "price": 61472.9,
+              "price": 61028.8,
               "qty": 600
             },
             {
-              "price": 61475.4,
+              "price": 61031.2,
               "qty": 650
             },
             {
-              "price": 61477.9,
+              "price": 61033.8,
               "qty": 700
             },
             {
-              "price": 61480.4,
+              "price": 61036.2,
               "qty": 750
             }
           ]
         }
       },
-      "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:32:02.603000",
-        "exit_price": 0.0,
-        "pnl": 0,
-        "pnl_pct": 0,
-        "max_favorable": 0.0,
-        "max_adverse": 0.0,
-        "holding_period_minutes": 15
-      },
-      "status": "COMPLETED",
+      "actual_outcome": null,
+      "status": "PENDING",
       "symbol": "BANKNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:16:06.778655",
-      "paper_trade_id": "PAPER_1794476766778_0c74",
+      "timestamp": "2026-11-13T15:19:54.208583",
+      "paper_trade_id": "PAPER_1794563394208_93e5",
       "prediction": {
         "signal": "BUY_CE",
-        "strike": 25350,
-        "confidence": 0.9173,
-        "entry_price": 124.01,
+        "strike": 25200,
+        "confidence": 0.9096,
+        "entry_price": 118.33,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -889,81 +865,81 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.55
         },
         "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 25275.25,
-        "vix": 16.63,
+        "spot_price": 25139.25,
+        "vix": 15.41,
         "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 25272.8,
+              "price": 25136.8,
               "qty": 550
             },
             {
-              "price": 25270.2,
+              "price": 25134.2,
               "qty": 600
             },
             {
-              "price": 25267.8,
+              "price": 25131.8,
               "qty": 650
             },
             {
-              "price": 25265.2,
+              "price": 25129.2,
               "qty": 700
             },
             {
-              "price": 25262.8,
+              "price": 25126.8,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 25277.8,
+              "price": 25141.8,
               "qty": 550
             },
             {
-              "price": 25280.2,
+              "price": 25144.2,
               "qty": 600
             },
             {
-              "price": 25282.8,
+              "price": 25146.8,
               "qty": 650
             },
             {
-              "price": 25285.2,
+              "price": 25149.2,
               "qty": 700
             },
             {
-              "price": 25287.8,
+              "price": 25151.8,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:31:56.533448",
-        "exit_price": 134.46,
-        "pnl": 261.25,
-        "pnl_pct": 8.43,
-        "max_favorable": 134.46,
-        "max_adverse": 124.01,
+        "exit_timestamp": "2026-11-13T15:35:14.861942",
+        "exit_price": 121.97,
+        "pnl": 91.0,
+        "pnl_pct": 3.08,
+        "max_favorable": 121.97,
+        "max_adverse": 118.33,
         "holding_period_minutes": 15
       },
       "status": "COMPLETED",
       "symbol": "NIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:11:44.242727",
-      "paper_trade_id": null,
+      "timestamp": "2026-11-13T15:16:35.245998",
+      "paper_trade_id": "PAPER_1794563195245_c67c",
       "prediction": {
-        "signal": "HOLD",
-        "strike": 73325,
-        "confidence": 0.3809,
-        "entry_price": 0.0,
+        "signal": "BUY_CE",
+        "strike": 72875,
+        "confidence": 0.8138,
+        "entry_price": 420.74,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -972,81 +948,81 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.64
+          "component_lead": -0.55
         },
-        "regime": "POWER_HOUR"
+        "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 73314.6484375,
-        "vix": 16.65,
-        "regime": "POWER_HOUR",
+        "spot_price": 72861.703125,
+        "vix": 15.42,
+        "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 73312.1,
+              "price": 72859.2,
               "qty": 550
             },
             {
-              "price": 73309.6,
+              "price": 72856.7,
               "qty": 600
             },
             {
-              "price": 73307.1,
+              "price": 72854.2,
               "qty": 650
             },
             {
-              "price": 73304.6,
+              "price": 72851.7,
               "qty": 700
             },
             {
-              "price": 73302.1,
+              "price": 72849.2,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 73317.1,
+              "price": 72864.2,
               "qty": 550
             },
             {
-              "price": 73319.6,
+              "price": 72866.7,
               "qty": 600
             },
             {
-              "price": 73322.1,
+              "price": 72869.2,
               "qty": 650
             },
             {
-              "price": 73324.6,
+              "price": 72871.7,
               "qty": 700
             },
             {
-              "price": 73327.1,
+              "price": 72874.2,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:30:49.490064",
-        "exit_price": 0.0,
-        "pnl": 0,
-        "pnl_pct": 0,
-        "max_favorable": 0.0,
-        "max_adverse": 0.0,
+        "exit_timestamp": "2026-11-13T15:34:06.879550",
+        "exit_price": 432.7,
+        "pnl": 598.0,
+        "pnl_pct": 2.84,
+        "max_favorable": 432.7,
+        "max_adverse": 420.74,
         "holding_period_minutes": 15
       },
       "status": "COMPLETED",
       "symbol": "MIDCPNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:11:32.696795",
-      "paper_trade_id": "PAPER_1794476492696_35a6",
+      "timestamp": "2026-11-13T15:16:12.292241",
+      "paper_trade_id": "PAPER_1794563172291_63df",
       "prediction": {
         "signal": "BUY_CE",
-        "strike": 30100,
-        "confidence": 0.9229,
-        "entry_price": 171.95,
+        "strike": 29850,
+        "confidence": 0.96,
+        "entry_price": 160.39,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -1055,81 +1031,81 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.55
         },
-        "regime": "POWER_HOUR"
+        "regime": "CLOSING_SQUEEZE"
       },
       "market_context": {
-        "spot_price": 30064.30078125,
-        "vix": 16.64,
-        "regime": "POWER_HOUR",
+        "spot_price": 29820.55078125,
+        "vix": 15.43,
+        "regime": "CLOSING_SQUEEZE",
         "order_book": {
           "bids": [
             {
-              "price": 30061.8,
+              "price": 29818.1,
               "qty": 550
             },
             {
-              "price": 30059.3,
+              "price": 29815.6,
               "qty": 600
             },
             {
-              "price": 30056.8,
+              "price": 29813.1,
               "qty": 650
             },
             {
-              "price": 30054.3,
+              "price": 29810.6,
               "qty": 700
             },
             {
-              "price": 30051.8,
+              "price": 29808.1,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 30066.8,
+              "price": 29823.1,
               "qty": 550
             },
             {
-              "price": 30069.3,
+              "price": 29825.6,
               "qty": 600
             },
             {
-              "price": 30071.8,
+              "price": 29828.1,
               "qty": 650
             },
             {
-              "price": 30074.3,
+              "price": 29830.6,
               "qty": 700
             },
             {
-              "price": 30076.8,
+              "price": 29833.1,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:30:47.009416",
-        "exit_price": 189.22,
-        "pnl": 431.75,
-        "pnl_pct": 10.04,
-        "max_favorable": 189.22,
-        "max_adverse": 171.95,
+        "exit_timestamp": "2026-11-13T15:34:03.902657",
+        "exit_price": 183.7,
+        "pnl": 582.75,
+        "pnl_pct": 14.53,
+        "max_favorable": 183.7,
+        "max_adverse": 160.39,
         "holding_period_minutes": 15
       },
       "status": "COMPLETED",
       "symbol": "FINNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:11:20.855138",
-      "paper_trade_id": null,
+      "timestamp": "2026-11-13T15:15:43.963616",
+      "paper_trade_id": "PAPER_1794563143963_bbce",
       "prediction": {
-        "signal": "HOLD",
-        "strike": 61500,
-        "confidence": 0.4561,
-        "entry_price": 0.0,
+        "signal": "BUY_CE",
+        "strike": 61100,
+        "confidence": 0.96,
+        "entry_price": 320.07,
         "model_scores": {
           "technical": -1.0,
           "tft": -1.0,
@@ -1138,81 +1114,81 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.56
         },
         "regime": "POWER_HOUR"
       },
       "market_context": {
-        "spot_price": 61453.44921875,
-        "vix": 16.65,
+        "spot_price": 61023.75,
+        "vix": 15.41,
         "regime": "POWER_HOUR",
         "order_book": {
           "bids": [
             {
-              "price": 61450.9,
+              "price": 61021.2,
               "qty": 550
             },
             {
-              "price": 61448.4,
+              "price": 61018.8,
               "qty": 600
             },
             {
-              "price": 61445.9,
+              "price": 61016.2,
               "qty": 650
             },
             {
-              "price": 61443.4,
+              "price": 61013.8,
               "qty": 700
             },
             {
-              "price": 61440.9,
+              "price": 61011.2,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 61455.9,
+              "price": 61026.2,
               "qty": 550
             },
             {
-              "price": 61458.4,
+              "price": 61028.8,
               "qty": 600
             },
             {
-              "price": 61460.9,
+              "price": 61031.2,
               "qty": 650
             },
             {
-              "price": 61463.4,
+              "price": 61033.8,
               "qty": 700
             },
             {
-              "price": 61465.9,
+              "price": 61036.2,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:30:38.337031",
-        "exit_price": 0.0,
-        "pnl": 0,
-        "pnl_pct": 0,
-        "max_favorable": 0.0,
-        "max_adverse": 0.0,
+        "exit_timestamp": "2026-11-13T15:34:00.202458",
+        "exit_price": 328.19,
+        "pnl": 121.8,
+        "pnl_pct": 2.54,
+        "max_favorable": 328.19,
+        "max_adverse": 320.07,
         "holding_period_minutes": 15
       },
       "status": "COMPLETED",
       "symbol": "BANKNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:11:01.180199",
-      "paper_trade_id": "PAPER_1794476461179_d0d4",
+      "timestamp": "2026-11-13T15:14:33.229001",
+      "paper_trade_id": "PAPER_1794563073228_0c59",
       "prediction": {
         "signal": "BUY_CE",
-        "strike": 25300,
-        "confidence": 0.918,
-        "entry_price": 144.83,
+        "strike": 25200,
+        "confidence": 0.96,
+        "entry_price": 115.53,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -1221,81 +1197,81 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.61
+          "component_lead": -0.57
         },
         "regime": "POWER_HOUR"
       },
       "market_context": {
-        "spot_price": 25270.25,
-        "vix": 16.66,
+        "spot_price": 25132.599609375,
+        "vix": 15.44,
         "regime": "POWER_HOUR",
         "order_book": {
           "bids": [
             {
-              "price": 25267.8,
+              "price": 25130.1,
               "qty": 550
             },
             {
-              "price": 25265.2,
+              "price": 25127.6,
               "qty": 600
             },
             {
-              "price": 25262.8,
+              "price": 25125.1,
               "qty": 650
             },
             {
-              "price": 25260.2,
+              "price": 25122.6,
               "qty": 700
             },
             {
-              "price": 25257.8,
+              "price": 25120.1,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 25272.8,
+              "price": 25135.1,
               "qty": 550
             },
             {
-              "price": 25275.2,
+              "price": 25137.6,
               "qty": 600
             },
             {
-              "price": 25277.8,
+              "price": 25140.1,
               "qty": 650
             },
             {
-              "price": 25280.2,
+              "price": 25142.6,
               "qty": 700
             },
             {
-              "price": 25282.8,
+              "price": 25145.1,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:30:31.918342",
-        "exit_price": 158.9,
-        "pnl": 351.75,
-        "pnl_pct": 9.71,
-        "max_favorable": 158.9,
-        "max_adverse": 144.83,
+        "exit_timestamp": "2026-11-13T15:33:48.312572",
+        "exit_price": 121.88,
+        "pnl": 158.75,
+        "pnl_pct": 5.5,
+        "max_favorable": 121.88,
+        "max_adverse": 115.53,
         "holding_period_minutes": 15
       },
       "status": "COMPLETED",
       "symbol": "NIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:06:45.959156",
-      "paper_trade_id": null,
+      "timestamp": "2026-11-13T15:10:20.743419",
+      "paper_trade_id": "PAPER_1794562820742_3651",
       "prediction": {
-        "signal": "HOLD",
-        "strike": 73300,
-        "confidence": 0.4101,
-        "entry_price": 0.0,
+        "signal": "BUY_CE",
+        "strike": 72875,
+        "confidence": 0.8336,
+        "entry_price": 419.87,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -1304,81 +1280,81 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.64
         },
         "regime": "POWER_HOUR"
       },
       "market_context": {
-        "spot_price": 73293.6484375,
-        "vix": 16.67,
+        "spot_price": 72857.953125,
+        "vix": 15.46,
         "regime": "POWER_HOUR",
         "order_book": {
           "bids": [
             {
-              "price": 73291.1,
+              "price": 72855.5,
               "qty": 550
             },
             {
-              "price": 73288.6,
+              "price": 72853.0,
               "qty": 600
             },
             {
-              "price": 73286.1,
+              "price": 72850.5,
               "qty": 650
             },
             {
-              "price": 73283.6,
+              "price": 72848.0,
               "qty": 700
             },
             {
-              "price": 73281.1,
+              "price": 72845.5,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 73296.1,
+              "price": 72860.5,
               "qty": 550
             },
             {
-              "price": 73298.6,
+              "price": 72863.0,
               "qty": 600
             },
             {
-              "price": 73301.1,
+              "price": 72865.5,
               "qty": 650
             },
             {
-              "price": 73303.6,
+              "price": 72868.0,
               "qty": 700
             },
             {
-              "price": 73306.1,
+              "price": 72870.5,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:25:56.743984",
-        "exit_price": 0.0,
-        "pnl": 0,
-        "pnl_pct": 0,
-        "max_favorable": 0.0,
-        "max_adverse": 0.0,
+        "exit_timestamp": "2026-11-13T15:29:07.880550",
+        "exit_price": 430.17,
+        "pnl": 515.0,
+        "pnl_pct": 2.45,
+        "max_favorable": 430.17,
+        "max_adverse": 419.87,
         "holding_period_minutes": 15
       },
       "status": "COMPLETED",
       "symbol": "MIDCPNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:06:29.922483",
-      "paper_trade_id": "PAPER_1794476189922_cf24",
+      "timestamp": "2026-11-13T15:10:03.021392",
+      "paper_trade_id": "PAPER_1794562803020_6b10",
       "prediction": {
         "signal": "BUY_CE",
-        "strike": 30100,
-        "confidence": 0.8621,
-        "entry_price": 168.18,
+        "strike": 29850,
+        "confidence": 0.9555,
+        "entry_price": 142.86,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -1387,412 +1363,80 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.63
+          "component_lead": -0.64
         },
         "regime": "POWER_HOUR"
       },
       "market_context": {
-        "spot_price": 30055.599609375,
-        "vix": 16.68,
+        "spot_price": 29783.05078125,
+        "vix": 15.45,
         "regime": "POWER_HOUR",
         "order_book": {
           "bids": [
             {
-              "price": 30053.1,
+              "price": 29780.6,
               "qty": 550
             },
             {
-              "price": 30050.6,
+              "price": 29778.1,
               "qty": 600
             },
             {
-              "price": 30048.1,
+              "price": 29775.6,
               "qty": 650
             },
             {
-              "price": 30045.6,
+              "price": 29773.1,
               "qty": 700
             },
             {
-              "price": 30043.1,
+              "price": 29770.6,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 30058.1,
+              "price": 29785.6,
               "qty": 550
             },
             {
-              "price": 30060.6,
+              "price": 29788.1,
               "qty": 600
             },
             {
-              "price": 30063.1,
+              "price": 29790.6,
               "qty": 650
             },
             {
-              "price": 30065.6,
+              "price": 29793.1,
               "qty": 700
             },
             {
-              "price": 30068.1,
+              "price": 29795.6,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:25:50.278189",
-        "exit_price": 166.87,
-        "pnl": -32.75,
-        "pnl_pct": -0.78,
-        "max_favorable": 168.18,
-        "max_adverse": 166.87,
+        "exit_timestamp": "2026-11-13T15:29:04.980322",
+        "exit_price": 183.49,
+        "pnl": 1015.75,
+        "pnl_pct": 28.44,
+        "max_favorable": 183.49,
+        "max_adverse": 142.86,
         "holding_period_minutes": 15
       },
       "status": "COMPLETED",
       "symbol": "FINNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:06:13.817535",
-      "paper_trade_id": "PAPER_1794476173817_fe49",
-      "prediction": {
-        "signal": "BUY_CE",
-        "strike": 61600,
-        "confidence": 0.8734,
-        "entry_price": 318.07,
-        "model_scores": {
-          "technical": -1.0,
-          "tft": -1.0,
-          "rl": 1.0,
-          "sentiment": 0.5,
-          "options": 1.0,
-          "order_flow": 0.0,
-          "macro": 0.0,
-          "component_lead": 0.63
-        },
-        "regime": "POWER_HOUR"
-      },
-      "market_context": {
-        "spot_price": 61453.75,
-        "vix": 16.67,
-        "regime": "POWER_HOUR",
-        "order_book": {
-          "bids": [
-            {
-              "price": 61451.2,
-              "qty": 550
-            },
-            {
-              "price": 61448.8,
-              "qty": 600
-            },
-            {
-              "price": 61446.2,
-              "qty": 650
-            },
-            {
-              "price": 61443.8,
-              "qty": 700
-            },
-            {
-              "price": 61441.2,
-              "qty": 750
-            }
-          ],
-          "asks": [
-            {
-              "price": 61456.2,
-              "qty": 550
-            },
-            {
-              "price": 61458.8,
-              "qty": 600
-            },
-            {
-              "price": 61461.2,
-              "qty": 650
-            },
-            {
-              "price": 61463.8,
-              "qty": 700
-            },
-            {
-              "price": 61466.2,
-              "qty": 750
-            }
-          ]
-        }
-      },
-      "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:25:36.168630",
-        "exit_price": 323.48,
-        "pnl": 81.15,
-        "pnl_pct": 1.7,
-        "max_favorable": 323.48,
-        "max_adverse": 318.07,
-        "holding_period_minutes": 15
-      },
-      "status": "COMPLETED",
-      "symbol": "BANKNIFTY"
-    },
-    {
-      "timestamp": "2026-11-12T15:05:54.744249",
-      "paper_trade_id": "PAPER_1794476154743_d68e",
-      "prediction": {
-        "signal": "BUY_CE",
-        "strike": 25300,
-        "confidence": 0.8651,
-        "entry_price": 139.99,
-        "model_scores": {
-          "technical": -1.0,
-          "tft": 0.0,
-          "rl": 1.0,
-          "sentiment": 0.5,
-          "options": 1.0,
-          "order_flow": 0.0,
-          "macro": 0.0,
-          "component_lead": 0.63
-        },
-        "regime": "POWER_HOUR"
-      },
-      "market_context": {
-        "spot_price": 25260.0,
-        "vix": 16.67,
-        "regime": "POWER_HOUR",
-        "order_book": {
-          "bids": [
-            {
-              "price": 25257.5,
-              "qty": 550
-            },
-            {
-              "price": 25255.0,
-              "qty": 600
-            },
-            {
-              "price": 25252.5,
-              "qty": 650
-            },
-            {
-              "price": 25250.0,
-              "qty": 700
-            },
-            {
-              "price": 25247.5,
-              "qty": 750
-            }
-          ],
-          "asks": [
-            {
-              "price": 25262.5,
-              "qty": 550
-            },
-            {
-              "price": 25265.0,
-              "qty": 600
-            },
-            {
-              "price": 25267.5,
-              "qty": 650
-            },
-            {
-              "price": 25270.0,
-              "qty": 700
-            },
-            {
-              "price": 25272.5,
-              "qty": 750
-            }
-          ]
-        }
-      },
-      "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:25:26.941095",
-        "exit_price": 146.92,
-        "pnl": 173.25,
-        "pnl_pct": 4.95,
-        "max_favorable": 146.92,
-        "max_adverse": 139.99,
-        "holding_period_minutes": 15
-      },
-      "status": "COMPLETED",
-      "symbol": "NIFTY"
-    },
-    {
-      "timestamp": "2026-11-12T15:01:41.797410",
+      "timestamp": "2026-11-13T15:09:44.729941",
       "paper_trade_id": null,
       "prediction": {
         "signal": "HOLD",
-        "strike": 73300,
-        "confidence": 0.3555,
-        "entry_price": 0.0,
-        "model_scores": {
-          "technical": -1.0,
-          "tft": 0.0,
-          "rl": 1.0,
-          "sentiment": 0.5,
-          "options": 1.0,
-          "order_flow": 0.0,
-          "macro": 0.0,
-          "component_lead": 0.63
-        },
-        "regime": "POWER_HOUR"
-      },
-      "market_context": {
-        "spot_price": 73297.5,
-        "vix": 16.72,
-        "regime": "POWER_HOUR",
-        "order_book": {
-          "bids": [
-            {
-              "price": 73295.0,
-              "qty": 550
-            },
-            {
-              "price": 73292.5,
-              "qty": 600
-            },
-            {
-              "price": 73290.0,
-              "qty": 650
-            },
-            {
-              "price": 73287.5,
-              "qty": 700
-            },
-            {
-              "price": 73285.0,
-              "qty": 750
-            }
-          ],
-          "asks": [
-            {
-              "price": 73300.0,
-              "qty": 550
-            },
-            {
-              "price": 73302.5,
-              "qty": 600
-            },
-            {
-              "price": 73305.0,
-              "qty": 650
-            },
-            {
-              "price": 73307.5,
-              "qty": 700
-            },
-            {
-              "price": 73310.0,
-              "qty": 750
-            }
-          ]
-        }
-      },
-      "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:20:59.678665",
-        "exit_price": 0.0,
-        "pnl": 0,
-        "pnl_pct": 0,
-        "max_favorable": 0.0,
-        "max_adverse": 0.0,
-        "holding_period_minutes": 15
-      },
-      "status": "COMPLETED",
-      "symbol": "MIDCPNIFTY"
-    },
-    {
-      "timestamp": "2026-11-12T15:01:29.261313",
-      "paper_trade_id": null,
-      "prediction": {
-        "signal": "HOLD",
-        "strike": 30050,
-        "confidence": 0.3835,
-        "entry_price": 0.0,
-        "model_scores": {
-          "technical": -1.0,
-          "tft": 0.0,
-          "rl": 1.0,
-          "sentiment": 0.5,
-          "options": 1.0,
-          "order_flow": 0.0,
-          "macro": 0.0,
-          "component_lead": 0.62
-        },
-        "regime": "POWER_HOUR"
-      },
-      "market_context": {
-        "spot_price": 30045.94921875,
-        "vix": 16.75,
-        "regime": "POWER_HOUR",
-        "order_book": {
-          "bids": [
-            {
-              "price": 30043.4,
-              "qty": 550
-            },
-            {
-              "price": 30040.9,
-              "qty": 600
-            },
-            {
-              "price": 30038.4,
-              "qty": 650
-            },
-            {
-              "price": 30035.9,
-              "qty": 700
-            },
-            {
-              "price": 30033.4,
-              "qty": 750
-            }
-          ],
-          "asks": [
-            {
-              "price": 30048.4,
-              "qty": 550
-            },
-            {
-              "price": 30050.9,
-              "qty": 600
-            },
-            {
-              "price": 30053.4,
-              "qty": 650
-            },
-            {
-              "price": 30055.9,
-              "qty": 700
-            },
-            {
-              "price": 30058.4,
-              "qty": 750
-            }
-          ]
-        }
-      },
-      "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:20:52.102807",
-        "exit_price": 0.0,
-        "pnl": 0,
-        "pnl_pct": 0,
-        "max_favorable": 0.0,
-        "max_adverse": 0.0,
-        "holding_period_minutes": 15
-      },
-      "status": "COMPLETED",
-      "symbol": "FINNIFTY"
-    },
-    {
-      "timestamp": "2026-11-12T15:01:17.071921",
-      "paper_trade_id": null,
-      "prediction": {
-        "signal": "HOLD",
-        "strike": 61400,
-        "confidence": 0.4031,
+        "strike": 61000,
+        "confidence": 0.4486,
         "entry_price": 0.0,
         "model_scores": {
           "technical": -1.0,
@@ -1802,63 +1446,63 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.61
+          "component_lead": -0.66
         },
         "regime": "POWER_HOUR"
       },
       "market_context": {
-        "spot_price": 61435.25,
-        "vix": 16.75,
+        "spot_price": 60969.3984375,
+        "vix": 15.45,
         "regime": "POWER_HOUR",
         "order_book": {
           "bids": [
             {
-              "price": 61432.8,
+              "price": 60966.9,
               "qty": 550
             },
             {
-              "price": 61430.2,
+              "price": 60964.4,
               "qty": 600
             },
             {
-              "price": 61427.8,
+              "price": 60961.9,
               "qty": 650
             },
             {
-              "price": 61425.2,
+              "price": 60959.4,
               "qty": 700
             },
             {
-              "price": 61422.8,
+              "price": 60956.9,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 61437.8,
+              "price": 60971.9,
               "qty": 550
             },
             {
-              "price": 61440.2,
+              "price": 60974.4,
               "qty": 600
             },
             {
-              "price": 61442.8,
+              "price": 60976.9,
               "qty": 650
             },
             {
-              "price": 61445.2,
+              "price": 60979.4,
               "qty": 700
             },
             {
-              "price": 61447.8,
+              "price": 60981.9,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:20:43.018921",
+        "exit_timestamp": "2026-11-13T15:28:57.131341",
         "exit_price": 0.0,
         "pnl": 0,
         "pnl_pct": 0,
@@ -1870,13 +1514,13 @@
       "symbol": "BANKNIFTY"
     },
     {
-      "timestamp": "2026-11-12T15:00:59.559693",
-      "paper_trade_id": null,
+      "timestamp": "2026-11-13T15:09:21.018354",
+      "paper_trade_id": "PAPER_1794562761017_ea61",
       "prediction": {
-        "signal": "HOLD",
-        "strike": 25250,
-        "confidence": 0.3791,
-        "entry_price": 0.0,
+        "signal": "BUY_CE",
+        "strike": 25150,
+        "confidence": 0.8439,
+        "entry_price": 128.03,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -1885,80 +1529,80 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.61
+          "component_lead": -0.67
         },
         "regime": "POWER_HOUR"
       },
       "market_context": {
-        "spot_price": 25253.55078125,
-        "vix": 16.77,
+        "spot_price": 25110.099609375,
+        "vix": 15.45,
         "regime": "POWER_HOUR",
         "order_book": {
           "bids": [
             {
-              "price": 25251.1,
+              "price": 25107.6,
               "qty": 550
             },
             {
-              "price": 25248.6,
+              "price": 25105.1,
               "qty": 600
             },
             {
-              "price": 25246.1,
+              "price": 25102.6,
               "qty": 650
             },
             {
-              "price": 25243.6,
+              "price": 25100.1,
               "qty": 700
             },
             {
-              "price": 25241.1,
+              "price": 25097.6,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 25256.1,
+              "price": 25112.6,
               "qty": 550
             },
             {
-              "price": 25258.6,
+              "price": 25115.1,
               "qty": 600
             },
             {
-              "price": 25261.1,
+              "price": 25117.6,
               "qty": 650
             },
             {
-              "price": 25263.6,
+              "price": 25120.1,
               "qty": 700
             },
             {
-              "price": 25266.1,
+              "price": 25122.6,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:20:31.319372",
-        "exit_price": 0.0,
-        "pnl": 0,
-        "pnl_pct": 0,
-        "max_favorable": 0.0,
-        "max_adverse": 0.0,
+        "exit_timestamp": "2026-11-13T15:28:49.078534",
+        "exit_price": 142.97,
+        "pnl": 373.5,
+        "pnl_pct": 11.67,
+        "max_favorable": 142.97,
+        "max_adverse": 128.03,
         "holding_period_minutes": 15
       },
       "status": "COMPLETED",
       "symbol": "NIFTY"
     },
     {
-      "timestamp": "2026-11-12T14:56:41.487632",
+      "timestamp": "2026-11-13T15:05:56.352303",
       "paper_trade_id": null,
       "prediction": {
         "signal": "HOLD",
-        "strike": 73325,
-        "confidence": 0.3575,
+        "strike": 72800,
+        "confidence": 0.3857,
         "entry_price": 0.0,
         "model_scores": {
           "technical": -1.0,
@@ -1968,63 +1612,63 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.59
+          "component_lead": -0.68
         },
         "regime": "POWER_HOUR"
       },
       "market_context": {
-        "spot_price": 73325.453125,
-        "vix": 16.83,
+        "spot_price": 72798.3984375,
+        "vix": 15.45,
         "regime": "POWER_HOUR",
         "order_book": {
           "bids": [
             {
-              "price": 73323.0,
+              "price": 72795.9,
               "qty": 550
             },
             {
-              "price": 73320.5,
+              "price": 72793.4,
               "qty": 600
             },
             {
-              "price": 73318.0,
+              "price": 72790.9,
               "qty": 650
             },
             {
-              "price": 73315.5,
+              "price": 72788.4,
               "qty": 700
             },
             {
-              "price": 73313.0,
+              "price": 72785.9,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 73328.0,
+              "price": 72800.9,
               "qty": 550
             },
             {
-              "price": 73330.5,
+              "price": 72803.4,
               "qty": 600
             },
             {
-              "price": 73333.0,
+              "price": 72805.9,
               "qty": 650
             },
             {
-              "price": 73335.5,
+              "price": 72808.4,
               "qty": 700
             },
             {
-              "price": 73338.0,
+              "price": 72810.9,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:15:44.924774",
+        "exit_timestamp": "2026-11-13T15:24:04.921235",
         "exit_price": 0.0,
         "pnl": 0,
         "pnl_pct": 0,
@@ -2036,13 +1680,13 @@
       "symbol": "MIDCPNIFTY"
     },
     {
-      "timestamp": "2026-11-12T14:56:30.963293",
-      "paper_trade_id": null,
+      "timestamp": "2026-11-13T15:05:26.143169",
+      "paper_trade_id": "PAPER_1794562526142_df97",
       "prediction": {
-        "signal": "HOLD",
-        "strike": 30050,
-        "confidence": 0.3606,
-        "entry_price": 0.0,
+        "signal": "BUY_CE",
+        "strike": 29800,
+        "confidence": 0.8279,
+        "entry_price": 158.04,
         "model_scores": {
           "technical": -1.0,
           "tft": 0.0,
@@ -2051,80 +1695,80 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.58
+          "component_lead": -0.68
         },
         "regime": "POWER_HOUR"
       },
       "market_context": {
-        "spot_price": 30043.650390625,
-        "vix": 16.82,
+        "spot_price": 29766.349609375,
+        "vix": 15.43,
         "regime": "POWER_HOUR",
         "order_book": {
           "bids": [
             {
-              "price": 30041.2,
+              "price": 29763.8,
               "qty": 550
             },
             {
-              "price": 30038.7,
+              "price": 29761.3,
               "qty": 600
             },
             {
-              "price": 30036.2,
+              "price": 29758.8,
               "qty": 650
             },
             {
-              "price": 30033.7,
+              "price": 29756.3,
               "qty": 700
             },
             {
-              "price": 30031.2,
+              "price": 29753.8,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 30046.2,
+              "price": 29768.8,
               "qty": 550
             },
             {
-              "price": 30048.7,
+              "price": 29771.3,
               "qty": 600
             },
             {
-              "price": 30051.2,
+              "price": 29773.8,
               "qty": 650
             },
             {
-              "price": 30053.7,
+              "price": 29776.3,
               "qty": 700
             },
             {
-              "price": 30056.2,
+              "price": 29778.8,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:15:41.447270",
-        "exit_price": 0.0,
-        "pnl": 0,
-        "pnl_pct": 0,
-        "max_favorable": 0.0,
-        "max_adverse": 0.0,
+        "exit_timestamp": "2026-11-13T15:24:02.501441",
+        "exit_price": 185.84,
+        "pnl": 695.0,
+        "pnl_pct": 17.59,
+        "max_favorable": 185.84,
+        "max_adverse": 158.04,
         "holding_period_minutes": 15
       },
       "status": "COMPLETED",
       "symbol": "FINNIFTY"
     },
     {
-      "timestamp": "2026-11-12T14:56:15.691973",
+      "timestamp": "2026-11-13T15:04:55.631724",
       "paper_trade_id": null,
       "prediction": {
         "signal": "HOLD",
-        "strike": 61400,
-        "confidence": 0.4304,
+        "strike": 60900,
+        "confidence": 0.443,
         "entry_price": 0.0,
         "model_scores": {
           "technical": -1.0,
@@ -2134,63 +1778,63 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.59
+          "component_lead": -0.69
         },
         "regime": "POWER_HOUR"
       },
       "market_context": {
-        "spot_price": 61431.0,
-        "vix": 16.81,
+        "spot_price": 60941.75,
+        "vix": 15.45,
         "regime": "POWER_HOUR",
         "order_book": {
           "bids": [
             {
-              "price": 61428.5,
+              "price": 60939.2,
               "qty": 550
             },
             {
-              "price": 61426.0,
+              "price": 60936.8,
               "qty": 600
             },
             {
-              "price": 61423.5,
+              "price": 60934.2,
               "qty": 650
             },
             {
-              "price": 61421.0,
+              "price": 60931.8,
               "qty": 700
             },
             {
-              "price": 61418.5,
+              "price": 60929.2,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 61433.5,
+              "price": 60944.2,
               "qty": 550
             },
             {
-              "price": 61436.0,
+              "price": 60946.8,
               "qty": 600
             },
             {
-              "price": 61438.5,
+              "price": 60949.2,
               "qty": 650
             },
             {
-              "price": 61441.0,
+              "price": 60951.8,
               "qty": 700
             },
             {
-              "price": 61443.5,
+              "price": 60954.2,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:15:38.120775",
+        "exit_timestamp": "2026-11-13T15:23:56.808761",
         "exit_price": 0.0,
         "pnl": 0,
         "pnl_pct": 0,
@@ -2202,12 +1846,12 @@
       "symbol": "BANKNIFTY"
     },
     {
-      "timestamp": "2026-11-12T14:55:54.665862",
+      "timestamp": "2026-11-13T15:04:32.162786",
       "paper_trade_id": null,
       "prediction": {
         "signal": "HOLD",
-        "strike": 25250,
-        "confidence": 0.3907,
+        "strike": 25100,
+        "confidence": 0.4521,
         "entry_price": 0.0,
         "model_scores": {
           "technical": -1.0,
@@ -2217,63 +1861,63 @@
           "options": 1.0,
           "order_flow": 0.0,
           "macro": 0.0,
-          "component_lead": 0.58
+          "component_lead": -0.69
         },
         "regime": "POWER_HOUR"
       },
       "market_context": {
-        "spot_price": 25250.19921875,
-        "vix": 16.81,
+        "spot_price": 25103.75,
+        "vix": 15.45,
         "regime": "POWER_HOUR",
         "order_book": {
           "bids": [
             {
-              "price": 25247.7,
+              "price": 25101.2,
               "qty": 550
             },
             {
-              "price": 25245.2,
+              "price": 25098.8,
               "qty": 600
             },
             {
-              "price": 25242.7,
+              "price": 25096.2,
               "qty": 650
             },
             {
-              "price": 25240.2,
+              "price": 25093.8,
               "qty": 700
             },
             {
-              "price": 25237.7,
+              "price": 25091.2,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 25252.7,
+              "price": 25106.2,
               "qty": 550
             },
             {
-              "price": 25255.2,
+              "price": 25108.8,
               "qty": 600
             },
             {
-              "price": 25257.7,
+              "price": 25111.2,
               "qty": 650
             },
             {
-              "price": 25260.2,
+              "price": 25113.8,
               "qty": 700
             },
             {
-              "price": 25262.7,
+              "price": 25116.2,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:15:26.943339",
+        "exit_timestamp": "2026-11-13T15:23:48.312842",
         "exit_price": 0.0,
         "pnl": 0,
         "pnl_pct": 0,
@@ -2285,931 +1929,1265 @@
       "symbol": "NIFTY"
     },
     {
-      "timestamp": "2026-11-12T14:55:00",
-      "symbol": "BANKNIFTY",
+      "timestamp": "2026-11-13T15:01:01.095558",
       "paper_trade_id": null,
       "prediction": {
         "signal": "HOLD",
-        "strike": 61400,
-        "confidence": 0.4086,
+        "strike": 72800,
+        "confidence": 0.3596,
         "entry_price": 0.0,
         "model_scores": {
-          "technical": -0.06,
-          "tft": 0.67,
-          "rl": 0.0,
-          "sentiment": 0.2,
-          "options": 0.0,
-          "order_flow": 0.36,
-          "pattern": 0.31
+          "technical": -1.0,
+          "tft": 0.0,
+          "rl": 1.0,
+          "sentiment": 0.5,
+          "options": 1.0,
+          "order_flow": 0.0,
+          "macro": 0.0,
+          "component_lead": -0.7
         },
-        "regime": "POWER_HOUR_TREND"
+        "regime": "POWER_HOUR"
       },
       "market_context": {
-        "spot_price": 61435.95,
-        "vix": 16.8,
-        "regime": "POWER_HOUR_TREND",
+        "spot_price": 72793.3984375,
+        "vix": 15.47,
+        "regime": "POWER_HOUR",
         "order_book": {
           "bids": [
             {
-              "price": 61433.4,
+              "price": 72790.9,
               "qty": 550
             },
             {
-              "price": 61430.9,
+              "price": 72788.4,
               "qty": 600
             },
             {
-              "price": 61428.4,
+              "price": 72785.9,
               "qty": 650
             },
             {
-              "price": 61425.9,
+              "price": 72783.4,
               "qty": 700
             },
             {
-              "price": 61423.4,
+              "price": 72780.9,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 61438.4,
+              "price": 72795.9,
               "qty": 550
             },
             {
-              "price": 61440.9,
+              "price": 72798.4,
               "qty": 600
             },
             {
-              "price": 61443.4,
+              "price": 72800.9,
               "qty": 650
             },
             {
-              "price": 61445.9,
+              "price": 72803.4,
               "qty": 700
             },
             {
-              "price": 61448.4,
+              "price": 72805.9,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:10:00",
+        "exit_timestamp": "2026-11-13T15:19:32.430682",
         "exit_price": 0.0,
-        "pnl": 0.0,
-        "pnl_pct": 0.0,
+        "pnl": 0,
+        "pnl_pct": 0,
         "max_favorable": 0.0,
         "max_adverse": 0.0,
         "holding_period_minutes": 15
       },
-      "status": "COMPLETED"
+      "status": "COMPLETED",
+      "symbol": "MIDCPNIFTY"
     },
     {
-      "timestamp": "2026-11-12T14:55:00",
-      "symbol": "FINNIFTY",
-      "paper_trade_id": null,
+      "timestamp": "2026-11-13T15:00:44.025159",
+      "paper_trade_id": "PAPER_1794562244024_ee50",
       "prediction": {
-        "signal": "HOLD",
-        "strike": 30050,
-        "confidence": 0.3702,
-        "entry_price": 0.0,
+        "signal": "BUY_CE",
+        "strike": 29800,
+        "confidence": 0.8932,
+        "entry_price": 156.1,
         "model_scores": {
-          "technical": -0.21,
-          "tft": -0.11,
-          "rl": 0.0,
-          "sentiment": -0.1,
-          "options": 0.0,
-          "order_flow": 0.17,
-          "pattern": -0.16
+          "technical": -1.0,
+          "tft": 0.0,
+          "rl": 1.0,
+          "sentiment": 0.5,
+          "options": 1.0,
+          "order_flow": 0.0,
+          "macro": 0.0,
+          "component_lead": -0.68
         },
-        "regime": "POWER_HOUR_TREND"
+        "regime": "POWER_HOUR"
       },
       "market_context": {
-        "spot_price": 30045.35,
-        "vix": 16.8,
-        "regime": "POWER_HOUR_TREND",
+        "spot_price": 29761.25,
+        "vix": 15.48,
+        "regime": "POWER_HOUR",
         "order_book": {
           "bids": [
             {
-              "price": 30042.8,
+              "price": 29758.8,
               "qty": 550
             },
             {
-              "price": 30040.3,
+              "price": 29756.2,
               "qty": 600
             },
             {
-              "price": 30037.8,
+              "price": 29753.8,
               "qty": 650
             },
             {
-              "price": 30035.3,
+              "price": 29751.2,
               "qty": 700
             },
             {
-              "price": 30032.8,
+              "price": 29748.8,
               "qty": 750
             }
           ],
           "asks": [
             {
-              "price": 30047.8,
+              "price": 29763.8,
               "qty": 550
             },
             {
-              "price": 30050.3,
+              "price": 29766.2,
               "qty": 600
             },
             {
-              "price": 30052.8,
+              "price": 29768.8,
               "qty": 650
             },
             {
-              "price": 30055.3,
+              "price": 29771.2,
               "qty": 700
             },
             {
-              "price": 30057.8,
+              "price": 29773.8,
               "qty": 750
             }
           ]
         }
       },
       "actual_outcome": {
-        "exit_timestamp": "2026-11-12T15:10:00",
+        "exit_timestamp": "2026-11-13T15:19:24.866057",
+        "exit_price": 185.52,
+        "pnl": 735.5,
+        "pnl_pct": 18.85,
+        "max_favorable": 185.52,
+        "max_adverse": 156.1,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
+      "symbol": "FINNIFTY"
+    },
+    {
+      "timestamp": "2026-11-13T15:00:10.559284",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 61000,
+        "confidence": 0.4667,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": -1.0,
+          "rl": 1.0,
+          "sentiment": 0.5,
+          "options": 1.0,
+          "order_flow": 0.0,
+          "macro": 0.0,
+          "component_lead": -0.66
+        },
+        "regime": "POWER_HOUR"
+      },
+      "market_context": {
+        "spot_price": 60970.3984375,
+        "vix": 15.47,
+        "regime": "POWER_HOUR",
+        "order_book": {
+          "bids": [
+            {
+              "price": 60967.9,
+              "qty": 550
+            },
+            {
+              "price": 60965.4,
+              "qty": 600
+            },
+            {
+              "price": 60962.9,
+              "qty": 650
+            },
+            {
+              "price": 60960.4,
+              "qty": 700
+            },
+            {
+              "price": 60957.9,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 60972.9,
+              "qty": 550
+            },
+            {
+              "price": 60975.4,
+              "qty": 600
+            },
+            {
+              "price": 60977.9,
+              "qty": 650
+            },
+            {
+              "price": 60980.4,
+              "qty": 700
+            },
+            {
+              "price": 60982.9,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:19:15.181778",
         "exit_price": 0.0,
-        "pnl": 0.0,
-        "pnl_pct": 0.0,
+        "pnl": 0,
+        "pnl_pct": 0,
         "max_favorable": 0.0,
         "max_adverse": 0.0,
         "holding_period_minutes": 15
       },
-      "status": "COMPLETED"
+      "status": "COMPLETED",
+      "symbol": "BANKNIFTY"
+    },
+    {
+      "timestamp": "2026-11-13T14:59:21.590721",
+      "paper_trade_id": "PAPER_1794562161589_f474",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 25150,
+        "confidence": 0.8106,
+        "entry_price": 130.17,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": 0.0,
+          "rl": 1.0,
+          "sentiment": 0.5,
+          "options": 1.0,
+          "order_flow": 0.0,
+          "macro": 0.0,
+          "component_lead": -0.64
+        },
+        "regime": "POWER_HOUR"
+      },
+      "market_context": {
+        "spot_price": 25114.400390625,
+        "vix": 15.46,
+        "regime": "POWER_HOUR",
+        "order_book": {
+          "bids": [
+            {
+              "price": 25111.9,
+              "qty": 550
+            },
+            {
+              "price": 25109.4,
+              "qty": 600
+            },
+            {
+              "price": 25106.9,
+              "qty": 650
+            },
+            {
+              "price": 25104.4,
+              "qty": 700
+            },
+            {
+              "price": 25101.9,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 25116.9,
+              "qty": 550
+            },
+            {
+              "price": 25119.4,
+              "qty": 600
+            },
+            {
+              "price": 25121.9,
+              "qty": 650
+            },
+            {
+              "price": 25124.4,
+              "qty": 700
+            },
+            {
+              "price": 25126.9,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:19:00.978470",
+        "exit_price": 141.97,
+        "pnl": 295.0,
+        "pnl_pct": 9.07,
+        "max_favorable": 141.97,
+        "max_adverse": 130.17,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
+      "symbol": "NIFTY"
+    },
+    {
+      "timestamp": "2026-11-13T14:55:37.409943",
+      "paper_trade_id": null,
+      "prediction": {
+        "signal": "HOLD",
+        "strike": 72850,
+        "confidence": 0.3971,
+        "entry_price": 0.0,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": 0.0,
+          "rl": 1.0,
+          "sentiment": 0.5,
+          "options": 1.0,
+          "order_flow": 0.0,
+          "macro": 0.0,
+          "component_lead": -0.6
+        },
+        "regime": "POWER_HOUR"
+      },
+      "market_context": {
+        "spot_price": 72842.1484375,
+        "vix": 15.5,
+        "regime": "POWER_HOUR",
+        "order_book": {
+          "bids": [
+            {
+              "price": 72839.6,
+              "qty": 550
+            },
+            {
+              "price": 72837.1,
+              "qty": 600
+            },
+            {
+              "price": 72834.6,
+              "qty": 650
+            },
+            {
+              "price": 72832.1,
+              "qty": 700
+            },
+            {
+              "price": 72829.6,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 72844.6,
+              "qty": 550
+            },
+            {
+              "price": 72847.1,
+              "qty": 600
+            },
+            {
+              "price": 72849.6,
+              "qty": 650
+            },
+            {
+              "price": 72852.1,
+              "qty": 700
+            },
+            {
+              "price": 72854.6,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:14:02.831207",
+        "exit_price": 0.0,
+        "pnl": 0,
+        "pnl_pct": 0,
+        "max_favorable": 0.0,
+        "max_adverse": 0.0,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
+      "symbol": "MIDCPNIFTY"
+    },
+    {
+      "timestamp": "2026-11-13T14:55:08.519564",
+      "paper_trade_id": "PAPER_1794561908518_014f",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 29850,
+        "confidence": 0.96,
+        "entry_price": 144.43,
+        "model_scores": {
+          "technical": -1.0,
+          "tft": 0.0,
+          "rl": 1.0,
+          "sentiment": 0.5,
+          "options": 1.0,
+          "order_flow": 0.0,
+          "macro": 0.0,
+          "component_lead": -0.62
+        },
+        "regime": "POWER_HOUR"
+      },
+      "market_context": {
+        "spot_price": 29784.849609375,
+        "vix": 15.52,
+        "regime": "POWER_HOUR",
+        "order_book": {
+          "bids": [
+            {
+              "price": 29782.3,
+              "qty": 550
+            },
+            {
+              "price": 29779.8,
+              "qty": 600
+            },
+            {
+              "price": 29777.3,
+              "qty": 650
+            },
+            {
+              "price": 29774.8,
+              "qty": 700
+            },
+            {
+              "price": 29772.3,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 29787.3,
+              "qty": 550
+            },
+            {
+              "price": 29789.8,
+              "qty": 600
+            },
+            {
+              "price": 29792.3,
+              "qty": 650
+            },
+            {
+              "price": 29794.8,
+              "qty": 700
+            },
+            {
+              "price": 29797.3,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:13:53.827235",
+        "exit_price": 154.15,
+        "pnl": 243.0,
+        "pnl_pct": 6.73,
+        "max_favorable": 154.15,
+        "max_adverse": 144.43,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
+      "symbol": "FINNIFTY"
     }
   ],
   "paper_summary": {
-    "date": "2026-11-12",
-    "open_count": 4,
-    "closed_today_count": 126,
-    "wins": 72,
-    "losses": 54,
-    "win_rate": 57.1,
-    "total_pnl": 40765.05,
+    "date": "2026-11-13",
+    "open_count": 34,
+    "closed_today_count": 140,
+    "wins": 94,
+    "losses": 46,
+    "win_rate": 67.1,
+    "total_pnl": 12601.65,
     "recent_closed": [
       {
-        "trade_id": "PAPER_1794476766778_0c74",
-        "timestamp": "2026-11-12T15:31:56.547299",
-        "entry_timestamp": "2026-11-12T15:16:06.778161",
+        "trade_id": "PAPER_1794563394208_93e5",
+        "timestamp": "2026-11-13T15:35:14.882368",
+        "entry_timestamp": "2026-11-13T15:19:54.208371",
         "action": "CLOSE",
-        "symbol": "NFO:NIFTY25350CE",
+        "symbol": "NFO:NIFTY25200CE",
         "side": "BUY",
         "quantity": 25,
-        "entry_price": 124.01,
-        "exit_price": 134.46,
+        "entry_price": 118.33,
+        "exit_price": 121.97,
         "status": "CLOSED",
-        "pnl": 261.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9261.25 (+8.43%)",
+        "pnl": 91.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b991.00 (+3.08%)",
         "mode": "AUTO_OBSERVATORY"
       },
       {
-        "trade_id": "PAPER_1794476492696_35a6",
-        "timestamp": "2026-11-12T15:30:47.027917",
-        "entry_timestamp": "2026-11-12T15:11:32.696485",
+        "trade_id": "PAPER_1794563195245_c67c",
+        "timestamp": "2026-11-13T15:34:06.897745",
+        "entry_timestamp": "2026-11-13T15:16:35.245555",
         "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY30100CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 171.95,
-        "exit_price": 189.22,
-        "status": "CLOSED",
-        "pnl": 431.75,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9431.75 (+10.04%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794476461179_d0d4",
-        "timestamp": "2026-11-12T15:30:31.943075",
-        "entry_timestamp": "2026-11-12T15:11:01.179284",
-        "action": "CLOSE",
-        "symbol": "NFO:NIFTY25300CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 144.83,
-        "exit_price": 158.9,
-        "status": "CLOSED",
-        "pnl": 351.75,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9351.75 (+9.71%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794476189922_cf24",
-        "timestamp": "2026-11-12T15:25:50.287307",
-        "entry_timestamp": "2026-11-12T15:06:29.922121",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY30100CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 168.18,
-        "exit_price": 166.87,
-        "status": "CLOSED",
-        "pnl": -32.75,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-32.75 (-0.78%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794476173817_fe49",
-        "timestamp": "2026-11-12T15:25:36.180983",
-        "entry_timestamp": "2026-11-12T15:06:13.817212",
-        "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY61600CE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 318.07,
-        "exit_price": 323.48,
-        "status": "CLOSED",
-        "pnl": 81.15,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b981.15 (+1.70%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794476154743_d68e",
-        "timestamp": "2026-11-12T15:25:26.964271",
-        "entry_timestamp": "2026-11-12T15:05:54.743961",
-        "action": "CLOSE",
-        "symbol": "NFO:NIFTY25300CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 139.99,
-        "exit_price": 146.92,
-        "status": "CLOSED",
-        "pnl": 173.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9173.25 (+4.95%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "SIM_20261112_1440_MIDCPNIFTY",
-        "timestamp": "2026-11-12T14:55:00",
-        "entry_timestamp": "2026-11-12T14:40:00",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73325PE",
+        "symbol": "NFO:MIDCPNIFTY72875CE",
         "side": "BUY",
         "quantity": 50,
-        "entry_price": 417.48,
-        "exit_price": 443.01,
+        "entry_price": 420.74,
+        "exit_price": 432.7,
         "status": "CLOSED",
-        "pnl": 1276.5,
-        "reasoning": "15M TARGET/TIME EXIT: Spot 73344.95 -> 73290.8 | PnL \u20b9+1276.50 (+6.1%)",
+        "pnl": 598.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9598.00 (+2.84%)",
         "mode": "AUTO_OBSERVATORY"
       },
       {
-        "trade_id": "PAPER_1794473793731_beb5",
-        "timestamp": "2026-11-12T14:45:43.548676",
-        "entry_timestamp": "2026-11-12T14:26:33.731468",
+        "trade_id": "PAPER_1794563172291_63df",
+        "timestamp": "2026-11-13T15:34:03.925748",
+        "entry_timestamp": "2026-11-13T15:16:12.291067",
         "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73425CE",
+        "symbol": "NFO:FINNIFTY29850CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 160.39,
+        "exit_price": 183.7,
+        "status": "CLOSED",
+        "pnl": 582.75,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9582.75 (+14.53%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794563143963_bbce",
+        "timestamp": "2026-11-13T15:34:00.218588",
+        "entry_timestamp": "2026-11-13T15:15:43.963425",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY61100CE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 320.07,
+        "exit_price": 328.19,
+        "status": "CLOSED",
+        "pnl": 121.8,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9121.80 (+2.54%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794563073228_0c59",
+        "timestamp": "2026-11-13T15:33:48.341256",
+        "entry_timestamp": "2026-11-13T15:14:33.228800",
+        "action": "CLOSE",
+        "symbol": "NFO:NIFTY25200CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 115.53,
+        "exit_price": 121.88,
+        "status": "CLOSED",
+        "pnl": 158.75,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9158.75 (+5.50%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794562820742_3651",
+        "timestamp": "2026-11-13T15:29:07.901596",
+        "entry_timestamp": "2026-11-13T15:10:20.742980",
+        "action": "CLOSE",
+        "symbol": "NFO:MIDCPNIFTY72875CE",
         "side": "BUY",
         "quantity": 50,
-        "entry_price": 458.99,
-        "exit_price": 428.97,
+        "entry_price": 419.87,
+        "exit_price": 430.17,
         "status": "CLOSED",
-        "pnl": -1501.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-1501.00 (-6.54%)",
+        "pnl": 515.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9515.00 (+2.45%)",
         "mode": "AUTO_OBSERVATORY"
       },
       {
-        "trade_id": "PAPER_1794473782119_54e7",
-        "timestamp": "2026-11-12T14:45:38.848986",
-        "entry_timestamp": "2026-11-12T14:26:22.120012",
+        "trade_id": "PAPER_1794562803020_6b10",
+        "timestamp": "2026-11-13T15:29:04.990852",
+        "entry_timestamp": "2026-11-13T15:10:03.020936",
         "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY30100CE",
+        "symbol": "NFO:FINNIFTY29850CE",
         "side": "BUY",
         "quantity": 25,
-        "entry_price": 173.42,
-        "exit_price": 160.25,
+        "entry_price": 142.86,
+        "exit_price": 183.49,
         "status": "CLOSED",
-        "pnl": -329.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-329.25 (-7.59%)",
+        "pnl": 1015.75,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b91015.75 (+28.44%)",
         "mode": "AUTO_OBSERVATORY"
       },
       {
-        "trade_id": "PAPER_1794473764675_4dbe",
-        "timestamp": "2026-11-12T14:45:33.942073",
-        "entry_timestamp": "2026-11-12T14:26:04.675875",
+        "trade_id": "PAPER_1794562761017_ea61",
+        "timestamp": "2026-11-13T15:28:49.099504",
+        "entry_timestamp": "2026-11-13T15:09:21.017704",
         "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY61600CE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 326.23,
-        "exit_price": 297.67,
-        "status": "CLOSED",
-        "pnl": -428.4,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-428.40 (-8.75%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794473744746_cdb9",
-        "timestamp": "2026-11-12T14:45:26.528896",
-        "entry_timestamp": "2026-11-12T14:25:44.746633",
-        "action": "CLOSE",
-        "symbol": "NFO:NIFTY25300CE",
+        "symbol": "NFO:NIFTY25150CE",
         "side": "BUY",
         "quantity": 25,
-        "entry_price": 140.23,
-        "exit_price": 136.75,
+        "entry_price": 128.03,
+        "exit_price": 142.97,
         "status": "CLOSED",
-        "pnl": -87.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-87.00 (-2.48%)",
+        "pnl": 373.5,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9373.50 (+11.67%)",
         "mode": "AUTO_OBSERVATORY"
       },
       {
-        "trade_id": "PAPER_1794473169744_613e",
-        "timestamp": "2026-11-12T14:35:37.816945",
-        "entry_timestamp": "2026-11-12T14:16:09.744111",
+        "trade_id": "PAPER_1794562526142_df97",
+        "timestamp": "2026-11-13T15:24:02.521572",
+        "entry_timestamp": "2026-11-13T15:05:26.142989",
         "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY61600CE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 326.19,
-        "exit_price": 282.84,
-        "status": "CLOSED",
-        "pnl": -650.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-650.25 (-13.29%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794472886108_beef",
-        "timestamp": "2026-11-12T14:30:38.286375",
-        "entry_timestamp": "2026-11-12T14:11:26.108490",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY30100CE",
+        "symbol": "NFO:FINNIFTY29800CE",
         "side": "BUY",
         "quantity": 25,
-        "entry_price": 170.83,
-        "exit_price": 168.4,
+        "entry_price": 158.04,
+        "exit_price": 185.84,
         "status": "CLOSED",
-        "pnl": -60.75,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-60.75 (-1.42%)",
+        "pnl": 695.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9695.00 (+17.59%)",
         "mode": "AUTO_OBSERVATORY"
       },
       {
-        "trade_id": "PAPER_1794472873797_75ea",
-        "timestamp": "2026-11-12T14:30:33.456187",
-        "entry_timestamp": "2026-11-12T14:11:13.797861",
+        "trade_id": "PAPER_1794562244024_ee50",
+        "timestamp": "2026-11-13T15:19:24.881805",
+        "entry_timestamp": "2026-11-13T15:00:44.024739",
         "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY61600CE",
+        "symbol": "NFO:FINNIFTY29800CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 156.1,
+        "exit_price": 185.52,
+        "status": "CLOSED",
+        "pnl": 735.5,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9735.50 (+18.85%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794562161589_f474",
+        "timestamp": "2026-11-13T15:19:00.998309",
+        "entry_timestamp": "2026-11-13T14:59:21.589382",
+        "action": "CLOSE",
+        "symbol": "NFO:NIFTY25150CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 130.17,
+        "exit_price": 141.97,
+        "status": "CLOSED",
+        "pnl": 295.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9295.00 (+9.07%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794561908518_014f",
+        "timestamp": "2026-11-13T15:13:53.848356",
+        "entry_timestamp": "2026-11-13T14:55:08.518814",
+        "action": "CLOSE",
+        "symbol": "NFO:FINNIFTY29850CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 144.43,
+        "exit_price": 154.15,
+        "status": "CLOSED",
+        "pnl": 243.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9243.00 (+6.73%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794561890737_6d3b",
+        "timestamp": "2026-11-13T15:13:49.435646",
+        "entry_timestamp": "2026-11-13T14:54:50.737398",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY61100CE",
         "side": "BUY",
         "quantity": 15,
-        "entry_price": 330.78,
-        "exit_price": 318.77,
+        "entry_price": 314.7,
+        "exit_price": 320.26,
         "status": "CLOSED",
-        "pnl": -180.15,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-180.15 (-3.63%)",
+        "pnl": 83.4,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b983.40 (+1.77%)",
         "mode": "AUTO_OBSERVATORY"
       },
       {
-        "trade_id": "PAPER_1794472580674_d481",
-        "timestamp": "2026-11-12T14:25:28.280328",
-        "entry_timestamp": "2026-11-12T14:06:20.674596",
+        "trade_id": "PAPER_1794561635919_2387",
+        "timestamp": "2026-11-13T15:09:04.057440",
+        "entry_timestamp": "2026-11-13T14:50:35.919823",
         "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY61500CE",
+        "symbol": "NFO:FINNIFTY29850CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 145.67,
+        "exit_price": 136.58,
+        "status": "CLOSED",
+        "pnl": -227.25,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-227.25 (-6.24%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794561603244_b572",
+        "timestamp": "2026-11-13T15:08:54.704875",
+        "entry_timestamp": "2026-11-13T14:50:03.244172",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY61100CE",
         "side": "BUY",
         "quantity": 15,
-        "entry_price": 360.57,
-        "exit_price": 362.55,
+        "entry_price": 320.65,
+        "exit_price": 285.62,
         "status": "CLOSED",
-        "pnl": 29.7,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b929.70 (+0.55%)",
+        "pnl": -525.45,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-525.45 (-10.92%)",
         "mode": "AUTO_OBSERVATORY"
       },
       {
-        "trade_id": "PAPER_1794472282038_16d6",
-        "timestamp": "2026-11-12T14:20:29.055977",
-        "entry_timestamp": "2026-11-12T14:01:22.038954",
+        "trade_id": "SIM_20261113_1440_FINNIFTY",
+        "timestamp": "2026-11-13T14:55:00",
+        "entry_timestamp": "2026-11-13T14:40:00",
         "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY61500CE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 359.67,
-        "exit_price": 361.15,
-        "status": "CLOSED",
-        "pnl": 22.2,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b922.20 (+0.41%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794471984750_8829",
-        "timestamp": "2026-11-12T14:15:26.037377",
-        "entry_timestamp": "2026-11-12T13:56:24.750348",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY30150CE",
+        "symbol": "NFO:FINNIFTY29800CE",
         "side": "BUY",
         "quantity": 25,
         "entry_price": 161.54,
-        "exit_price": 146.49,
+        "exit_price": 175.42,
         "status": "CLOSED",
-        "pnl": -376.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-376.25 (-9.32%)",
+        "pnl": 347.0,
+        "reasoning": "15M TARGET/TIME EXIT: Spot 29764.7 -> 29767.2 | PnL \u20b9+347.00 (+8.6%)",
         "mode": "AUTO_OBSERVATORY"
       },
       {
-        "trade_id": "PAPER_1794471700002_f962",
-        "timestamp": "2026-11-12T14:10:36.758828",
-        "entry_timestamp": "2026-11-12T13:51:40.002111",
+        "trade_id": "SIM_20261113_1410_BANKNIFTY",
+        "timestamp": "2026-11-13T14:25:00",
+        "entry_timestamp": "2026-11-13T14:10:00",
         "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73400CE",
+        "symbol": "NFO:BANKNIFTY60800PE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 284.37,
+        "exit_price": 297.03,
+        "status": "CLOSED",
+        "pnl": 189.9,
+        "reasoning": "15M TARGET/TIME EXIT: Spot 60906.85 -> 60943.3 | PnL \u20b9+189.90 (+4.5%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "SIM_20261113_1410_NIFTY",
+        "timestamp": "2026-11-13T14:25:00",
+        "entry_timestamp": "2026-11-13T14:10:00",
+        "action": "CLOSE",
+        "symbol": "NFO:NIFTY25000PE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 104.74,
+        "exit_price": 109.6,
+        "status": "CLOSED",
+        "pnl": 121.5,
+        "reasoning": "15M TARGET/TIME EXIT: Spot 25073.15 -> 25087.3 | PnL \u20b9+121.50 (+4.6%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794561321766_ba23",
+        "timestamp": "2026-11-13T15:04:02.073188",
+        "entry_timestamp": "2026-11-13T14:45:21.766858",
+        "action": "CLOSE",
+        "symbol": "NFO:FINNIFTY29800CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 161.65,
+        "exit_price": 156.75,
+        "status": "CLOSED",
+        "pnl": -122.5,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-122.50 (-3.03%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794561300627_5134",
+        "timestamp": "2026-11-13T15:03:56.041042",
+        "entry_timestamp": "2026-11-13T14:45:00.627500",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY61100CE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 304.68,
+        "exit_price": 285.99,
+        "status": "CLOSED",
+        "pnl": -280.35,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-280.35 (-6.13%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794560986831_a8bf",
+        "timestamp": "2026-11-13T14:58:55.589587",
+        "entry_timestamp": "2026-11-13T14:39:46.831480",
+        "action": "CLOSE",
+        "symbol": "NFO:FINNIFTY29800CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 159.44,
+        "exit_price": 165.12,
+        "status": "CLOSED",
+        "pnl": 142.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9142.00 (+3.56%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794560972038_a3c5",
+        "timestamp": "2026-11-13T14:58:50.077705",
+        "entry_timestamp": "2026-11-13T14:39:32.038992",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY61100CE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 322.16,
+        "exit_price": 307.05,
+        "status": "CLOSED",
+        "pnl": -226.65,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-226.65 (-4.69%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794560710062_af4e",
+        "timestamp": "2026-11-13T14:54:07.781126",
+        "entry_timestamp": "2026-11-13T14:35:10.062230",
+        "action": "CLOSE",
+        "symbol": "NFO:FINNIFTY29800CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 152.95,
+        "exit_price": 162.88,
+        "status": "CLOSED",
+        "pnl": 248.25,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9248.25 (+6.49%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794560408841_ad02",
+        "timestamp": "2026-11-13T14:48:44.197846",
+        "entry_timestamp": "2026-11-13T14:30:08.841713",
+        "action": "CLOSE",
+        "symbol": "NFO:NIFTY25050PE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 120.55,
+        "exit_price": 107.49,
+        "status": "CLOSED",
+        "pnl": -326.5,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-326.50 (-10.83%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794560121064_2408",
+        "timestamp": "2026-11-13T14:44:04.209087",
+        "entry_timestamp": "2026-11-13T14:25:21.064926",
+        "action": "CLOSE",
+        "symbol": "NFO:MIDCPNIFTY72675PE",
         "side": "BUY",
         "quantity": 50,
-        "entry_price": 460.19,
-        "exit_price": 456.04,
+        "entry_price": 381.71,
+        "exit_price": 326.03,
         "status": "CLOSED",
-        "pnl": -207.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-207.50 (-0.90%)",
+        "pnl": -2784.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-2784.00 (-14.59%)",
         "mode": "AUTO_OBSERVATORY"
       },
       {
-        "trade_id": "PAPER_1794471682885_9f83",
-        "timestamp": "2026-11-12T14:10:31.591377",
-        "entry_timestamp": "2026-11-12T13:51:22.885566",
+        "trade_id": "PAPER_1794560089077_40f3",
+        "timestamp": "2026-11-13T14:43:51.099524",
+        "entry_timestamp": "2026-11-13T14:24:49.077342",
         "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY30150CE",
+        "symbol": "NFO:BANKNIFTY60800PE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 281.65,
+        "exit_price": 252.13,
+        "status": "CLOSED",
+        "pnl": -442.8,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-442.80 (-10.48%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794560058779_580c",
+        "timestamp": "2026-11-13T14:43:44.186304",
+        "entry_timestamp": "2026-11-13T14:24:18.779496",
+        "action": "CLOSE",
+        "symbol": "NFO:NIFTY25000PE",
         "side": "BUY",
         "quantity": 25,
-        "entry_price": 160.68,
-        "exit_price": 146.43,
+        "entry_price": 108.0,
+        "exit_price": 90.76,
         "status": "CLOSED",
-        "pnl": -356.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-356.25 (-8.87%)",
+        "pnl": -431.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-431.00 (-15.96%)",
         "mode": "AUTO_OBSERVATORY"
       },
       {
-        "trade_id": "PAPER_1794471653674_d5e2",
-        "timestamp": "2026-11-12T14:10:26.453642",
-        "entry_timestamp": "2026-11-12T13:50:53.674764",
+        "trade_id": "PAPER_1794559795466_8213",
+        "timestamp": "2026-11-13T14:38:51.209186",
+        "entry_timestamp": "2026-11-13T14:19:55.466770",
         "action": "CLOSE",
-        "symbol": "NFO:NIFTY25350CE",
+        "symbol": "NFO:MIDCPNIFTY72700PE",
+        "side": "BUY",
+        "quantity": 50,
+        "entry_price": 385.16,
+        "exit_price": 315.97,
+        "status": "CLOSED",
+        "pnl": -3459.5,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-3459.50 (-17.96%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794559762980_0dfe",
+        "timestamp": "2026-11-13T14:38:46.512131",
+        "entry_timestamp": "2026-11-13T14:19:22.980979",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60800PE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 281.23,
+        "exit_price": 232.32,
+        "status": "CLOSED",
+        "pnl": -733.65,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-733.65 (-17.39%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794559486003_d4de",
+        "timestamp": "2026-11-13T14:33:56.266213",
+        "entry_timestamp": "2026-11-13T14:14:46.003891",
+        "action": "CLOSE",
+        "symbol": "NFO:MIDCPNIFTY72725PE",
+        "side": "BUY",
+        "quantity": 50,
+        "entry_price": 386.78,
+        "exit_price": 340.21,
+        "status": "CLOSED",
+        "pnl": -2328.5,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-2328.50 (-12.04%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794559469439_d537",
+        "timestamp": "2026-11-13T14:33:50.723540",
+        "entry_timestamp": "2026-11-13T14:14:29.439419",
+        "action": "CLOSE",
+        "symbol": "NFO:FINNIFTY29650PE",
         "side": "BUY",
         "quantity": 25,
-        "entry_price": 130.13,
-        "exit_price": 119.33,
+        "entry_price": 132.22,
+        "exit_price": 116.51,
         "status": "CLOSED",
-        "pnl": -270.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-270.00 (-8.30%)",
+        "pnl": -392.75,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-392.75 (-11.88%)",
         "mode": "AUTO_OBSERVATORY"
       },
       {
-        "trade_id": "PAPER_1794471393588_7a39",
-        "timestamp": "2026-11-12T14:05:26.872883",
-        "entry_timestamp": "2026-11-12T13:46:33.588977",
+        "trade_id": "PAPER_1794559455525_7f80",
+        "timestamp": "2026-11-13T14:33:47.601408",
+        "entry_timestamp": "2026-11-13T14:14:15.525254",
         "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY30100CE",
+        "symbol": "NFO:BANKNIFTY60800PE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 281.13,
+        "exit_price": 243.68,
+        "status": "CLOSED",
+        "pnl": -561.75,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-561.75 (-13.32%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794559432960_5af6",
+        "timestamp": "2026-11-13T14:33:42.328432",
+        "entry_timestamp": "2026-11-13T14:13:52.960700",
+        "action": "CLOSE",
+        "symbol": "NFO:NIFTY25050PE",
         "side": "BUY",
         "quantity": 25,
-        "entry_price": 167.73,
-        "exit_price": 161.23,
+        "entry_price": 125.14,
+        "exit_price": 109.33,
         "status": "CLOSED",
-        "pnl": -162.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-162.50 (-3.88%)",
+        "pnl": -395.25,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-395.25 (-12.63%)",
         "mode": "AUTO_OBSERVATORY"
       },
       {
-        "trade_id": "PAPER_1794471361185_a87f",
-        "timestamp": "2026-11-12T14:05:23.663878",
-        "entry_timestamp": "2026-11-12T13:46:01.185669",
+        "trade_id": "PAPER_1794559230286_5618",
+        "timestamp": "2026-11-13T14:29:29.878854",
+        "entry_timestamp": "2026-11-13T14:10:30.286303",
         "action": "CLOSE",
-        "symbol": "NFO:NIFTY25300CE",
+        "symbol": "NFO:MIDCPNIFTY72750PE",
+        "side": "BUY",
+        "quantity": 50,
+        "entry_price": 390.48,
+        "exit_price": 394.92,
+        "status": "CLOSED",
+        "pnl": 222.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9222.00 (+1.14%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794559176295_9581",
+        "timestamp": "2026-11-13T14:29:09.082390",
+        "entry_timestamp": "2026-11-13T14:09:36.295043",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60800PE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 297.04,
+        "exit_price": 264.36,
+        "status": "CLOSED",
+        "pnl": -490.2,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-490.20 (-11.00%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794559035169_491c",
+        "timestamp": "2026-11-13T14:23:50.431260",
+        "entry_timestamp": "2026-11-13T14:07:15.169777",
+        "action": "CLOSE",
+        "symbol": "NFO:MIDCPNIFTY72775PE",
+        "side": "BUY",
+        "quantity": 50,
+        "entry_price": 383.64,
+        "exit_price": 451.1,
+        "status": "CLOSED",
+        "pnl": 3373.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b93373.00 (+17.58%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794559017557_18fd",
+        "timestamp": "2026-11-13T14:23:45.009400",
+        "entry_timestamp": "2026-11-13T14:06:57.557944",
+        "action": "CLOSE",
+        "symbol": "NFO:FINNIFTY29650PE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 133.84,
+        "exit_price": 142.1,
+        "status": "CLOSED",
+        "pnl": 206.5,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9206.50 (+6.17%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794559001973_fb65",
+        "timestamp": "2026-11-13T14:23:40.672922",
+        "entry_timestamp": "2026-11-13T14:06:41.973992",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60800PE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 286.24,
+        "exit_price": 298.9,
+        "status": "CLOSED",
+        "pnl": 189.9,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9189.90 (+4.42%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794558589187_ffb3",
+        "timestamp": "2026-11-13T14:18:48.889961",
+        "entry_timestamp": "2026-11-13T13:59:49.187868",
+        "action": "CLOSE",
+        "symbol": "NFO:MIDCPNIFTY72800PE",
+        "side": "BUY",
+        "quantity": 50,
+        "entry_price": 385.16,
+        "exit_price": 427.66,
+        "status": "CLOSED",
+        "pnl": 2125.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b92125.00 (+11.03%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794558571051_edb5",
+        "timestamp": "2026-11-13T14:18:30.474634",
+        "entry_timestamp": "2026-11-13T13:59:31.051411",
+        "action": "CLOSE",
+        "symbol": "NFO:FINNIFTY29700PE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 146.39,
+        "exit_price": 150.91,
+        "status": "CLOSED",
+        "pnl": 113.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9113.00 (+3.09%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794558556635_37e1",
+        "timestamp": "2026-11-13T14:18:25.966712",
+        "entry_timestamp": "2026-11-13T13:59:16.635504",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60800PE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 274.39,
+        "exit_price": 283.16,
+        "status": "CLOSED",
+        "pnl": 131.55,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9131.55 (+3.20%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794558350573_f930",
+        "timestamp": "2026-11-13T14:10:50.573401",
+        "entry_timestamp": "2026-11-13T13:55:50.573401",
+        "action": "CLOSE",
+        "symbol": "NFO:MIDCPNIFTY72800PE",
+        "side": "BUY",
+        "quantity": 50,
+        "entry_price": 384.43,
+        "exit_price": 390.2,
+        "status": "CLOSED",
+        "pnl": 288.5,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794558040686_844f",
+        "timestamp": "2026-11-13T14:05:40.686173",
+        "entry_timestamp": "2026-11-13T13:50:40.686173",
+        "action": "CLOSE",
+        "symbol": "NFO:MIDCPNIFTY72825PE",
+        "side": "BUY",
+        "quantity": 50,
+        "entry_price": 392.56,
+        "exit_price": 398.45,
+        "status": "CLOSED",
+        "pnl": 294.5,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "SIM_20261113_1340_MIDCPNIFTY",
+        "timestamp": "2026-11-13T13:55:00",
+        "entry_timestamp": "2026-11-13T13:40:00",
+        "action": "CLOSE",
+        "symbol": "NFO:MIDCPNIFTY72875PE",
+        "side": "BUY",
+        "quantity": 50,
+        "entry_price": 393.12,
+        "exit_price": 426.56,
+        "status": "CLOSED",
+        "pnl": 1672.0,
+        "reasoning": "15M TARGET/TIME EXIT: Spot 72890.3 -> 72848.65 | PnL \u20b9+1672.00 (+8.5%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794557672234_b7ad",
+        "timestamp": "2026-11-13T13:59:32.234319",
+        "entry_timestamp": "2026-11-13T13:44:32.234319",
+        "action": "CLOSE",
+        "symbol": "NFO:MIDCPNIFTY72850PE",
+        "side": "BUY",
+        "quantity": 50,
+        "entry_price": 384.44,
+        "exit_price": 390.21,
+        "status": "CLOSED",
+        "pnl": 288.5,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794557651896_d225",
+        "timestamp": "2026-11-13T13:59:11.896097",
+        "entry_timestamp": "2026-11-13T13:44:11.896097",
+        "action": "CLOSE",
+        "symbol": "NFO:FINNIFTY29800CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 154.84,
+        "exit_price": 157.16,
+        "status": "CLOSED",
+        "pnl": 58.0,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794557372272_43aa",
+        "timestamp": "2026-11-13T13:58:28.197133",
+        "entry_timestamp": "2026-11-13T13:39:32.272687",
+        "action": "CLOSE",
+        "symbol": "NFO:FINNIFTY29800CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 165.58,
+        "exit_price": 145.65,
+        "status": "CLOSED",
+        "pnl": -498.25,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-498.25 (-12.04%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794557320335_f4cd",
+        "timestamp": "2026-11-13T13:58:16.830765",
+        "entry_timestamp": "2026-11-13T13:38:40.335079",
+        "action": "CLOSE",
+        "symbol": "NFO:NIFTY25150CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 137.39,
+        "exit_price": 121.33,
+        "status": "CLOSED",
+        "pnl": -401.5,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-401.50 (-11.69%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794557148930_9457",
+        "timestamp": "2026-11-13T13:53:35.378394",
+        "entry_timestamp": "2026-11-13T13:35:48.930909",
+        "action": "CLOSE",
+        "symbol": "NFO:FINNIFTY29800CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 151.5,
+        "exit_price": 153.54,
+        "status": "CLOSED",
+        "pnl": 51.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b951.00 (+1.35%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794556789889_2152",
+        "timestamp": "2026-11-13T13:44:49.889155",
+        "entry_timestamp": "2026-11-13T13:29:49.889155",
+        "action": "CLOSE",
+        "symbol": "NFO:NIFTY25150CE",
         "side": "BUY",
         "quantity": 25,
         "entry_price": 137.54,
-        "exit_price": 138.07,
+        "exit_price": 139.6,
         "status": "CLOSED",
-        "pnl": 13.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b913.25 (+0.39%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794471072963_bc81",
-        "timestamp": "2026-11-12T14:00:27.738716",
-        "entry_timestamp": "2026-11-12T13:41:12.963179",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY30100CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 176.94,
-        "exit_price": 166.13,
-        "status": "CLOSED",
-        "pnl": -270.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-270.25 (-6.11%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794471039709_345c",
-        "timestamp": "2026-11-12T14:00:24.094547",
-        "entry_timestamp": "2026-11-12T13:40:39.709206",
-        "action": "CLOSE",
-        "symbol": "NFO:NIFTY25300CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 141.82,
-        "exit_price": 138.28,
-        "status": "CLOSED",
-        "pnl": -88.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-88.50 (-2.50%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794470782357_f88b",
-        "timestamp": "2026-11-12T13:55:31.385684",
-        "entry_timestamp": "2026-11-12T13:36:22.357088",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY30100CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 154.5,
-        "exit_price": 186.87,
-        "status": "CLOSED",
-        "pnl": 809.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9809.25 (+20.95%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794470495926_af2f",
-        "timestamp": "2026-11-12T13:50:28.116860",
-        "entry_timestamp": "2026-11-12T13:31:35.926376",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY30100CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 154.08,
-        "exit_price": 186.48,
-        "status": "CLOSED",
-        "pnl": 810.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9810.00 (+21.03%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794470456970_5066",
-        "timestamp": "2026-11-12T13:50:23.391921",
-        "entry_timestamp": "2026-11-12T13:30:56.970245",
-        "action": "CLOSE",
-        "symbol": "NFO:NIFTY25300CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 137.48,
-        "exit_price": 149.98,
-        "status": "CLOSED",
-        "pnl": 312.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9312.50 (+9.09%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794470188128_ddc8",
-        "timestamp": "2026-11-12T13:45:30.664179",
-        "entry_timestamp": "2026-11-12T13:26:28.128111",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY30050CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 169.74,
-        "exit_price": 196.36,
-        "status": "CLOSED",
-        "pnl": 665.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9665.50 (+15.68%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794469606119_2115",
-        "timestamp": "2026-11-12T13:35:34.530909",
-        "entry_timestamp": "2026-11-12T13:16:46.119944",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73425CE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 457.13,
-        "exit_price": 436.19,
-        "status": "CLOSED",
-        "pnl": -1047.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-1047.00 (-4.58%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794469589698_2ec9",
-        "timestamp": "2026-11-12T13:35:29.752759",
-        "entry_timestamp": "2026-11-12T13:16:29.698701",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY30100CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 155.23,
-        "exit_price": 161.49,
-        "status": "CLOSED",
-        "pnl": 156.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9156.50 (+4.03%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794469350706_ee38",
-        "timestamp": "2026-11-12T13:30:36.170340",
-        "entry_timestamp": "2026-11-12T13:12:30.706548",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73475CE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 455.98,
-        "exit_price": 382.41,
-        "status": "CLOSED",
-        "pnl": -3678.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-3678.50 (-16.13%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794469337906_1367",
-        "timestamp": "2026-11-12T13:30:30.533274",
-        "entry_timestamp": "2026-11-12T13:12:17.906812",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY30100CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 159.25,
-        "exit_price": 150.76,
-        "status": "CLOSED",
-        "pnl": -212.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-212.25 (-5.33%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794468968537_f9a6",
-        "timestamp": "2026-11-12T13:25:33.711312",
-        "entry_timestamp": "2026-11-12T13:06:08.537811",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73475CE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 449.54,
-        "exit_price": 385.51,
-        "status": "CLOSED",
-        "pnl": -3201.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-3201.50 (-14.24%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "SIM_20261112_1240_MIDCPNIFTY",
-        "timestamp": "2026-11-12T12:55:00",
-        "entry_timestamp": "2026-11-12T12:40:00",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73275PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 410.33,
-        "exit_price": 421.95,
-        "status": "CLOSED",
-        "pnl": 581.0,
-        "reasoning": "15M TARGET/TIME EXIT: Spot 73308.9 -> 73427.4 | PnL \u20b9+581.00 (+2.8%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "SIM_20261112_1225_MIDCPNIFTY",
-        "timestamp": "2026-11-12T12:40:00",
-        "entry_timestamp": "2026-11-12T12:25:00",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73300PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 411.08,
-        "exit_price": 444.06,
-        "status": "CLOSED",
-        "pnl": 1649.0,
-        "reasoning": "15M TARGET/TIME EXIT: Spot 73334.3 -> 73308.9 | PnL \u20b9+1649.00 (+8.0%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "SIM_20261112_1210_MIDCPNIFTY",
-        "timestamp": "2026-11-12T12:25:00",
-        "entry_timestamp": "2026-11-12T12:10:00",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73275PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 414.84,
-        "exit_price": 428.61,
-        "status": "CLOSED",
-        "pnl": 688.5,
-        "reasoning": "15M TARGET/TIME EXIT: Spot 73303.25 -> 73334.3 | PnL \u20b9+688.50 (+3.3%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "SIM_20261112_1155_MIDCPNIFTY",
-        "timestamp": "2026-11-12T12:10:00",
-        "entry_timestamp": "2026-11-12T11:55:00",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73400PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 420.84,
-        "exit_price": 464.19,
-        "status": "CLOSED",
-        "pnl": 2167.5,
-        "reasoning": "15M TARGET/TIME EXIT: Spot 73418.8 -> 73303.25 | PnL \u20b9+2167.50 (+10.3%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "SIM_20261112_1225_FINNIFTY",
-        "timestamp": "2026-11-12T12:40:00",
-        "entry_timestamp": "2026-11-12T12:25:00",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29900PE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 144.52,
-        "exit_price": 150.9,
-        "status": "CLOSED",
-        "pnl": 159.5,
-        "reasoning": "15M TARGET/TIME EXIT: Spot 29965.75 -> 29979.85 | PnL \u20b9+159.50 (+4.4%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "SIM_20261112_1155_FINNIFTY",
-        "timestamp": "2026-11-12T12:10:00",
-        "entry_timestamp": "2026-11-12T11:55:00",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29950PE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 148.41,
-        "exit_price": 173.14,
-        "status": "CLOSED",
-        "pnl": 618.25,
-        "reasoning": "15M TARGET/TIME EXIT: Spot 30009.1 -> 29948.7 | PnL \u20b9+618.25 (+16.7%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "SIM_20261112_1210_BANKNIFTY",
-        "timestamp": "2026-11-12T12:25:00",
-        "entry_timestamp": "2026-11-12T12:10:00",
-        "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY61000PE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 318.09,
-        "exit_price": 292.64,
-        "status": "CLOSED",
-        "pnl": -381.75,
-        "reasoning": "15M TARGET/TIME EXIT: Spot 61082.85 -> 61169.85 | PnL \u20b9-381.75 (-8.0%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "SIM_20261112_1155_BANKNIFTY",
-        "timestamp": "2026-11-12T12:10:00",
-        "entry_timestamp": "2026-11-12T11:55:00",
-        "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY61100PE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 301.78,
-        "exit_price": 354.57,
-        "status": "CLOSED",
-        "pnl": 791.85,
-        "reasoning": "15M TARGET/TIME EXIT: Spot 61222.85 -> 61082.85 | PnL \u20b9+791.85 (+17.5%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794467503324_f577",
-        "timestamp": "2026-11-12T13:00:31.408828",
-        "entry_timestamp": "2026-11-12T12:41:43.324640",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73250PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 416.1,
-        "exit_price": 347.69,
-        "status": "CLOSED",
-        "pnl": -3420.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-3420.50 (-16.44%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794467483462_8144",
-        "timestamp": "2026-11-12T13:00:25.767226",
-        "entry_timestamp": "2026-11-12T12:41:23.462998",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29900PE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 153.42,
-        "exit_price": 129.4,
-        "status": "CLOSED",
-        "pnl": -600.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-600.50 (-15.66%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794467187118_d7dc",
-        "timestamp": "2026-11-12T12:55:30.699828",
-        "entry_timestamp": "2026-11-12T12:36:27.118169",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73225PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 415.4,
-        "exit_price": 348.4,
-        "status": "CLOSED",
-        "pnl": -3350.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-3350.00 (-16.13%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794465965730_41fb",
-        "timestamp": "2026-11-12T12:35:31.366804",
-        "entry_timestamp": "2026-11-12T12:16:05.730608",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73275PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 422.2,
-        "exit_price": 422.6,
-        "status": "CLOSED",
-        "pnl": 20.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b920.00 (+0.09%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794465939339_a326",
-        "timestamp": "2026-11-12T12:35:23.229259",
-        "entry_timestamp": "2026-11-12T12:15:39.339117",
-        "action": "CLOSE",
-        "symbol": "NFO:NIFTY25150PE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 114.75,
-        "exit_price": 113.54,
-        "status": "CLOSED",
-        "pnl": -30.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-30.25 (-1.05%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794465667962_01e6",
-        "timestamp": "2026-11-12T12:30:29.406285",
-        "entry_timestamp": "2026-11-12T12:11:07.962138",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73325PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 419.3,
-        "exit_price": 423.35,
-        "status": "CLOSED",
-        "pnl": 202.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9202.50 (+0.97%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794465397616_e667",
-        "timestamp": "2026-11-12T12:25:25.219536",
-        "entry_timestamp": "2026-11-12T12:06:37.617004",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY73350PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 412.2,
-        "exit_price": 425.75,
-        "status": "CLOSED",
-        "pnl": 677.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9677.50 (+3.29%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794465380477_235e",
-        "timestamp": "2026-11-12T12:25:22.638776",
-        "entry_timestamp": "2026-11-12T12:06:20.477196",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29950PE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 161.13,
-        "exit_price": 169.48,
-        "status": "CLOSED",
-        "pnl": 208.75,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9208.75 (+5.18%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794465346469_a093",
-        "timestamp": "2026-11-12T12:25:19.736992",
-        "entry_timestamp": "2026-11-12T12:05:46.469187",
-        "action": "CLOSE",
-        "symbol": "NFO:NIFTY25200PE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 121.18,
-        "exit_price": 130.21,
-        "status": "CLOSED",
-        "pnl": 225.75,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9225.75 (+7.45%)",
+        "pnl": 51.5,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
         "mode": "AUTO_OBSERVATORY"
       }
     ],
-    "all_time_closed": 1933,
-    "all_time_pnl": 972638.85
+    "all_time_closed": 2081,
+    "all_time_pnl": 987214.65
   }
 }
