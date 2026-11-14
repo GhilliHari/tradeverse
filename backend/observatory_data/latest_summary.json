@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-13T15:35:16.929445",
+  "updated_at": "2026-11-14T15:35:20.995137",
   "repo": "GhilliHari/tradeverse",
   "branch": "main",
   "status": {
@@ -7,21 +7,21 @@
     "is_market_hours": false,
     "offline_catchup_enabled": true,
     "latest_session_date": "2026-11-13",
-    "active_predictions": 12,
-    "completed_today": 356
+    "active_predictions": 0,
+    "completed_today": 371
   },
   "observatory_summary": {
     "date": "2026-11-13",
-    "total_predictions": 367,
-    "completed": 356,
-    "pending": 11,
-    "active_trades_count": 149,
-    "win_rate": 65.8,
-    "avg_pnl": 164.29,
-    "total_pnl": 24479.49,
-    "profitable_count": 98,
-    "loss_count": 51,
-    "hold_count": 207
+    "total_predictions": 371,
+    "completed": 371,
+    "pending": 0,
+    "active_trades_count": 162,
+    "win_rate": 65.4,
+    "avg_pnl": 165.97,
+    "total_pnl": 26887.19,
+    "profitable_count": 106,
+    "loss_count": 56,
+    "hold_count": 209
   },
   "recent_predictions": [
     {
@@ -95,8 +95,16 @@
           ]
         }
       },
-      "actual_outcome": null,
-      "status": "PENDING",
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:46:23.821862",
+        "exit_price": 418.38,
+        "pnl": -66.0,
+        "pnl_pct": -0.31,
+        "max_favorable": 419.7,
+        "max_adverse": 418.38,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
       "symbol": "MIDCPNIFTY"
     },
     {
@@ -170,8 +178,16 @@
           ]
         }
       },
-      "actual_outcome": null,
-      "status": "PENDING",
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:46:19.584837",
+        "exit_price": 157.93,
+        "pnl": -11.0,
+        "pnl_pct": -0.28,
+        "max_favorable": 158.37,
+        "max_adverse": 157.93,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
       "symbol": "FINNIFTY"
     },
     {
@@ -245,8 +261,16 @@
           ]
         }
       },
-      "actual_outcome": null,
-      "status": "PENDING",
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:46:15.539613",
+        "exit_price": 326.86,
+        "pnl": -6.75,
+        "pnl_pct": -0.14,
+        "max_favorable": 327.31,
+        "max_adverse": 326.86,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
       "symbol": "BANKNIFTY"
     },
     {
@@ -320,8 +344,16 @@
           ]
         }
       },
-      "actual_outcome": null,
-      "status": "PENDING",
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:45:03.899548",
+        "exit_price": 121.34,
+        "pnl": -6.75,
+        "pnl_pct": -0.22,
+        "max_favorable": 121.61,
+        "max_adverse": 121.34,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
       "symbol": "NIFTY"
     },
     {
@@ -395,8 +427,16 @@
           ]
         }
       },
-      "actual_outcome": null,
-      "status": "PENDING",
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:41:55.708596",
+        "exit_price": 425.76,
+        "pnl": 625.0,
+        "pnl_pct": 3.02,
+        "max_favorable": 425.76,
+        "max_adverse": 413.26,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
       "symbol": "MIDCPNIFTY"
     },
     {
@@ -470,8 +510,16 @@
           ]
         }
       },
-      "actual_outcome": null,
-      "status": "PENDING",
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:41:50.529283",
+        "exit_price": 186.07,
+        "pnl": 626.0,
+        "pnl_pct": 15.55,
+        "max_favorable": 186.07,
+        "max_adverse": 161.03,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
       "symbol": "FINNIFTY"
     },
     {
@@ -545,8 +593,16 @@
           ]
         }
       },
-      "actual_outcome": null,
-      "status": "PENDING",
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:40:45.917950",
+        "exit_price": 333.04,
+        "pnl": 174.75,
+        "pnl_pct": 3.62,
+        "max_favorable": 333.04,
+        "max_adverse": 321.39,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
       "symbol": "BANKNIFTY"
     },
     {
@@ -620,8 +676,16 @@
           ]
         }
       },
-      "actual_outcome": null,
-      "status": "PENDING",
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:39:37.120075",
+        "exit_price": 124.05,
+        "pnl": 138.5,
+        "pnl_pct": 4.67,
+        "max_favorable": 124.05,
+        "max_adverse": 118.51,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
       "symbol": "NIFTY"
     },
     {
@@ -695,8 +759,16 @@
           ]
         }
       },
-      "actual_outcome": null,
-      "status": "PENDING",
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:36:32.079258",
+        "exit_price": 419.43,
+        "pnl": 265.0,
+        "pnl_pct": 1.28,
+        "max_favorable": 419.43,
+        "max_adverse": 414.13,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
       "symbol": "MIDCPNIFTY"
     },
     {
@@ -770,8 +842,16 @@
           ]
         }
       },
-      "actual_outcome": null,
-      "status": "PENDING",
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:36:25.917131",
+        "exit_price": 183.49,
+        "pnl": 583.0,
+        "pnl_pct": 14.56,
+        "max_favorable": 183.49,
+        "max_adverse": 160.17,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
       "symbol": "FINNIFTY"
     },
     {
@@ -845,8 +925,16 @@
           ]
         }
       },
-      "actual_outcome": null,
-      "status": "PENDING",
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:36:20.508478",
+        "exit_price": 328.19,
+        "pnl": 121.8,
+        "pnl_pct": 2.54,
+        "max_favorable": 328.19,
+        "max_adverse": 320.07,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED",
       "symbol": "BANKNIFTY"
     },
     {
@@ -1429,6 +1517,170 @@
       },
       "status": "COMPLETED",
       "symbol": "FINNIFTY"
+    },
+    {
+      "timestamp": "2026-11-13T15:10:00",
+      "symbol": "NIFTY",
+      "paper_trade_id": "SIM_20261113_1510_NIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 25200,
+        "confidence": 0.9004,
+        "entry_price": 119.09,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 0.26,
+          "rl": 1.0,
+          "sentiment": 0.41,
+          "options": 0.6,
+          "order_flow": 0.56,
+          "pattern": 0.63
+        },
+        "regime": "POWER_HOUR_TREND"
+      },
+      "market_context": {
+        "spot_price": 25140.55,
+        "vix": 15.43,
+        "regime": "POWER_HOUR_TREND",
+        "order_book": {
+          "bids": [
+            {
+              "price": 25138.0,
+              "qty": 550
+            },
+            {
+              "price": 25135.5,
+              "qty": 600
+            },
+            {
+              "price": 25133.0,
+              "qty": 650
+            },
+            {
+              "price": 25130.5,
+              "qty": 700
+            },
+            {
+              "price": 25128.0,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 25143.0,
+              "qty": 550
+            },
+            {
+              "price": 25145.5,
+              "qty": 600
+            },
+            {
+              "price": 25148.0,
+              "qty": 650
+            },
+            {
+              "price": 25150.5,
+              "qty": 700
+            },
+            {
+              "price": 25153.0,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:25:00",
+        "exit_price": 120.53,
+        "pnl": 36.0,
+        "pnl_pct": 1.21,
+        "max_favorable": 120.54,
+        "max_adverse": 107.52,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
+    },
+    {
+      "timestamp": "2026-11-13T15:10:00",
+      "symbol": "BANKNIFTY",
+      "paper_trade_id": "SIM_20261113_1510_BANKNIFTY",
+      "prediction": {
+        "signal": "BUY_CE",
+        "strike": 61100,
+        "confidence": 0.96,
+        "entry_price": 329.68,
+        "model_scores": {
+          "technical": 1.0,
+          "tft": 0.86,
+          "rl": 1.0,
+          "sentiment": 0.6,
+          "options": 0.6,
+          "order_flow": 0.53,
+          "pattern": 0.93
+        },
+        "regime": "POWER_HOUR_TREND"
+      },
+      "market_context": {
+        "spot_price": 61042.55,
+        "vix": 15.43,
+        "regime": "POWER_HOUR_TREND",
+        "order_book": {
+          "bids": [
+            {
+              "price": 61040.1,
+              "qty": 550
+            },
+            {
+              "price": 61037.6,
+              "qty": 600
+            },
+            {
+              "price": 61035.1,
+              "qty": 650
+            },
+            {
+              "price": 61032.6,
+              "qty": 700
+            },
+            {
+              "price": 61030.1,
+              "qty": 750
+            }
+          ],
+          "asks": [
+            {
+              "price": 61045.1,
+              "qty": 550
+            },
+            {
+              "price": 61047.6,
+              "qty": 600
+            },
+            {
+              "price": 61050.1,
+              "qty": 650
+            },
+            {
+              "price": 61052.6,
+              "qty": 700
+            },
+            {
+              "price": 61055.1,
+              "qty": 750
+            }
+          ]
+        }
+      },
+      "actual_outcome": {
+        "exit_timestamp": "2026-11-13T15:25:00",
+        "exit_price": 324.89,
+        "pnl": -71.85,
+        "pnl_pct": -1.45,
+        "max_favorable": 329.68,
+        "max_adverse": 296.06,
+        "holding_period_minutes": 15
+      },
+      "status": "COMPLETED"
     },
     {
       "timestamp": "2026-11-13T15:09:44.729941",
@@ -2259,183 +2511,557 @@
       },
       "status": "COMPLETED",
       "symbol": "NIFTY"
-    },
-    {
-      "timestamp": "2026-11-13T14:55:37.409943",
-      "paper_trade_id": null,
-      "prediction": {
-        "signal": "HOLD",
-        "strike": 72850,
-        "confidence": 0.3971,
-        "entry_price": 0.0,
-        "model_scores": {
-          "technical": -1.0,
-          "tft": 0.0,
-          "rl": 1.0,
-          "sentiment": 0.5,
-          "options": 1.0,
-          "order_flow": 0.0,
-          "macro": 0.0,
-          "component_lead": -0.6
-        },
-        "regime": "POWER_HOUR"
-      },
-      "market_context": {
-        "spot_price": 72842.1484375,
-        "vix": 15.5,
-        "regime": "POWER_HOUR",
-        "order_book": {
-          "bids": [
-            {
-              "price": 72839.6,
-              "qty": 550
-            },
-            {
-              "price": 72837.1,
-              "qty": 600
-            },
-            {
-              "price": 72834.6,
-              "qty": 650
-            },
-            {
-              "price": 72832.1,
-              "qty": 700
-            },
-            {
-              "price": 72829.6,
-              "qty": 750
-            }
-          ],
-          "asks": [
-            {
-              "price": 72844.6,
-              "qty": 550
-            },
-            {
-              "price": 72847.1,
-              "qty": 600
-            },
-            {
-              "price": 72849.6,
-              "qty": 650
-            },
-            {
-              "price": 72852.1,
-              "qty": 700
-            },
-            {
-              "price": 72854.6,
-              "qty": 750
-            }
-          ]
-        }
-      },
-      "actual_outcome": {
-        "exit_timestamp": "2026-11-13T15:14:02.831207",
-        "exit_price": 0.0,
-        "pnl": 0,
-        "pnl_pct": 0,
-        "max_favorable": 0.0,
-        "max_adverse": 0.0,
-        "holding_period_minutes": 15
-      },
-      "status": "COMPLETED",
-      "symbol": "MIDCPNIFTY"
-    },
-    {
-      "timestamp": "2026-11-13T14:55:08.519564",
-      "paper_trade_id": "PAPER_1794561908518_014f",
-      "prediction": {
-        "signal": "BUY_CE",
-        "strike": 29850,
-        "confidence": 0.96,
-        "entry_price": 144.43,
-        "model_scores": {
-          "technical": -1.0,
-          "tft": 0.0,
-          "rl": 1.0,
-          "sentiment": 0.5,
-          "options": 1.0,
-          "order_flow": 0.0,
-          "macro": 0.0,
-          "component_lead": -0.62
-        },
-        "regime": "POWER_HOUR"
-      },
-      "market_context": {
-        "spot_price": 29784.849609375,
-        "vix": 15.52,
-        "regime": "POWER_HOUR",
-        "order_book": {
-          "bids": [
-            {
-              "price": 29782.3,
-              "qty": 550
-            },
-            {
-              "price": 29779.8,
-              "qty": 600
-            },
-            {
-              "price": 29777.3,
-              "qty": 650
-            },
-            {
-              "price": 29774.8,
-              "qty": 700
-            },
-            {
-              "price": 29772.3,
-              "qty": 750
-            }
-          ],
-          "asks": [
-            {
-              "price": 29787.3,
-              "qty": 550
-            },
-            {
-              "price": 29789.8,
-              "qty": 600
-            },
-            {
-              "price": 29792.3,
-              "qty": 650
-            },
-            {
-              "price": 29794.8,
-              "qty": 700
-            },
-            {
-              "price": 29797.3,
-              "qty": 750
-            }
-          ]
-        }
-      },
-      "actual_outcome": {
-        "exit_timestamp": "2026-11-13T15:13:53.827235",
-        "exit_price": 154.15,
-        "pnl": 243.0,
-        "pnl_pct": 6.73,
-        "max_favorable": 154.15,
-        "max_adverse": 144.43,
-        "holding_period_minutes": 15
-      },
-      "status": "COMPLETED",
-      "symbol": "FINNIFTY"
     }
   ],
   "paper_summary": {
     "date": "2026-11-13",
-    "open_count": 34,
-    "closed_today_count": 140,
-    "wins": 94,
-    "losses": 46,
-    "win_rate": 67.1,
-    "total_pnl": 12601.65,
+    "open_count": 0,
+    "closed_today_count": 176,
+    "wins": 125,
+    "losses": 51,
+    "win_rate": 71.0,
+    "total_pnl": 36019.59,
     "recent_closed": [
+      {
+        "trade_id": "PAPER_1794558978355_fbf1",
+        "timestamp": "2026-11-13T14:21:18.355416",
+        "entry_timestamp": "2026-11-13T14:06:18.355416",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60895.0,
+        "exit_price": 61808.42,
+        "status": "CLOSED",
+        "pnl": 913.42,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558974323_48b5",
+        "timestamp": "2026-11-13T14:21:14.323889",
+        "entry_timestamp": "2026-11-13T14:06:14.323889",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60904.4,
+        "exit_price": 61817.97,
+        "status": "CLOSED",
+        "pnl": 913.57,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558952381_0cdf",
+        "timestamp": "2026-11-13T14:20:52.381630",
+        "entry_timestamp": "2026-11-13T14:05:52.381630",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60901.6,
+        "exit_price": 61815.12,
+        "status": "CLOSED",
+        "pnl": 913.52,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558947610_8c60",
+        "timestamp": "2026-11-13T14:20:47.610514",
+        "entry_timestamp": "2026-11-13T14:05:47.610514",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60887.05,
+        "exit_price": 61800.36,
+        "status": "CLOSED",
+        "pnl": 913.31,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558943610_0f43",
+        "timestamp": "2026-11-13T14:20:43.610940",
+        "entry_timestamp": "2026-11-13T14:05:43.610940",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60892.8,
+        "exit_price": 61806.19,
+        "status": "CLOSED",
+        "pnl": 913.39,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558924960_8409",
+        "timestamp": "2026-11-13T14:20:24.960717",
+        "entry_timestamp": "2026-11-13T14:05:24.960717",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60892.45,
+        "exit_price": 61805.84,
+        "status": "CLOSED",
+        "pnl": 913.39,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558915222_8a17",
+        "timestamp": "2026-11-13T14:20:15.222871",
+        "entry_timestamp": "2026-11-13T14:05:15.222871",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60892.45,
+        "exit_price": 61805.84,
+        "status": "CLOSED",
+        "pnl": 913.39,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558887478_f485",
+        "timestamp": "2026-11-13T14:19:47.478756",
+        "entry_timestamp": "2026-11-13T14:04:47.478756",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60900PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60878.4,
+        "exit_price": 61791.58,
+        "status": "CLOSED",
+        "pnl": 913.18,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558884725_e4fd",
+        "timestamp": "2026-11-13T14:19:44.725243",
+        "entry_timestamp": "2026-11-13T14:04:44.725243",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60900PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60879.3,
+        "exit_price": 61792.49,
+        "status": "CLOSED",
+        "pnl": 913.19,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558877497_958f",
+        "timestamp": "2026-11-13T14:19:37.497056",
+        "entry_timestamp": "2026-11-13T14:04:37.497056",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60877.4,
+        "exit_price": 61790.56,
+        "status": "CLOSED",
+        "pnl": 913.16,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558868628_826d",
+        "timestamp": "2026-11-13T14:19:28.628732",
+        "entry_timestamp": "2026-11-13T14:04:28.628732",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60900PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60870.65,
+        "exit_price": 61783.71,
+        "status": "CLOSED",
+        "pnl": 913.06,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558860600_b8ea",
+        "timestamp": "2026-11-13T14:19:20.600382",
+        "entry_timestamp": "2026-11-13T14:04:20.600382",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60877.9,
+        "exit_price": 61791.07,
+        "status": "CLOSED",
+        "pnl": 913.17,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558838069_3319",
+        "timestamp": "2026-11-13T14:18:58.069704",
+        "entry_timestamp": "2026-11-13T14:03:58.069704",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60898.75,
+        "exit_price": 61812.23,
+        "status": "CLOSED",
+        "pnl": 913.48,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558807247_ad9d",
+        "timestamp": "2026-11-13T14:18:27.247540",
+        "entry_timestamp": "2026-11-13T14:03:27.247540",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60913.25,
+        "exit_price": 61826.95,
+        "status": "CLOSED",
+        "pnl": 913.7,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558801753_aa2f",
+        "timestamp": "2026-11-13T14:18:21.753844",
+        "entry_timestamp": "2026-11-13T14:03:21.753844",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60905.45,
+        "exit_price": 61819.03,
+        "status": "CLOSED",
+        "pnl": 913.58,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558782719_9cd9",
+        "timestamp": "2026-11-13T14:18:02.719932",
+        "entry_timestamp": "2026-11-13T14:03:02.719932",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60912.9,
+        "exit_price": 61826.59,
+        "status": "CLOSED",
+        "pnl": 913.69,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558776163_447e",
+        "timestamp": "2026-11-13T14:17:56.163828",
+        "entry_timestamp": "2026-11-13T14:02:56.163828",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60917.1,
+        "exit_price": 61830.86,
+        "status": "CLOSED",
+        "pnl": 913.76,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558769396_ed5b",
+        "timestamp": "2026-11-13T14:17:49.396930",
+        "entry_timestamp": "2026-11-13T14:02:49.396930",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60916.35,
+        "exit_price": 61830.1,
+        "status": "CLOSED",
+        "pnl": 913.75,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558752630_5918",
+        "timestamp": "2026-11-13T14:17:32.632980",
+        "entry_timestamp": "2026-11-13T14:02:32.632980",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60912.9,
+        "exit_price": 61826.59,
+        "status": "CLOSED",
+        "pnl": 913.69,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558749874_2d08",
+        "timestamp": "2026-11-13T14:17:29.874956",
+        "entry_timestamp": "2026-11-13T14:02:29.874956",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60911.1,
+        "exit_price": 61824.77,
+        "status": "CLOSED",
+        "pnl": 913.67,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558744211_c7ef",
+        "timestamp": "2026-11-13T14:17:24.211382",
+        "entry_timestamp": "2026-11-13T14:02:24.211382",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60914.1,
+        "exit_price": 61827.81,
+        "status": "CLOSED",
+        "pnl": 913.71,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558735795_c896",
+        "timestamp": "2026-11-13T14:17:15.795184",
+        "entry_timestamp": "2026-11-13T14:02:15.795184",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60917.4,
+        "exit_price": 61831.16,
+        "status": "CLOSED",
+        "pnl": 913.76,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "PAPER_1794558733155_9619",
+        "timestamp": "2026-11-13T14:17:13.155023",
+        "entry_timestamp": "2026-11-13T14:02:13.155023",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY60950PE",
+        "side": "BUY",
+        "quantity": 1,
+        "entry_price": 60913.05,
+        "exit_price": 61826.75,
+        "status": "CLOSED",
+        "pnl": 913.7,
+        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
+        "mode": "AUTO"
+      },
+      {
+        "trade_id": "SIM_20261113_1510_BANKNIFTY",
+        "timestamp": "2026-11-13T15:25:00",
+        "entry_timestamp": "2026-11-13T15:10:00",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY61100CE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 329.68,
+        "exit_price": 324.89,
+        "status": "CLOSED",
+        "pnl": -71.85,
+        "reasoning": "15M TARGET/TIME EXIT: Spot 61042.55 -> 61034.1 | PnL \u20b9-71.85 (-1.4%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "SIM_20261113_1510_NIFTY",
+        "timestamp": "2026-11-13T15:25:00",
+        "entry_timestamp": "2026-11-13T15:10:00",
+        "action": "CLOSE",
+        "symbol": "NFO:NIFTY25200CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 119.09,
+        "exit_price": 120.53,
+        "status": "CLOSED",
+        "pnl": 36.0,
+        "reasoning": "15M TARGET/TIME EXIT: Spot 25140.55 -> 25144.3 | PnL \u20b9+36.00 (+1.2%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794564046925_0478",
+        "timestamp": "2026-11-13T15:46:23.836459",
+        "entry_timestamp": "2026-11-13T15:30:46.925164",
+        "action": "CLOSE",
+        "symbol": "NFO:MIDCPNIFTY72900CE",
+        "side": "BUY",
+        "quantity": 50,
+        "entry_price": 419.7,
+        "exit_price": 418.38,
+        "status": "CLOSED",
+        "pnl": -66.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-66.00 (-0.31%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794564025611_44d2",
+        "timestamp": "2026-11-13T15:46:19.609010",
+        "entry_timestamp": "2026-11-13T15:30:25.611359",
+        "action": "CLOSE",
+        "symbol": "NFO:FINNIFTY29900CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 158.37,
+        "exit_price": 157.93,
+        "status": "CLOSED",
+        "pnl": -11.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-11.00 (-0.28%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794564006955_cffb",
+        "timestamp": "2026-11-13T15:46:15.571440",
+        "entry_timestamp": "2026-11-13T15:30:06.955956",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY61100CE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 327.31,
+        "exit_price": 326.86,
+        "status": "CLOSED",
+        "pnl": -6.75,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-6.75 (-0.14%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794563970910_3366",
+        "timestamp": "2026-11-13T15:45:03.919441",
+        "entry_timestamp": "2026-11-13T15:29:30.910030",
+        "action": "CLOSE",
+        "symbol": "NFO:NIFTY25200CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 121.61,
+        "exit_price": 121.34,
+        "status": "CLOSED",
+        "pnl": -6.75,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-6.75 (-0.22%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794563775342_3d27",
+        "timestamp": "2026-11-13T15:41:55.721641",
+        "entry_timestamp": "2026-11-13T15:26:15.342878",
+        "action": "CLOSE",
+        "symbol": "NFO:MIDCPNIFTY72900CE",
+        "side": "BUY",
+        "quantity": 50,
+        "entry_price": 413.26,
+        "exit_price": 425.76,
+        "status": "CLOSED",
+        "pnl": 625.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9625.00 (+3.02%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794563745265_7d65",
+        "timestamp": "2026-11-13T15:41:50.548615",
+        "entry_timestamp": "2026-11-13T15:25:45.265835",
+        "action": "CLOSE",
+        "symbol": "NFO:FINNIFTY29850CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 161.03,
+        "exit_price": 186.07,
+        "status": "CLOSED",
+        "pnl": 626.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9626.00 (+15.55%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794563711902_4d1a",
+        "timestamp": "2026-11-13T15:40:45.945407",
+        "entry_timestamp": "2026-11-13T15:25:11.902584",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY61100CE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 321.39,
+        "exit_price": 333.04,
+        "status": "CLOSED",
+        "pnl": 174.75,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9174.75 (+3.62%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794563660811_02c0",
+        "timestamp": "2026-11-13T15:39:37.142181",
+        "entry_timestamp": "2026-11-13T15:24:20.811637",
+        "action": "CLOSE",
+        "symbol": "NFO:NIFTY25200CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 118.51,
+        "exit_price": 124.05,
+        "status": "CLOSED",
+        "pnl": 138.5,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9138.50 (+4.67%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794563468458_f413",
+        "timestamp": "2026-11-13T15:36:32.093149",
+        "entry_timestamp": "2026-11-13T15:21:08.458275",
+        "action": "CLOSE",
+        "symbol": "NFO:MIDCPNIFTY72900CE",
+        "side": "BUY",
+        "quantity": 50,
+        "entry_price": 414.13,
+        "exit_price": 419.43,
+        "status": "CLOSED",
+        "pnl": 265.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9265.00 (+1.28%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794563445144_d516",
+        "timestamp": "2026-11-13T15:36:25.933915",
+        "entry_timestamp": "2026-11-13T15:20:45.144712",
+        "action": "CLOSE",
+        "symbol": "NFO:FINNIFTY29850CE",
+        "side": "BUY",
+        "quantity": 25,
+        "entry_price": 160.17,
+        "exit_price": 183.49,
+        "status": "CLOSED",
+        "pnl": 583.0,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9583.00 (+14.56%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
+      {
+        "trade_id": "PAPER_1794563423332_31a8",
+        "timestamp": "2026-11-13T15:36:20.536552",
+        "entry_timestamp": "2026-11-13T15:20:23.333002",
+        "action": "CLOSE",
+        "symbol": "NFO:BANKNIFTY61100CE",
+        "side": "BUY",
+        "quantity": 15,
+        "entry_price": 320.07,
+        "exit_price": 328.19,
+        "status": "CLOSED",
+        "pnl": 121.8,
+        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9121.80 (+2.54%)",
+        "mode": "AUTO_OBSERVATORY"
+      },
       {
         "trade_id": "PAPER_1794563394208_93e5",
         "timestamp": "2026-11-13T15:35:14.882368",
@@ -2645,549 +3271,9 @@
         "pnl": -227.25,
         "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-227.25 (-6.24%)",
         "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794561603244_b572",
-        "timestamp": "2026-11-13T15:08:54.704875",
-        "entry_timestamp": "2026-11-13T14:50:03.244172",
-        "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY61100CE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 320.65,
-        "exit_price": 285.62,
-        "status": "CLOSED",
-        "pnl": -525.45,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-525.45 (-10.92%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "SIM_20261113_1440_FINNIFTY",
-        "timestamp": "2026-11-13T14:55:00",
-        "entry_timestamp": "2026-11-13T14:40:00",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29800CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 161.54,
-        "exit_price": 175.42,
-        "status": "CLOSED",
-        "pnl": 347.0,
-        "reasoning": "15M TARGET/TIME EXIT: Spot 29764.7 -> 29767.2 | PnL \u20b9+347.00 (+8.6%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "SIM_20261113_1410_BANKNIFTY",
-        "timestamp": "2026-11-13T14:25:00",
-        "entry_timestamp": "2026-11-13T14:10:00",
-        "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY60800PE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 284.37,
-        "exit_price": 297.03,
-        "status": "CLOSED",
-        "pnl": 189.9,
-        "reasoning": "15M TARGET/TIME EXIT: Spot 60906.85 -> 60943.3 | PnL \u20b9+189.90 (+4.5%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "SIM_20261113_1410_NIFTY",
-        "timestamp": "2026-11-13T14:25:00",
-        "entry_timestamp": "2026-11-13T14:10:00",
-        "action": "CLOSE",
-        "symbol": "NFO:NIFTY25000PE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 104.74,
-        "exit_price": 109.6,
-        "status": "CLOSED",
-        "pnl": 121.5,
-        "reasoning": "15M TARGET/TIME EXIT: Spot 25073.15 -> 25087.3 | PnL \u20b9+121.50 (+4.6%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794561321766_ba23",
-        "timestamp": "2026-11-13T15:04:02.073188",
-        "entry_timestamp": "2026-11-13T14:45:21.766858",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29800CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 161.65,
-        "exit_price": 156.75,
-        "status": "CLOSED",
-        "pnl": -122.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-122.50 (-3.03%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794561300627_5134",
-        "timestamp": "2026-11-13T15:03:56.041042",
-        "entry_timestamp": "2026-11-13T14:45:00.627500",
-        "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY61100CE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 304.68,
-        "exit_price": 285.99,
-        "status": "CLOSED",
-        "pnl": -280.35,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-280.35 (-6.13%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794560986831_a8bf",
-        "timestamp": "2026-11-13T14:58:55.589587",
-        "entry_timestamp": "2026-11-13T14:39:46.831480",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29800CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 159.44,
-        "exit_price": 165.12,
-        "status": "CLOSED",
-        "pnl": 142.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9142.00 (+3.56%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794560972038_a3c5",
-        "timestamp": "2026-11-13T14:58:50.077705",
-        "entry_timestamp": "2026-11-13T14:39:32.038992",
-        "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY61100CE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 322.16,
-        "exit_price": 307.05,
-        "status": "CLOSED",
-        "pnl": -226.65,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-226.65 (-4.69%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794560710062_af4e",
-        "timestamp": "2026-11-13T14:54:07.781126",
-        "entry_timestamp": "2026-11-13T14:35:10.062230",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29800CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 152.95,
-        "exit_price": 162.88,
-        "status": "CLOSED",
-        "pnl": 248.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9248.25 (+6.49%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794560408841_ad02",
-        "timestamp": "2026-11-13T14:48:44.197846",
-        "entry_timestamp": "2026-11-13T14:30:08.841713",
-        "action": "CLOSE",
-        "symbol": "NFO:NIFTY25050PE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 120.55,
-        "exit_price": 107.49,
-        "status": "CLOSED",
-        "pnl": -326.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-326.50 (-10.83%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794560121064_2408",
-        "timestamp": "2026-11-13T14:44:04.209087",
-        "entry_timestamp": "2026-11-13T14:25:21.064926",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY72675PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 381.71,
-        "exit_price": 326.03,
-        "status": "CLOSED",
-        "pnl": -2784.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-2784.00 (-14.59%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794560089077_40f3",
-        "timestamp": "2026-11-13T14:43:51.099524",
-        "entry_timestamp": "2026-11-13T14:24:49.077342",
-        "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY60800PE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 281.65,
-        "exit_price": 252.13,
-        "status": "CLOSED",
-        "pnl": -442.8,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-442.80 (-10.48%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794560058779_580c",
-        "timestamp": "2026-11-13T14:43:44.186304",
-        "entry_timestamp": "2026-11-13T14:24:18.779496",
-        "action": "CLOSE",
-        "symbol": "NFO:NIFTY25000PE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 108.0,
-        "exit_price": 90.76,
-        "status": "CLOSED",
-        "pnl": -431.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-431.00 (-15.96%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794559795466_8213",
-        "timestamp": "2026-11-13T14:38:51.209186",
-        "entry_timestamp": "2026-11-13T14:19:55.466770",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY72700PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 385.16,
-        "exit_price": 315.97,
-        "status": "CLOSED",
-        "pnl": -3459.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-3459.50 (-17.96%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794559762980_0dfe",
-        "timestamp": "2026-11-13T14:38:46.512131",
-        "entry_timestamp": "2026-11-13T14:19:22.980979",
-        "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY60800PE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 281.23,
-        "exit_price": 232.32,
-        "status": "CLOSED",
-        "pnl": -733.65,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-733.65 (-17.39%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794559486003_d4de",
-        "timestamp": "2026-11-13T14:33:56.266213",
-        "entry_timestamp": "2026-11-13T14:14:46.003891",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY72725PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 386.78,
-        "exit_price": 340.21,
-        "status": "CLOSED",
-        "pnl": -2328.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-2328.50 (-12.04%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794559469439_d537",
-        "timestamp": "2026-11-13T14:33:50.723540",
-        "entry_timestamp": "2026-11-13T14:14:29.439419",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29650PE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 132.22,
-        "exit_price": 116.51,
-        "status": "CLOSED",
-        "pnl": -392.75,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-392.75 (-11.88%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794559455525_7f80",
-        "timestamp": "2026-11-13T14:33:47.601408",
-        "entry_timestamp": "2026-11-13T14:14:15.525254",
-        "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY60800PE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 281.13,
-        "exit_price": 243.68,
-        "status": "CLOSED",
-        "pnl": -561.75,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-561.75 (-13.32%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794559432960_5af6",
-        "timestamp": "2026-11-13T14:33:42.328432",
-        "entry_timestamp": "2026-11-13T14:13:52.960700",
-        "action": "CLOSE",
-        "symbol": "NFO:NIFTY25050PE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 125.14,
-        "exit_price": 109.33,
-        "status": "CLOSED",
-        "pnl": -395.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-395.25 (-12.63%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794559230286_5618",
-        "timestamp": "2026-11-13T14:29:29.878854",
-        "entry_timestamp": "2026-11-13T14:10:30.286303",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY72750PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 390.48,
-        "exit_price": 394.92,
-        "status": "CLOSED",
-        "pnl": 222.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9222.00 (+1.14%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794559176295_9581",
-        "timestamp": "2026-11-13T14:29:09.082390",
-        "entry_timestamp": "2026-11-13T14:09:36.295043",
-        "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY60800PE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 297.04,
-        "exit_price": 264.36,
-        "status": "CLOSED",
-        "pnl": -490.2,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-490.20 (-11.00%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794559035169_491c",
-        "timestamp": "2026-11-13T14:23:50.431260",
-        "entry_timestamp": "2026-11-13T14:07:15.169777",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY72775PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 383.64,
-        "exit_price": 451.1,
-        "status": "CLOSED",
-        "pnl": 3373.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b93373.00 (+17.58%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794559017557_18fd",
-        "timestamp": "2026-11-13T14:23:45.009400",
-        "entry_timestamp": "2026-11-13T14:06:57.557944",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29650PE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 133.84,
-        "exit_price": 142.1,
-        "status": "CLOSED",
-        "pnl": 206.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9206.50 (+6.17%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794559001973_fb65",
-        "timestamp": "2026-11-13T14:23:40.672922",
-        "entry_timestamp": "2026-11-13T14:06:41.973992",
-        "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY60800PE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 286.24,
-        "exit_price": 298.9,
-        "status": "CLOSED",
-        "pnl": 189.9,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9189.90 (+4.42%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794558589187_ffb3",
-        "timestamp": "2026-11-13T14:18:48.889961",
-        "entry_timestamp": "2026-11-13T13:59:49.187868",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY72800PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 385.16,
-        "exit_price": 427.66,
-        "status": "CLOSED",
-        "pnl": 2125.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b92125.00 (+11.03%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794558571051_edb5",
-        "timestamp": "2026-11-13T14:18:30.474634",
-        "entry_timestamp": "2026-11-13T13:59:31.051411",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29700PE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 146.39,
-        "exit_price": 150.91,
-        "status": "CLOSED",
-        "pnl": 113.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9113.00 (+3.09%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794558556635_37e1",
-        "timestamp": "2026-11-13T14:18:25.966712",
-        "entry_timestamp": "2026-11-13T13:59:16.635504",
-        "action": "CLOSE",
-        "symbol": "NFO:BANKNIFTY60800PE",
-        "side": "BUY",
-        "quantity": 15,
-        "entry_price": 274.39,
-        "exit_price": 283.16,
-        "status": "CLOSED",
-        "pnl": 131.55,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9131.55 (+3.20%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794558350573_f930",
-        "timestamp": "2026-11-13T14:10:50.573401",
-        "entry_timestamp": "2026-11-13T13:55:50.573401",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY72800PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 384.43,
-        "exit_price": 390.2,
-        "status": "CLOSED",
-        "pnl": 288.5,
-        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794558040686_844f",
-        "timestamp": "2026-11-13T14:05:40.686173",
-        "entry_timestamp": "2026-11-13T13:50:40.686173",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY72825PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 392.56,
-        "exit_price": 398.45,
-        "status": "CLOSED",
-        "pnl": 294.5,
-        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "SIM_20261113_1340_MIDCPNIFTY",
-        "timestamp": "2026-11-13T13:55:00",
-        "entry_timestamp": "2026-11-13T13:40:00",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY72875PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 393.12,
-        "exit_price": 426.56,
-        "status": "CLOSED",
-        "pnl": 1672.0,
-        "reasoning": "15M TARGET/TIME EXIT: Spot 72890.3 -> 72848.65 | PnL \u20b9+1672.00 (+8.5%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794557672234_b7ad",
-        "timestamp": "2026-11-13T13:59:32.234319",
-        "entry_timestamp": "2026-11-13T13:44:32.234319",
-        "action": "CLOSE",
-        "symbol": "NFO:MIDCPNIFTY72850PE",
-        "side": "BUY",
-        "quantity": 50,
-        "entry_price": 384.44,
-        "exit_price": 390.21,
-        "status": "CLOSED",
-        "pnl": 288.5,
-        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794557651896_d225",
-        "timestamp": "2026-11-13T13:59:11.896097",
-        "entry_timestamp": "2026-11-13T13:44:11.896097",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29800CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 154.84,
-        "exit_price": 157.16,
-        "status": "CLOSED",
-        "pnl": 58.0,
-        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794557372272_43aa",
-        "timestamp": "2026-11-13T13:58:28.197133",
-        "entry_timestamp": "2026-11-13T13:39:32.272687",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29800CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 165.58,
-        "exit_price": 145.65,
-        "status": "CLOSED",
-        "pnl": -498.25,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-498.25 (-12.04%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794557320335_f4cd",
-        "timestamp": "2026-11-13T13:58:16.830765",
-        "entry_timestamp": "2026-11-13T13:38:40.335079",
-        "action": "CLOSE",
-        "symbol": "NFO:NIFTY25150CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 137.39,
-        "exit_price": 121.33,
-        "status": "CLOSED",
-        "pnl": -401.5,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b9-401.50 (-11.69%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794557148930_9457",
-        "timestamp": "2026-11-13T13:53:35.378394",
-        "entry_timestamp": "2026-11-13T13:35:48.930909",
-        "action": "CLOSE",
-        "symbol": "NFO:FINNIFTY29800CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 151.5,
-        "exit_price": 153.54,
-        "status": "CLOSED",
-        "pnl": 51.0,
-        "reasoning": "OBSERVATORY AUTO-EXIT: PnL \u20b951.00 (+1.35%)",
-        "mode": "AUTO_OBSERVATORY"
-      },
-      {
-        "trade_id": "PAPER_1794556789889_2152",
-        "timestamp": "2026-11-13T13:44:49.889155",
-        "entry_timestamp": "2026-11-13T13:29:49.889155",
-        "action": "CLOSE",
-        "symbol": "NFO:NIFTY25150CE",
-        "side": "BUY",
-        "quantity": 25,
-        "entry_price": 137.54,
-        "exit_price": 139.6,
-        "status": "CLOSED",
-        "pnl": 51.5,
-        "reasoning": "AUTO-SQUARE-OFF: Position closed after holding window / EOD recovery",
-        "mode": "AUTO_OBSERVATORY"
       }
     ],
-    "all_time_closed": 2081,
-    "all_time_pnl": 987214.65
+    "all_time_closed": 2117,
+    "all_time_pnl": 1010632.59
   }
 }

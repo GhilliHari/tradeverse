@@ -66,3 +66,5 @@ firebase-debug.log
 .coverage
 htmlcov/
 backend/.env
+.vercel
+.env*
