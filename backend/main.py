@@ -233,6 +233,133 @@ autonomous_state: Dict[str, Any] = {
     "last_tradingsymbol": None,
 }
 
+def get_hybrid_trailing_profile(regime: str = "NOMINAL", sentiment_score: float = 0.0) -> dict:
+    """
+    Computes dynamic risk, target, and trailing stop-loss percentages based on live market regime,
+    macro trend expansion, and sentiment mood.
+    
+    Regimes:
+    - TRENDING_EXPANSION / POWER_HOUR_TREND: Extended target (+25% to +35%), looser trail (3.5% gap)
+      to capture massive gamma expansion runners without shaking out on normal pullbacks.
+    - VOLATILE / OPENING_VOLATILITY: Quick targets (+12%), tighter breakeven (+2.5%), tighter trailing
+      to protect profits against sharp whipsaws.
+    - NOMINAL / LUNCH_LULL / RANGE_BOUND: Balanced scalping (+15% target, +3.0% breakeven).
+    """
+    reg_upper = (regime or "").upper()
+    
+    # 1. Trending Expansion Days (High Momentum / Breakout)
+    if any(k in reg_upper for k in ("TREND", "EXPANSION", "POWER_HOUR")) or abs(sentiment_score) >= 0.7:
+        return {
+            "regime_profile": "TRENDING_EXPANSION",
+            "target_pct": 30.0,             # Ride high delta & gamma expansion
+            "stop_loss_pct": -5.0,          # Strict risk cap
+            "breakeven_trigger_pct": 3.5,   # Slightly wider to avoid premature lock in fast bars
+            "breakeven_lock_pct": 1.0,      # Lock +1.0% net profit
+            "stage1_trigger_pct": 8.0,      # Once +8%, trail starts
+            "stage1_trail_gap": 3.0,        # Trail 3.0% behind peak
+            "stage2_trigger_pct": 14.0,     # Once +14%, super-runner engages
+            "stage2_trail_gap": 3.5,        # Trail 3.5% behind peak up to +30%
+            "max_hold_minutes": 40,         # Allow full multi-candle impulse move
+        }
+    
+    # 2. Volatile / Choppy / High VIX Regimes
+    if any(k in reg_upper for k in ("VOLATIL", "CHOP", "CRASH")) or sentiment_score == 0.0:
+        return {
+            "regime_profile": "VOLATILITY_DEFENSE",
+            "target_pct": 12.0,             # Swift target before mean reversion
+            "stop_loss_pct": -4.5,          # Tighter risk cut
+            "breakeven_trigger_pct": 2.5,   # Early breakeven lock
+            "breakeven_lock_pct": 0.6,      # Cover brokerage + 0.6%
+            "stage1_trigger_pct": 5.0,      # Quick trail
+            "stage1_trail_gap": 2.0,        # Tight 2.0% gap
+            "stage2_trigger_pct": 8.0,      # Tighter runner lock
+            "stage2_trail_gap": 2.5,        # 2.5% gap
+            "max_hold_minutes": 20,         # Quick exit before theta decay hits
+        }
+
+    # 3. Standard / Balanced Market Regimes
+    return {
+        "regime_profile": "BALANCED_NOMINAL",
+        "target_pct": 20.0,
+        "stop_loss_pct": -5.0,
+        "breakeven_trigger_pct": 3.0,
+        "breakeven_lock_pct": 0.8,
+        "stage1_trigger_pct": 6.0,
+        "stage1_trail_gap": 2.5,
+        "stage2_trigger_pct": 10.0,
+        "stage2_trail_gap": 3.0,
+        "max_hold_minutes": 30,
+    }
+
+def record_live_trade_to_observatory(
+    tsym: str,
+    tracked: dict,
+    exit_price: float,
+    exit_reason: str,
+    pnl_inr: float,
+    pnl_pct: float,
+    elapsed_mins: float,
+    net_qty: int
+):
+    """
+    Records completed live broker trade into Observatory so it immediately shows up in
+    the Observatory feed and feeds into Pattern Analytics (win rates, regime breakdown, etc.).
+    """
+    try:
+        from simulation_engine import simulation_engine as eng_instance
+    except Exception:
+        eng_instance = globals().get("simulation_engine")
+    if not eng_instance:
+        return
+    try:
+        now = datetime.now()
+        entry_time = tracked.get("entry_time") or now
+        entry_price = float(tracked.get("entry_price") or exit_price or 0.0)
+        target_pct = float(tracked.get("target_pct", 20.0))
+        sl_pct = float(tracked.get("stop_loss_pct", -5.0))
+        regime = tracked.get("regime_profile") or autonomous_state.get("last_regime") or "NOMINAL"
+        analysis = tracked.get("analysis") or {}
+        confidence = float(analysis.get("confidence") or 0.85)
+
+        symbol = "BANKNIFTY" if "BANK" in tsym.upper() else "NIFTY"
+        signal = "BUY_CE" if "CE" in tsym.upper() else ("BUY_PE" if "PE" in tsym.upper() else "BUY_CE")
+        trade_id = f"LIVE_{tsym}_{int(entry_time.timestamp())}"
+
+        obs_record = {
+            "id": trade_id,
+            "symbol": symbol,
+            "timestamp": entry_time.isoformat(),
+            "prediction": {
+                "signal": signal,
+                "symbol": symbol,
+                "strike": tsym,
+                "confidence": confidence,
+                "technique": f"Autopilot {regime} Real Broker Order",
+                "entry_price": round(entry_price, 2),
+                "target_1_price": round(entry_price * (1 + target_pct / 100.0), 2),
+                "stop_loss_price": round(entry_price * (1 + sl_pct / 100.0), 2),
+                "regime": regime,
+                "model_scores": analysis.get("model_scores") or {}
+            },
+            "paper_trade_id": "LIVE_REAL_MONEY",
+            "trade_source": "LIVE_BROKER",
+            "status": "COMPLETED",
+            "actual_outcome": {
+                "pnl": round(pnl_inr, 2),
+                "pnl_pct": round(pnl_pct, 2),
+                "entry_price": round(entry_price, 2),
+                "exit_price": round(exit_price, 2),
+                "exit_reason": exit_reason,
+                "holding_time_minutes": round(elapsed_mins, 1),
+                "quantity": abs(net_qty),
+                "outcome": "WIN" if pnl_inr > 0 else "LOSS"
+            }
+        }
+        eng_instance._save_prediction(obs_record)
+        logger.info(f"🔭 [Observatory] Recorded live completed broker trade {tsym} (PnL: ₹{pnl_inr:+.2f}, Reason: {exit_reason}) to Observatory pattern analytics!")
+    except Exception as e:
+        logger.warning(f"Failed to record live trade to Observatory: {e}")
+
 async def monitor_live_positions_step():
     """
     Monitors open live broker positions for Stop-Loss (-15%), Target (+25%),
@@ -257,19 +384,36 @@ async def monitor_live_positions_step():
             if not tsym:
                 continue
 
-            # If a previously tracked position was manually closed on broker, record realized PnL
+            # If a previously tracked position was manually closed on broker, record realized PnL and Observatory outcome
             if net_qty == 0:
                 if tsym in active_live_positions:
-                    active_live_positions.pop(tsym, None)
+                    tracked = active_live_positions.pop(tsym, None)
                     realised_pnl = float(pos.get("realised") or pos.get("pnl") or 0.0)
                     if risk_engine and realised_pnl != 0.0:
                         risk_engine.update_pnl(realised_pnl, trade_id=f"CLOSED_{tsym}_{now.strftime('%Y%m%d')}")
+                    entry_p = float((tracked or {}).get("entry_price") or 0.0)
+                    exit_p = float(pos.get("ltp") or entry_p)
+                    pnl_pct = ((exit_p - entry_p) / entry_p * 100.0) if entry_p > 0 else 0.0
+                    elapsed = (now - ((tracked or {}).get("entry_time") or now)).total_seconds() / 60.0
+                    record_live_trade_to_observatory(
+                        tsym=tsym,
+                        tracked=tracked or {},
+                        exit_price=exit_p,
+                        exit_reason="MANUAL / BROKER CLOSED",
+                        pnl_inr=realised_pnl,
+                        pnl_pct=pnl_pct,
+                        elapsed_mins=elapsed,
+                        net_qty=int((tracked or {}).get("quantity") or 1)
+                    )
                 continue
 
             tracked = active_live_positions.get(tsym)
             entry_price = float((tracked or {}).get("entry_price") or pos.get("buyavgprice") or 0.0)
             entry_time = (tracked or {}).get("entry_time") or now
             if tsym not in active_live_positions:
+                # Resolve market regime from autonomous_state or simulation_engine
+                detected_regime = autonomous_state.get("last_regime") or "NOMINAL"
+                profile = get_hybrid_trailing_profile(detected_regime, sentiment_score=0.0)
                 active_live_positions[tsym] = {
                     "tradingsymbol": tsym,
                     "exchange": exch,
@@ -277,13 +421,19 @@ async def monitor_live_positions_step():
                     "entry_price": entry_price,
                     "entry_time": entry_time,
                     "peak_price": entry_price,
-                    "stop_loss_pct": -5.0,
-                    "target_pct": 10.0,
-                    "breakeven_trigger_pct": 2.5,
-                    "breakeven_lock_pct": 0.6,
-                    "max_hold_minutes": 25,
+                    "regime_profile": profile["regime_profile"],
+                    "stop_loss_pct": profile["stop_loss_pct"],
+                    "target_pct": profile["target_pct"],
+                    "breakeven_trigger_pct": profile["breakeven_trigger_pct"],
+                    "breakeven_lock_pct": profile["breakeven_lock_pct"],
+                    "stage1_trigger_pct": profile["stage1_trigger_pct"],
+                    "stage1_trail_gap": profile["stage1_trail_gap"],
+                    "stage2_trigger_pct": profile["stage2_trigger_pct"],
+                    "stage2_trail_gap": profile["stage2_trail_gap"],
+                    "max_hold_minutes": profile["max_hold_minutes"],
                 }
                 tracked = active_live_positions[tsym]
+                logger.info(f"📊 [LivePositionMonitor] Initialized {profile['regime_profile']} exit profile for {tsym}: Target +{profile['target_pct']}%, Breakeven @ +{profile['breakeven_trigger_pct']}%, Hold {profile['max_hold_minutes']}m")
 
             ltp_val = float(pos.get("ltp") or 0.0)
             if ltp_val <= 0.0:
@@ -304,31 +454,44 @@ async def monitor_live_positions_step():
             pnl_inr = (ltp_val - entry_price) * net_qty
             elapsed_mins = (now - entry_time).total_seconds() / 60.0
 
-            # Dynamic Breakeven & Ratcheting Trailing Stop-Loss:
-            # 1. Once position reaches +2.5% (e.g. +₹215 on a ₹8,600 lot), lock SL at +0.6% (covers brokerage + green exit)
-            # 2. Once position reaches +5.0%, trail SL 2.2% behind peak_pct
+            # Hybrid Dynamic Ratcheting Trailing Stop-Loss (Adaptive to Expansion vs Defense):
             current_sl_pct = float(tracked.get("stop_loss_pct", -5.0))
-            be_trigger = float(tracked.get("breakeven_trigger_pct", 2.5))
-            be_lock = float(tracked.get("breakeven_lock_pct", 0.6))
+            be_trigger = float(tracked.get("breakeven_trigger_pct", 3.0))
+            be_lock = float(tracked.get("breakeven_lock_pct", 0.8))
+            st1_trigger = float(tracked.get("stage1_trigger_pct", 6.0))
+            st1_gap = float(tracked.get("stage1_trail_gap", 2.5))
+            st2_trigger = float(tracked.get("stage2_trigger_pct", 10.0))
+            st2_gap = float(tracked.get("stage2_trail_gap", 3.0))
+
+            # 1. Breakeven Lock: once position moves safely into the green
             if peak_pct >= be_trigger and current_sl_pct < be_lock:
                 current_sl_pct = be_lock
                 tracked["stop_loss_pct"] = current_sl_pct
                 logger.info(f"🔒 [LivePositionMonitor] Breakeven Lock activated for {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
-            if peak_pct >= 5.0:
-                trail_sl_pct = round(peak_pct - 2.2, 2)
+
+            # 2. Stage 2 Super-Runner Trail (riding trending expansion moves)
+            if peak_pct >= st2_trigger:
+                trail_sl_pct = round(peak_pct - st2_gap, 2)
                 if trail_sl_pct > current_sl_pct:
                     current_sl_pct = trail_sl_pct
                     tracked["stop_loss_pct"] = current_sl_pct
-                    logger.info(f"📈 [LivePositionMonitor] Trailing SL ratcheted up for {tsym} (Peak: +{peak_pct:.2f}% -> SL raised to +{current_sl_pct:.2f}%)")
+                    logger.info(f"🚀 [LivePositionMonitor] Stage-2 Super-Runner Trailing SL raised for {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
+            # 3. Stage 1 Runner Trail
+            elif peak_pct >= st1_trigger:
+                trail_sl_pct = round(peak_pct - st1_gap, 2)
+                if trail_sl_pct > current_sl_pct:
+                    current_sl_pct = trail_sl_pct
+                    tracked["stop_loss_pct"] = current_sl_pct
+                    logger.info(f"📈 [LivePositionMonitor] Stage-1 Trailing SL raised for {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
 
             exit_reason = None
             if is_eod_squareoff:
                 exit_reason = f"EOD AUTO SQUARE-OFF (15:20 IST) | PnL: ₹{pnl_inr:+.2f} ({pnl_pct:+.1f}%)"
             elif pnl_pct <= current_sl_pct:
                 exit_reason = f"STOP-LOSS / TRAILING-LOCK HIT ({pnl_pct:+.1f}% <= {current_sl_pct:+.1f}%) | PnL: ₹{pnl_inr:+.2f}"
-            elif pnl_pct >= tracked.get("target_pct", 10.0):
+            elif pnl_pct >= tracked.get("target_pct", 20.0):
                 exit_reason = f"TARGET HIT ({pnl_pct:+.1f}%) | PnL: ₹{pnl_inr:+.2f}"
-            elif elapsed_mins >= tracked.get("max_hold_minutes", 25):
+            elif elapsed_mins >= tracked.get("max_hold_minutes", 30):
                 exit_reason = f"TIME-EXIT ({int(elapsed_mins)}m) | PnL: ₹{pnl_inr:+.2f} ({pnl_pct:+.1f}%)"
 
             if exit_reason:
@@ -353,6 +516,16 @@ async def monitor_live_positions_step():
                 active_live_positions.pop(tsym, None)
                 if risk_engine:
                     risk_engine.update_pnl(pnl_inr, trade_id=f"EXIT_{tsym}_{int(now.timestamp())}")
+                record_live_trade_to_observatory(
+                    tsym=tsym,
+                    tracked=tracked,
+                    exit_price=ltp_val,
+                    exit_reason=exit_reason,
+                    pnl_inr=pnl_inr,
+                    pnl_pct=pnl_pct,
+                    elapsed_mins=elapsed_mins,
+                    net_qty=net_qty
+                )
                 notifier.notify_sync(
                     f"🛡️ *Live Auto-Exit ({tsym})*\n"
                     f"Reason: {exit_reason}\n"
@@ -447,6 +620,7 @@ async def run_autonomous_trading():
             status = res.get("status", "UNKNOWN")
             autonomous_state["last_cycle_at"] = datetime.now().isoformat()
             autonomous_state["last_signal"] = res.get("signal") or (res.get("analysis") or {}).get("final_signal", "HOLD")
+            autonomous_state["last_regime"] = (res.get("analysis") or {}).get("regime") or "NOMINAL"
             autonomous_state["last_status"] = status
             autonomous_state["last_reason"] = res.get("reason") or f"Status: {status}"
             autonomous_state["cycles_today"] = int(autonomous_state.get("cycles_today", 0)) + 1
@@ -779,6 +953,16 @@ async def get_market_pulse():
         }
     except Exception as e:
         logger.error(f"Market Pulse Error: {e}")
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/institutional/radar")
+async def get_institutional_radar():
+    """Returns institutional positioning, IV Rank, and Heavyweight anchor metrics."""
+    try:
+        from institutional_radar import InstitutionalRadar
+        return InstitutionalRadar.get_full_radar()
+    except Exception as e:
+        logger.error(f"Institutional Radar Error: {e}")
         return {"status": "error", "message": str(e)}
 
 @app.get("/api/market/indices")
@@ -1374,14 +1558,20 @@ async def get_gex_squeeze_status(symbol: str):
 
 
 @app.get("/api/orders")
-async def get_orders():
+async def get_orders(user_id: Optional[str] = None):
     """
-    Fetches the order book from the active broker.
+    Fetches the live order book from the active broker (Angel One).
     """
-    if not kite or not initialization_status["ready"]:
-        return []
     try:
-        return kite.orders()
+        target_user = user_id or config.OWNER_EMAIL
+        broker = await asyncio.to_thread(get_broker_client, target_user)
+        if broker and hasattr(broker, "orders"):
+            orders_list = await asyncio.to_thread(broker.orders)
+            if isinstance(orders_list, list):
+                return orders_list
+        if kite and hasattr(kite, "orders"):
+            return await asyncio.to_thread(kite.orders)
+        return []
     except Exception as e:
         logger.error(f"Failed to fetch orders: {e}")
         return []
@@ -3813,6 +4003,12 @@ async def execute_autopilot(
             fill_price = float(telemetry.get("executed_price") or ltp_val or 0.0)
             if risk_engine:
                 risk_engine.trades_today_count = int(getattr(risk_engine, "trades_today_count", 0)) + 1
+            
+            # Resolve dynamic hybrid profile from current market analysis
+            detected_regime = analysis.get("regime") or autonomous_state.get("last_regime") or "NOMINAL"
+            sent_score = float((analysis.get("model_scores") or {}).get("sentiment") or 0.0)
+            profile = get_hybrid_trailing_profile(detected_regime, sentiment_score=sent_score)
+            
             active_live_positions[resolved_symbol] = {
                 "tradingsymbol": resolved_symbol,
                 "exchange": target_exchange,
@@ -3820,12 +4016,19 @@ async def execute_autopilot(
                 "entry_price": fill_price,
                 "entry_time": datetime.now(),
                 "peak_price": fill_price,
-                "stop_loss_pct": -5.0,
-                "target_pct": 10.0,
-                "breakeven_trigger_pct": 2.5,
-                "breakeven_lock_pct": 0.6,
-                "max_hold_minutes": 25,
+                "regime_profile": profile["regime_profile"],
+                "stop_loss_pct": profile["stop_loss_pct"],
+                "target_pct": profile["target_pct"],
+                "breakeven_trigger_pct": profile["breakeven_trigger_pct"],
+                "breakeven_lock_pct": profile["breakeven_lock_pct"],
+                "stage1_trigger_pct": profile["stage1_trigger_pct"],
+                "stage1_trail_gap": profile["stage1_trail_gap"],
+                "stage2_trigger_pct": profile["stage2_trigger_pct"],
+                "stage2_trail_gap": profile["stage2_trail_gap"],
+                "max_hold_minutes": profile["max_hold_minutes"],
+                "analysis": analysis,
             }
+            logger.info(f"🎯 [Autopilot] Position {resolved_symbol} registered with {profile['regime_profile']} profile: Target +{profile['target_pct']}%, Breakeven @ +{profile['breakeven_trigger_pct']}%, Hold {profile['max_hold_minutes']}m")
         return {
             "status": "EXECUTED" if exec_status in ["COMPLETE", "FILLED", "MOCK_FILLED"] else exec_status,
             "order_id": telemetry.get("order_id"),

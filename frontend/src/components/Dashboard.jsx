@@ -43,7 +43,8 @@ import GeminiAssistant from './GeminiAssistant';
 import GannAstrologyIndicator from './GannAstrologyIndicator';
 import HybridEnsembleIndicator from './HybridEnsembleIndicator';
 import ElliottWaveIndicator from './ElliottWaveIndicator';
-import { Waves, Telescope, ScrollText, BookOpen, Layers, ShieldCheck, Clock, Sparkles, Compass, Target, Network } from 'lucide-react';
+import InstitutionalRadar from './InstitutionalRadar';
+import { Waves, Telescope, ScrollText, BookOpen, Layers, ShieldCheck, Clock, Sparkles, Compass, Target, Network, Landmark } from 'lucide-react';
 import MarketClock from './MarketClock';
 import MyScriptsTab from './MyScriptsTab';
 import { auth } from '../firebase';
@@ -1070,6 +1071,7 @@ const DashboardWithLogic = () => {
 
     const navItems = [
         { icon: Terminal, label: 'Live Terminal' },
+        { icon: Landmark, label: 'Institutional Radar' },
         { icon: Target, label: 'My Scripts' },
         { icon: Cpu, label: 'Hybrid Intelligence' },
         { icon: Waves, label: 'Elliott Wave Intelligence' },
@@ -2652,6 +2654,8 @@ const DashboardWithLogic = () => {
                             </div>
                             <Orders />
                         </div>
+                    ) : activeTab.toLowerCase() === 'institutional radar' ? (
+                        <InstitutionalRadar />
                     ) : activeTab.toLowerCase() === 'simulations' ? (
                         <PaperTrade token={token} symbol={symbol} ltp={data.price || 0} />
                     ) : activeTab.toLowerCase() === 'my scripts' ? (
