@@ -209,6 +209,38 @@ SEED_JOURNAL = [
             "Never risk more than 1% of total account capital on any single intraday trade setup. If the distance between entry and technical stop-loss is 150 points in Bank Nifty, calculate position lot sizing strictly such that the maximum loss equals <= 1%."
         ),
         "metadata": {"author": "trader", "rule_type": "position_sizing", "priority": "high"}
+    },
+    {
+        "id": "journal_rule_post_mortem_20261116_confidence",
+        "document": (
+            "Trader Rule #5 (16-Nov-2026 Lesson) — Minimum Conviction Gate:\n"
+            "Never fire a live options order when AI Confidence is below 68.0% (and strictly below 72.0% during the opening hour 09:15-10:00 AM). Low confidence trades (like 30.7% PE entries) suffer high shakeout probability in normal market noise."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "entry_gate", "priority": "critical", "date": "2026-11-16"}
+    },
+    {
+        "id": "journal_rule_post_mortem_20261116_anti_flip",
+        "document": (
+            "Trader Rule #6 (16-Nov-2026 Lesson) — Mandatory Cool-Off & Anti-Direction Flip:\n"
+            "Enforce a strict 10-minute cool-off after any trade exit. If a trade exits at breakeven or loss, DO NOT flip to the opposite side (e.g., PE ➔ CE) for at least 20 minutes. Rapid direction flipping in the opening hour guarantees double-whipsaw losses."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "execution_discipline", "priority": "critical", "date": "2026-11-16"}
+    },
+    {
+        "id": "journal_rule_post_mortem_20261116_tech_veto",
+        "document": (
+            "Trader Rule #7 (16-Nov-2026 Lesson) — Technical Trend Veto (Price Action is King):\n"
+            "Technical price action must strictly agree with option direction. If 5m/15m technical score is bearish (< 0.0), Call buying is strictly VETOED regardless of bullish Macro or Sentiment scores. Never fight technical breakdown with macro hope."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "trend_confluence", "priority": "critical", "date": "2026-11-16"}
+    },
+    {
+        "id": "journal_rule_post_mortem_20261116_5s_monitor",
+        "document": (
+            "Trader Rule #8 (16-Nov-2026 Lesson) — High-Frequency 5-Second Position Pulse:\n"
+            "When an open real-money option contract is active, position monitoring must accelerate from 60-second scanning down to a 5-second tick loop. Slow 60s polling creates catastrophic slippage on trailing stop execution during swift candle reversals."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "risk_management", "priority": "high", "date": "2026-11-16"}
     }
 ]
 

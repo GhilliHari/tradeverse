@@ -389,6 +389,9 @@ async def monitor_live_positions_step():
                 if tsym in active_live_positions:
                     tracked = active_live_positions.pop(tsym, None)
                     realised_pnl = float(pos.get("realised") or pos.get("pnl") or 0.0)
+                    autonomous_state["last_trade_exit_at"] = now
+                    autonomous_state["last_trade_option_type"] = "PE" if "PE" in tsym.upper() else "CE"
+                    autonomous_state["last_trade_pnl_inr"] = realised_pnl
                     if risk_engine and realised_pnl != 0.0:
                         risk_engine.update_pnl(realised_pnl, trade_id=f"CLOSED_{tsym}_{now.strftime('%Y%m%d')}")
                     entry_p = float((tracked or {}).get("entry_price") or 0.0)
@@ -514,6 +517,9 @@ async def monitor_live_positions_step():
                     user_id=config.OWNER_EMAIL,
                 )
                 active_live_positions.pop(tsym, None)
+                autonomous_state["last_trade_exit_at"] = now
+                autonomous_state["last_trade_option_type"] = "PE" if "PE" in tsym.upper() else "CE"
+                autonomous_state["last_trade_pnl_inr"] = pnl_inr
                 if risk_engine:
                     risk_engine.update_pnl(pnl_inr, trade_id=f"EXIT_{tsym}_{int(now.timestamp())}")
                 record_live_trade_to_observatory(
@@ -633,8 +639,11 @@ async def run_autonomous_trading():
             else:
                 logger.debug(f"Autonomous cycle ran, signal: {status}")
             
-            # Run every 60 seconds autonomously during market hours
-            await asyncio.sleep(60)
+            # Run every 60 seconds autonomously during market hours, or 5 seconds if actively holding a live position
+            if active_live_positions:
+                await asyncio.sleep(5)
+            else:
+                await asyncio.sleep(60)
             
         except Exception as e:
             logger.error(f"Autonomous Trading Error: {e}")
@@ -3782,6 +3791,62 @@ async def execute_autopilot(
     opt_type = rec.get("option_type")
     if opt_type not in ["CE", "PE"]:
         opt_type = "CE" if signal in ["BUY", "BUY_CE"] else "PE"
+
+    # --- POST-MORTEM 16-NOV-2026 LESSONS LEARNED GUARDRAILS ---
+    now = datetime.now()
+    cur_time = now.time()
+
+    # Gate 1: Hard Minimum Confidence Threshold
+    conf = float(analysis.get("confidence") or 0.0)
+    is_early_open = (time(9, 15) <= cur_time < time(10, 0))
+    min_conf_required = 72.0 if is_early_open else 68.0
+    if conf < min_conf_required:
+        return {
+            "status": "HOLD",
+            "reason": f"Low Confidence Gate: Signal confidence {conf:.1f}% below required {min_conf_required:.1f}% (Rule #5).",
+            "analysis": analysis
+        }
+
+    # Gate 2: Mandatory 10-Minute Post-Trade Cool-Off Period
+    last_exit_dt = autonomous_state.get("last_trade_exit_at")
+    if last_exit_dt:
+        elapsed_since_exit = (now - last_exit_dt).total_seconds() / 60.0
+        if elapsed_since_exit < 10.0:
+            remaining = 10.0 - elapsed_since_exit
+            return {
+                "status": "HOLD",
+                "reason": f"Cool-Off Active: {remaining:.1f}m remaining after last trade exit to prevent whipsaw (Rule #6).",
+                "analysis": analysis
+            }
+
+    # Gate 3: Anti-Direction Flip Filter (20-Minute Lockout on Non-Win)
+    last_opt_type = autonomous_state.get("last_trade_option_type")
+    last_pnl = float(autonomous_state.get("last_trade_pnl_inr") or 0.0)
+    if last_exit_dt and last_opt_type and last_pnl <= 50.0:
+        elapsed_since_exit = (now - last_exit_dt).total_seconds() / 60.0
+        if opt_type != last_opt_type and elapsed_since_exit < 20.0:
+            remaining = 20.0 - elapsed_since_exit
+            return {
+                "status": "HOLD",
+                "reason": f"Anti-Direction Flip: Prohibited from flipping {last_opt_type} -> {opt_type} for {remaining:.1f}m after non-winning exit (Rule #6).",
+                "analysis": analysis
+            }
+
+    # Gate 4: Technical Trend Veto Rule (Price Action is King)
+    model_scores = analysis.get("model_scores") or {}
+    tech_score = float(model_scores.get("technical") or 0.0)
+    if opt_type == "CE" and tech_score < 0.0:
+        return {
+            "status": "HOLD",
+            "reason": f"Technical Veto: Cannot buy CALL option while Technical Score is bearish ({tech_score}) (Rule #7).",
+            "analysis": analysis
+        }
+    if opt_type == "PE" and tech_score > 0.0:
+        return {
+            "status": "HOLD",
+            "reason": f"Technical Veto: Cannot buy PUT option while Technical Score is bullish ({tech_score}) (Rule #7).",
+            "analysis": analysis
+        }
 
     u_sym = symbol.upper().replace("NSE:", "").replace("NFO:", "")
     base_index = None

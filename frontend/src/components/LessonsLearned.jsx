@@ -128,6 +128,19 @@ const LessonsLearned = () => {
                 { title: "10Y Train / 2Y Test Split", detail: "Dataset 'tradeverse-fe8ef.tradeverse_analytics' evaluates 10Y In-Sample (2014-2024) vs 2Y Out-of-Sample (2024-2026) to eliminate lookahead bias." },
                 { title: "Dataplex & Auto-Cleaning Protocol", detail: "Market candle gaps are forward-filled (ffill), price spikes (>5-Sigma) are neutralized, and high/low consistency is strictly enforced." }
             ]
+        },
+        {
+            category: "5. LIVE OPTIONS GUARDRAILS (16-NOV-2026 POST-MORTEM)",
+            icon: AlertCircle,
+            color: "text-rose-400",
+            borderColor: "border-rose-500/20",
+            bgColor: "bg-rose-500/5",
+            items: [
+                { title: "High-Conviction Gate (≥68% / 72% Open)", detail: "Strictly filters out weak entries (e.g. 30.7% signals) to eliminate noise shakeouts." },
+                { title: "10-Min Cool-Off & Anti-Flip Lock (20m)", detail: "Enforces a mandatory 10-minute quiet period after any exit and locks out opposite PE/CE flips for 20 mins to stop opening-hour whipsaw traps." },
+                { title: "Price Action Veto (Technical Alignment)", detail: "If technical score is bearish (< 0.0), Call buying is strictly vetoed regardless of bullish Macro/Sentiment scores." },
+                { title: "5-Second High-Frequency Position Guard", detail: "Switches autonomous position monitor from 60s idle down to a tight 5s pulse when holding live option contracts to eliminate trailing slippage." }
+            ]
         }
     ];
 

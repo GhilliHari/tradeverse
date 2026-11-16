@@ -78,9 +78,9 @@ class IntelligenceLayer:
             except Exception as e:
                 logger.warning(f"genai.configure failed: {e}")
         try:
-            self.model = genai.GenerativeModel('gemini-flash-latest')
+            self.model = genai.GenerativeModel('gemini-flash-lite-latest')
         except Exception:
-            self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
+            self.model = genai.GenerativeModel('gemini-2.5-flash')
         self.scraper = NewsScraper()
         
         # Core flags and status
@@ -683,18 +683,18 @@ class IntelligenceLayer:
         confidence = current_confidence
         reasoning = ""
         
-        # Calibrated score thresholds for active signal generation
-        req_score = 0.5 # Default
+        # Calibrated score thresholds for active signal generation (Post-Mortem 16-Nov-2026 Enhanced)
+        req_score = 0.50 # Default
         
         if regime in ["NOMINAL", "RANGE_BOUND", "TRENDING_INTRADAY", "POWER_HOUR_TREND", "LUNCH_LULL"]:
-            req_score = 0.25
+            req_score = 0.40
         elif regime in ["VOLATILE", "OPENING_VOLATILITY"]:
-            req_score = 0.35
+            req_score = 0.50
             
         if greedy:
             req_score = 0.1 # Very low threshold for simulation density
             
-        if abs(convergence_score) >= req_score and risk_safe:
+        if abs(convergence_score) >= req_score and confidence >= 68.0 and risk_safe:
             # --- NEW: Phase 5 Meta-Labeling Gate ---
             current_confidence = state.get('confidence', 0.0)
             tech_ctx = state.get('technical_context', {})
