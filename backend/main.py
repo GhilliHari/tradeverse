@@ -233,62 +233,74 @@ autonomous_state: Dict[str, Any] = {
     "last_tradingsymbol": None,
 }
 
-def get_hybrid_trailing_profile(regime: str = "NOMINAL", sentiment_score: float = 0.0) -> dict:
+def get_hybrid_trailing_profile(
+    regime: str = "NOMINAL", 
+    sentiment_score: float = 0.0,
+    confidence: float = 0.0,
+    technical_score: float = 0.0
+) -> dict:
     """
     Computes dynamic risk, target, and trailing stop-loss percentages based on live market regime,
-    macro trend expansion, and sentiment mood.
+    macro trend expansion, technical conviction, and sentiment mood.
     
     Regimes:
-    - TRENDING_EXPANSION / POWER_HOUR_TREND: Extended target (+25% to +35%), looser trail (3.5% gap)
-      to capture massive gamma expansion runners without shaking out on normal pullbacks.
-    - VOLATILE / OPENING_VOLATILITY: Quick targets (+12%), tighter breakeven (+2.5%), tighter trailing
+    - TRENDING_EXPANSION / HIGH CONVICTION: Extended target (+45% to +50%), early breakeven lock (+3.0%),
+      and 3-stage dynamic trailing (trailing 2% -> 3% -> 4%) with Runner Exemption to ride mega-gamma runners.
+    - VOLATILE / OPENING_VOLATILITY: Quick targets (+15%), tighter breakeven (+2.5%), tighter trailing
       to protect profits against sharp whipsaws.
-    - NOMINAL / LUNCH_LULL / RANGE_BOUND: Balanced scalping (+15% target, +3.0% breakeven).
+    - NOMINAL / LUNCH_LULL / RANGE_BOUND: Balanced scalping (+30% target, +3.0% breakeven).
     """
     reg_upper = (regime or "").upper()
+    is_high_conviction = abs(technical_score) >= 0.8 or confidence >= 0.72 or abs(sentiment_score) >= 0.7
     
-    # 1. Trending Expansion Days (High Momentum / Breakout)
-    if any(k in reg_upper for k in ("TREND", "EXPANSION", "POWER_HOUR")) or abs(sentiment_score) >= 0.7:
+    # 1. Trending Expansion Days (High Momentum / High Conviction Breakout)
+    if any(k in reg_upper for k in ("TREND", "EXPANSION", "POWER_HOUR")) or is_high_conviction:
         return {
             "regime_profile": "TRENDING_EXPANSION",
-            "target_pct": 30.0,             # Ride high delta & gamma expansion
+            "target_pct": 50.0,             # Ride high delta & gamma expansion multi-baggers
             "stop_loss_pct": -5.0,          # Strict risk cap
-            "breakeven_trigger_pct": 3.5,   # Slightly wider to avoid premature lock in fast bars
-            "breakeven_lock_pct": 1.0,      # Lock +1.0% net profit
-            "stage1_trigger_pct": 8.0,      # Once +8%, trail starts
-            "stage1_trail_gap": 3.0,        # Trail 3.0% behind peak
-            "stage2_trigger_pct": 14.0,     # Once +14%, super-runner engages
-            "stage2_trail_gap": 3.5,        # Trail 3.5% behind peak up to +30%
-            "max_hold_minutes": 40,         # Allow full multi-candle impulse move
+            "breakeven_trigger_pct": 3.0,   # Once +3.0% reached, lock breakeven immediately
+            "breakeven_lock_pct": 0.8,      # Lock +0.8% net profit (covers STT/charges + green)
+            "stage1_trigger_pct": 5.0,      # Once +5.0%, trail starts
+            "stage1_trail_gap": 2.0,        # Trail 2.0% behind peak
+            "stage2_trigger_pct": 10.0,     # Once +10.0%, super-runner engages
+            "stage2_trail_gap": 3.0,        # Trail 3.0% behind peak
+            "stage3_trigger_pct": 20.0,     # Once +20.0%, mega-gamma trail engages
+            "stage3_trail_gap": 4.0,        # Trail 4.0% behind peak up to +50%
+            "max_hold_minutes": 45,         # Base hold; Runner Exemption protects profitable trends
         }
     
     # 2. Volatile / Choppy / High VIX Regimes
-    if any(k in reg_upper for k in ("VOLATIL", "CHOP", "CRASH")) or sentiment_score == 0.0:
+    if any(k in reg_upper for k in ("VOLATIL", "CHOP", "CRASH")):
         return {
             "regime_profile": "VOLATILITY_DEFENSE",
-            "target_pct": 12.0,             # Swift target before mean reversion
+            "target_pct": 15.0,             # Swift target before mean reversion
             "stop_loss_pct": -4.5,          # Tighter risk cut
             "breakeven_trigger_pct": 2.5,   # Early breakeven lock
             "breakeven_lock_pct": 0.6,      # Cover brokerage + 0.6%
-            "stage1_trigger_pct": 5.0,      # Quick trail
+            "stage1_trigger_pct": 4.5,      # Quick trail
             "stage1_trail_gap": 2.0,        # Tight 2.0% gap
             "stage2_trigger_pct": 8.0,      # Tighter runner lock
             "stage2_trail_gap": 2.5,        # 2.5% gap
-            "max_hold_minutes": 20,         # Quick exit before theta decay hits
+            "stage3_trigger_pct": 14.0,     # Stage 3 trail
+            "stage3_trail_gap": 3.5,        # 3.5% gap
+            "max_hold_minutes": 25,         # Quick exit before theta decay hits
         }
 
     # 3. Standard / Balanced Market Regimes
     return {
         "regime_profile": "BALANCED_NOMINAL",
-        "target_pct": 20.0,
+        "target_pct": 30.0,
         "stop_loss_pct": -5.0,
         "breakeven_trigger_pct": 3.0,
         "breakeven_lock_pct": 0.8,
-        "stage1_trigger_pct": 6.0,
-        "stage1_trail_gap": 2.5,
+        "stage1_trigger_pct": 5.0,
+        "stage1_trail_gap": 2.0,
         "stage2_trigger_pct": 10.0,
         "stage2_trail_gap": 3.0,
-        "max_hold_minutes": 30,
+        "stage3_trigger_pct": 20.0,
+        "stage3_trail_gap": 4.0,
+        "max_hold_minutes": 35,
     }
 
 def record_live_trade_to_observatory(
@@ -433,6 +445,8 @@ async def monitor_live_positions_step():
                     "stage1_trail_gap": profile["stage1_trail_gap"],
                     "stage2_trigger_pct": profile["stage2_trigger_pct"],
                     "stage2_trail_gap": profile["stage2_trail_gap"],
+                    "stage3_trigger_pct": profile.get("stage3_trigger_pct", 20.0),
+                    "stage3_trail_gap": profile.get("stage3_trail_gap", 4.0),
                     "max_hold_minutes": profile["max_hold_minutes"],
                 }
                 tracked = active_live_positions[tsym]
@@ -461,10 +475,12 @@ async def monitor_live_positions_step():
             current_sl_pct = float(tracked.get("stop_loss_pct", -5.0))
             be_trigger = float(tracked.get("breakeven_trigger_pct", 3.0))
             be_lock = float(tracked.get("breakeven_lock_pct", 0.8))
-            st1_trigger = float(tracked.get("stage1_trigger_pct", 6.0))
-            st1_gap = float(tracked.get("stage1_trail_gap", 2.5))
+            st1_trigger = float(tracked.get("stage1_trigger_pct", 5.0))
+            st1_gap = float(tracked.get("stage1_trail_gap", 2.0))
             st2_trigger = float(tracked.get("stage2_trigger_pct", 10.0))
             st2_gap = float(tracked.get("stage2_trail_gap", 3.0))
+            st3_trigger = float(tracked.get("stage3_trigger_pct", 20.0))
+            st3_gap = float(tracked.get("stage3_trail_gap", 4.0))
 
             # 1. Breakeven Lock: once position moves safely into the green
             if peak_pct >= be_trigger and current_sl_pct < be_lock:
@@ -472,14 +488,21 @@ async def monitor_live_positions_step():
                 tracked["stop_loss_pct"] = current_sl_pct
                 logger.info(f"🔒 [LivePositionMonitor] Breakeven Lock activated for {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
 
-            # 2. Stage 2 Super-Runner Trail (riding trending expansion moves)
-            if peak_pct >= st2_trigger:
+            # 2. Stage 3 Mega-Gamma Trail (riding monster +20% to +50% moves)
+            if peak_pct >= st3_trigger:
+                trail_sl_pct = round(peak_pct - st3_gap, 2)
+                if trail_sl_pct > current_sl_pct:
+                    current_sl_pct = trail_sl_pct
+                    tracked["stop_loss_pct"] = current_sl_pct
+                    logger.info(f"⚡ [LivePositionMonitor] Stage-3 Mega-Gamma Trail raised for {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
+            # 3. Stage 2 Super-Runner Trail (riding trending expansion moves)
+            elif peak_pct >= st2_trigger:
                 trail_sl_pct = round(peak_pct - st2_gap, 2)
                 if trail_sl_pct > current_sl_pct:
                     current_sl_pct = trail_sl_pct
                     tracked["stop_loss_pct"] = current_sl_pct
                     logger.info(f"🚀 [LivePositionMonitor] Stage-2 Super-Runner Trailing SL raised for {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
-            # 3. Stage 1 Runner Trail
+            # 4. Stage 1 Runner Trail
             elif peak_pct >= st1_trigger:
                 trail_sl_pct = round(peak_pct - st1_gap, 2)
                 if trail_sl_pct > current_sl_pct:
@@ -492,10 +515,17 @@ async def monitor_live_positions_step():
                 exit_reason = f"EOD AUTO SQUARE-OFF (15:20 IST) | PnL: ₹{pnl_inr:+.2f} ({pnl_pct:+.1f}%)"
             elif pnl_pct <= current_sl_pct:
                 exit_reason = f"STOP-LOSS / TRAILING-LOCK HIT ({pnl_pct:+.1f}% <= {current_sl_pct:+.1f}%) | PnL: ₹{pnl_inr:+.2f}"
-            elif pnl_pct >= tracked.get("target_pct", 20.0):
+            elif pnl_pct >= tracked.get("target_pct", 30.0):
                 exit_reason = f"TARGET HIT ({pnl_pct:+.1f}%) | PnL: ₹{pnl_inr:+.2f}"
-            elif elapsed_mins >= tracked.get("max_hold_minutes", 30):
-                exit_reason = f"TIME-EXIT ({int(elapsed_mins)}m) | PnL: ₹{pnl_inr:+.2f} ({pnl_pct:+.1f}%)"
+            elif elapsed_mins >= tracked.get("max_hold_minutes", 35):
+                # RUNNER EXEMPTION:
+                # If position is safely locked in profit/breakeven, DO NOT prematurely cut a winning trend on a clock timer.
+                # Only time-exit if position is stagnant/underwater (< be_lock) or exceeds absolute safety limit (90 mins).
+                is_locked_in_profit = current_sl_pct >= be_lock
+                if is_locked_in_profit and elapsed_mins < 90.0:
+                    logger.debug(f"🏃 [LivePositionMonitor] Runner Exemption active for {tsym} ({elapsed_mins:.1f}m): Locked at +{current_sl_pct:.2f}%. Continuing trail.")
+                else:
+                    exit_reason = f"TIME-EXIT ({int(elapsed_mins)}m) | PnL: ₹{pnl_inr:+.2f} ({pnl_pct:+.1f}%)"
 
             if exit_reason:
                 exit_side = "SELL" if net_qty > 0 else "BUY"
@@ -578,12 +608,15 @@ async def run_autonomous_trading():
                         autonomous_state["trades_today"] = 0
                         autonomous_state["last_status"] = "PRE_MARKET_READY"
                         autonomous_state["last_reason"] = f"Angel One connected. Available Cash: ₹{avail_cash:,.2f}"
+                        pos_count = len(active_live_positions)
                         notifier.notify_sync(
-                            f"🌅 *Tradeverse 24/7 Cloud Autopilot Ready ({today_str})*\n"
-                            f"Broker: `{config.ACTIVE_BROKER}` (`{config.ENV}`)\n"
-                            f"Mode: `{config.TRADING_MODE}` (Offline Cloud Active)\n"
-                            f"Available Cash: *₹{avail_cash:,.2f}*\n"
-                            f"Max Position: `₹{config.MAX_POSITION_SIZE:,.0f}` | Daily Loss Cap: `₹{config.DAILY_LOSS_LIMIT:,.0f}`"
+                            f"🛡️ *Tradeverse 24/7 Cloud Autopilot Ready ({today_str})*\n"
+                            f"🏦 *Broker:* `{config.ACTIVE_BROKER}` (`{config.ENV}`) — ✅ *CONNECTED*\n"
+                            f"👤 *Client ID:* `{config.ANGEL_CLIENT_ID}`\n"
+                            f"💰 *Available Cash:* *₹{avail_cash:,.2f}*\n"
+                            f"📊 *Open Positions:* `{pos_count}` | Mode: `{config.TRADING_MODE}`\n"
+                            f"🔒 *Risk Caps:* Max `₹{config.MAX_POSITION_SIZE:,.0f}` | Daily Loss `₹{config.DAILY_LOSS_LIMIT:,.0f}`\n"
+                            f"🎯 *Safeguards:* Conf Gate >=68% | 10m Cool-off | Tech Trend Veto Active"
                         )
                     except Exception as pme:
                         logger.warning(f"Pre-market warmup warning: {pme}")
@@ -4072,7 +4105,14 @@ async def execute_autopilot(
             # Resolve dynamic hybrid profile from current market analysis
             detected_regime = analysis.get("regime") or autonomous_state.get("last_regime") or "NOMINAL"
             sent_score = float((analysis.get("model_scores") or {}).get("sentiment") or 0.0)
-            profile = get_hybrid_trailing_profile(detected_regime, sentiment_score=sent_score)
+            tech_score = float((analysis.get("model_scores") or {}).get("technical") or 0.0)
+            conf_val = float(analysis.get("confidence") or 0.0)
+            profile = get_hybrid_trailing_profile(
+                detected_regime, 
+                sentiment_score=sent_score,
+                confidence=conf_val,
+                technical_score=tech_score
+            )
             
             active_live_positions[resolved_symbol] = {
                 "tradingsymbol": resolved_symbol,
@@ -4090,6 +4130,8 @@ async def execute_autopilot(
                 "stage1_trail_gap": profile["stage1_trail_gap"],
                 "stage2_trigger_pct": profile["stage2_trigger_pct"],
                 "stage2_trail_gap": profile["stage2_trail_gap"],
+                "stage3_trigger_pct": profile.get("stage3_trigger_pct", 20.0),
+                "stage3_trail_gap": profile.get("stage3_trail_gap", 4.0),
                 "max_hold_minutes": profile["max_hold_minutes"],
                 "analysis": analysis,
             }
