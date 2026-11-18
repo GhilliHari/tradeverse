@@ -141,6 +141,18 @@ const LessonsLearned = () => {
                 { title: "Price Action Veto (Technical Alignment)", detail: "If technical score is bearish (< 0.0), Call buying is strictly vetoed regardless of bullish Macro/Sentiment scores." },
                 { title: "5-Second High-Frequency Position Guard", detail: "Switches autonomous position monitor from 60s idle down to a tight 5s pulse when holding live option contracts to eliminate trailing slippage." }
             ]
+        },
+        {
+            category: "6. RUNNER PRESERVATION & DYNAMIC TRAILING (18-NOV-2026 POST-MORTEM)",
+            icon: Sparkles,
+            color: "text-emerald-400",
+            borderColor: "border-emerald-500/20",
+            bgColor: "bg-emerald-500/5",
+            items: [
+                { title: "Runner Exemption on Time-Exits", detail: "When a winning trade is locked in profit (≥ +0.8%), the 30-40 min time-exit is bypassed to capture multi-bagger +30% to +50% gamma expansion runs." },
+                { title: "3-Stage Ratcheting Trailing Stop", detail: "+3% profit locks breakeven (+0.8%), +5% profit trails 2% gap, +10% trails 3% gap, and +20% trails 4% gap up to +50% max target." },
+                { title: "High-Conviction Auto-Upgrade (≥72% / |Tech| ≥ 0.8)", detail: "High-conviction trend breakouts automatically promote to 'TRENDING_EXPANSION' regime, preventing restrictive low-target scalping." }
+            ]
         }
     ];
 

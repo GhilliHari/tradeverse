@@ -241,6 +241,30 @@ SEED_JOURNAL = [
             "When an open real-money option contract is active, position monitoring must accelerate from 60-second scanning down to a 5-second tick loop. Slow 60s polling creates catastrophic slippage on trailing stop execution during swift candle reversals."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "risk_management", "priority": "high", "date": "2026-11-16"}
+    },
+    {
+        "id": "journal_rule_post_mortem_20261118_runner_exemption",
+        "document": (
+            "Trader Rule #9 (18-Nov-2026 Lesson) — Runner Exemption on Time Exits:\n"
+            "Never prematurely terminate a profitable, trending option trade on a fixed clock timer (e.g. 30-40 min). Once a trade is locked at breakeven (+0.8% net), bypass time-exits and let the dynamic trailing stop manage the position to capture massive +30% to +50% gamma breakout runs."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "exit_discipline", "priority": "critical", "date": "2026-11-18"}
+    },
+    {
+        "id": "journal_rule_post_mortem_20261118_dynamic_trailing",
+        "document": (
+            "Trader Rule #10 (18-Nov-2026 Lesson) — 3-Stage Dynamic Trailing Stop:\n"
+            "Rachet trailing stop-loss progressively: +3.0% profit triggers Breakeven Lock (+0.8% net), +5.0% triggers Stage 1 (trail 2.0% gap), +10.0% triggers Stage 2 Super-Runner (trail 3.0% gap), and +20.0% triggers Stage 3 Mega-Gamma (trail 4.0% gap up to +50.0%). Eliminates premature profit capping."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "risk_management", "priority": "critical", "date": "2026-11-18"}
+    },
+    {
+        "id": "journal_rule_post_mortem_20261118_conviction_upgrade",
+        "document": (
+            "Trader Rule #11 (18-Nov-2026 Lesson) — High-Conviction Regime Auto-Upgrade:\n"
+            "When technical momentum score is strong (|tech| >= 0.8) or AI confidence is >= 72.0%, position profile must auto-upgrade to 'TRENDING_EXPANSION'. Never box a strong trend trade into low-target nominal scalping parameters."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "regime_classification", "priority": "high", "date": "2026-11-18"}
     }
 ]
 
