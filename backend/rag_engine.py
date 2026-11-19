@@ -276,6 +276,19 @@ SEED_JOURNAL = [
             "3. Quota Gate Warning: Never point live trading to unverified elemental preview models (Neon/Argon/Carbon on Free Tier) as zero-request limits trigger mid-session 429 execution lockouts."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "ai_infrastructure", "priority": "critical", "date": "2026-11-19"}
+    },
+    {
+        "id": "journal_rule_post_mortem_20261119_moa_hybrid_routing",
+        "document": (
+            "Trader Rule #13 (19-Nov-2026 Lesson) — Mixture-of-Agents (MoA) F&O Model Router Architecture:\n"
+            "To maximize alpha, reduce option slippage, and completely prevent 429 quota lockouts, decouple F&O intelligence tasks into specialized models:\n"
+            "1. Live Market Scanning & Order Triggers: Gemini 3.8 Flash (sub-300ms latency ensures precision fill near trigger price).\n"
+            "2. Greeks, IV Skew & Multi-Leg Spread Structuring: Gemini 4 Argon with immediate 3.8 Flash fallback (deep reasoning on delta/gamma pinning).\n"
+            "3. High-Frequency Breaking News & Sentiment Filtering: Gemini 3.5 Flash / Flash-Lite (ultra-low latency binary classification).\n"
+            "4. Post-Market Trade Auditing & Deep RAG Ingestion: Gemini 4 Hydrogen (1M token context for whole-day tick-by-tick log analysis).\n"
+            "Rule: If any specialized route hits a rate-limit error, the engine must auto-fallback to Gemini 3.8 Flash within 50ms without dropping orders."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "moa_architecture", "priority": "critical", "date": "2026-11-19"}
     }
 ]
 

@@ -77,14 +77,12 @@ class IntelligenceLayer:
                 genai.configure(api_key=gemini_api_key)
             except Exception as e:
                 logger.warning(f"genai.configure failed: {e}")
-        self.model_name = "gemini-3.8-flash"
-        for m_candidate in ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-lite-latest", "gemini-2.5-flash"]:
-            try:
-                self.model = genai.GenerativeModel(m_candidate)
-                self.model_name = m_candidate
-                break
-            except Exception:
-                continue
+        from gemini_service import ModelRouter
+        self.scanner_model, self.scanner_model_name = ModelRouter.get_scanner_model(gemini_api_key)
+        self.sentiment_model, self.sentiment_model_name = ModelRouter.get_sentiment_model(gemini_api_key)
+        self.strategy_model, self.strategy_model_name = ModelRouter.get_strategy_model(gemini_api_key)
+        self.model = self.scanner_model
+        self.model_name = self.scanner_model_name
         self.scraper = NewsScraper()
         
         # Core flags and status
@@ -291,14 +289,21 @@ class IntelligenceLayer:
             if getattr(self, "api_key", "") == "MOCK_KEY" or "MOCK" in str(self.model):
                  raise ValueError("Mock API Key detected.")
                  
-            # Capture usage metadata implies a valid response object
-            response = self.model.generate_content(prompt)
+            # Execute via specialized Sentiment model with automatic fallback to Scanner model
+            active_model_name = getattr(self, "sentiment_model_name", "gemini-3.5-flash")
+            try:
+                response = self.sentiment_model.generate_content(prompt)
+            except Exception as se_err:
+                logger.warning(f"Specialized sentiment model failed ({se_err}). Falling back to scanner model.")
+                response = self.scanner_model.generate_content(prompt)
+                active_model_name = getattr(self, "scanner_model_name", "gemini-3.8-flash")
+            
             res_text = response.text.upper()
             
             # Record Token Usage
             if response.usage_metadata:
                 self.token_manager.add_usage(
-                    model_name=getattr(self, "model_name", "gemini-3.8-flash"),
+                    model_name=active_model_name,
                     input_tokens=response.usage_metadata.prompt_token_count,
                     output_tokens=response.usage_metadata.candidates_token_count
                 )

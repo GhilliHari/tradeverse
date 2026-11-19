@@ -24,6 +24,85 @@ genai_legacy = None
 CANDIDATE_MODELS = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-lite-latest", "gemini-2.5-flash"]
 MODEL_NAME = "gemini-3.8-flash"
 
+# Hybrid Task-Specialized Model Hierarchies (F&O Optimization Matrix)
+TASK_MODELS = {
+    # 1. Live Market Scanning & Rapid Alerts (Sub-second low latency agent loops)
+    "scanner": ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-lite-latest", "gemini-2.5-flash"],
+    # 2. Option Chain, Greeks & Strategy Structuring (Deep reasoning, IV skew & multi-leg math)
+    "strategy": ["gemini-4-argon", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.5-flash"],
+    # 3. High-Frequency Breaking News & Sentiment Filtering (Ultra-fast binary / calibrated scoring)
+    "sentiment": ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-flash-lite-latest", "gemini-3.8-flash"],
+    # 4. Pre/Post-Market Backtesting, Journaling & RAG Synthesis (1M context heavy log ingestion)
+    "journal": ["gemini-4-hydrogen", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.5-flash"],
+}
+
+class ModelRouter:
+    """
+    Intelligent Hybrid Multi-Model Router for Tradeverse F&O Algorithmic Trading:
+    - SCANNER: Gemini 3.8 Flash (Live market cycle triggers & rapid agentic loops)
+    - STRATEGY: Gemini 4 Argon / 3.8 Flash (Deep multi-step reasoning for option Greeks & IV skew)
+    - SENTIMENT: Gemini 3.5 Flash-Lite / 3.5 Flash (Ultra-low latency breaking news & retail sentiment)
+    - JOURNAL: Gemini 4 Hydrogen (1M token context for full-day multi-trade post-mortems & vector RAG)
+    """
+    TASK_MODELS = TASK_MODELS
+    _resolved_cache = {}
+
+    @classmethod
+    def get_model(cls, task_type: str = "scanner", api_key: str = None):
+        key = api_key or GEMINI_API_KEY
+        cache_key = f"{task_type}_{bool(key)}"
+        if cache_key in cls._resolved_cache:
+            return cls._resolved_cache[cache_key]
+
+        candidates = cls.TASK_MODELS.get(task_type, cls.TASK_MODELS["scanner"])
+        import google.generativeai as genai_module
+        if key:
+            try:
+                genai_module.configure(api_key=key)
+            except Exception:
+                pass
+
+        resolved_model = None
+        resolved_name = "gemini-3.8-flash"
+
+        for m_candidate in candidates:
+            try:
+                m_inst = genai_module.GenerativeModel(m_candidate)
+                resolved_model = m_inst
+                resolved_name = m_candidate
+                break
+            except Exception:
+                continue
+
+        if not resolved_model:
+            resolved_model = genai_module.GenerativeModel("gemini-3.8-flash")
+            resolved_name = "gemini-3.8-flash"
+
+        cls._resolved_cache[cache_key] = (resolved_model, resolved_name)
+        logger.info(f"🎯 [ModelRouter] Routed task [{task_type.upper()}] to model '{resolved_name}'")
+        return resolved_model, resolved_name
+
+    @classmethod
+    def get_scanner_model(cls, api_key: str = None):
+        return cls.get_model("scanner", api_key)
+
+    @classmethod
+    def get_strategy_model(cls, api_key: str = None):
+        return cls.get_model("strategy", api_key)
+
+    @classmethod
+    def get_sentiment_model(cls, api_key: str = None):
+        return cls.get_model("sentiment", api_key)
+
+    @classmethod
+    def get_journal_model(cls, api_key: str = None):
+        return cls.get_model("journal", api_key)
+
+    @classmethod
+    def call(cls, task_type: str, prompt_text: str, system_prompt: str = None):
+        candidates = cls.TASK_MODELS.get(task_type, cls.TASK_MODELS["scanner"])
+        return _call_gemini_api(prompt_text, system_prompt=system_prompt or SYSTEM_INSTRUCTION, candidate_models=candidates)
+
 def _init_gemini(api_key: str):
     global genai_client, genai_legacy, MODEL_NAME
     if not api_key:
@@ -115,13 +194,14 @@ def _get_knowledge_graph():
         logger.warning(f"Knowledge Graph import warning: {e}")
         return None
 
-def _call_gemini_api(prompt_text, system_prompt=SYSTEM_INSTRUCTION):
+def _call_gemini_api(prompt_text, system_prompt=SYSTEM_INSTRUCTION, candidate_models=None):
     """Execute Gemini API query with model fallbacks."""
     global genai_client, genai_legacy, MODEL_NAME
+    models_to_try = candidate_models or CANDIDATE_MODELS
     last_err = None
 
     if genai_client:
-        for m in CANDIDATE_MODELS:
+        for m in models_to_try:
             try:
                 response = genai_client.models.generate_content(
                     model=m,
@@ -135,7 +215,7 @@ def _call_gemini_api(prompt_text, system_prompt=SYSTEM_INSTRUCTION):
                 continue
 
     if genai_legacy:
-        for m in CANDIDATE_MODELS:
+        for m in models_to_try:
             try:
                 model = genai_legacy.GenerativeModel(
                     model_name=m,

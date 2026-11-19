@@ -18,14 +18,9 @@ class NewsSentimentEngine:
         self.api_key = api_key or os.getenv("GEMINI_API_KEY", "")
         if self.api_key:
             try:
-                genai.configure(api_key=self.api_key)
-                for m_candidate in ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-lite-latest", "gemini-2.5-flash"]:
-                    try:
-                        self.model = genai.GenerativeModel(m_candidate)
-                        logger.info(f"📰 NewsSentimentEngine Initialized with {m_candidate}")
-                        break
-                    except Exception:
-                        continue
+                from gemini_service import ModelRouter
+                self.model, self.model_name = ModelRouter.get_sentiment_model(self.api_key)
+                logger.info(f"📰 NewsSentimentEngine Initialized via ModelRouter with {self.model_name}")
             except Exception as e:
                 logger.warning(f"Gemini Init Warning in NewsSentimentEngine: {e}")
                 self.model = None

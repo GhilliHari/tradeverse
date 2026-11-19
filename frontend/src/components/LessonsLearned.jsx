@@ -155,15 +155,16 @@ const LessonsLearned = () => {
             ]
         },
         {
-            category: "7. FOUNDATION AI MODEL SELECTION PROTOCOL (19-NOV-2026 LESSON)",
+            category: "7. HYBRID MULTI-MODEL ROUTER (MoA F&O ARCHITECTURE)",
             icon: Layers,
             color: "text-cyan-400",
             borderColor: "border-cyan-500/20",
             bgColor: "bg-cyan-500/5",
             items: [
-                { title: "Gemini 3.8 Flash for Intraday Live Trading", detail: "Sub-second turnaround (250-400ms) minimizes option premium slippage, eliminates 429 quota exhaustion during high-frequency volatility, and enforces strict sentiment/macro gates." },
-                { title: "Gemini 4 Hydrogen for EOD Synthesis", detail: "1M token context and 65k token output buffer deployed for deep multi-week trade log auditing, vector RAG memory ingestion, and post-market journal synthesis." },
-                { title: "Preview Quota Gate Protection", detail: "Strictly guards live execution against zero-limit elemental preview models (Neon/Argon/Carbon on Free Tier) to prevent mid-trade API lockouts." }
+                { title: "Live Market Scanning: Gemini 3.8 Flash", detail: "Sub-300ms turnaround minimizes option premium slippage, eliminates 429 quota exhaustion, and streams rapid alerts across live option chains." },
+                { title: "Option Greeks & Strategy: Gemini 4 Argon", detail: "Deep multi-step reasoning on IV skew, Gamma wall pinning, and multi-leg spread structures with automatic 50ms fallback to 3.8 Flash." },
+                { title: "High-Frequency News: Gemini 3.5 Flash-Lite", detail: "Ultra-low latency binary classification scoring breaking macro and RBI events before market absorption." },
+                { title: "EOD Synthesis & RAG: Gemini 4 Hydrogen", detail: "1M token context and 65k output buffer deployed for deep multi-week trade log auditing, vector RAG memory ingestion, and post-market journal synthesis." }
             ]
         }
     ];
