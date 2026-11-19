@@ -90,6 +90,32 @@ class SmartExecutionEngine:
                 user_id=user_id
             )
 
+        # Pre-Flight Microstructure Liquidity Check (Bid-Ask Spread Friction Guard)
+        if not is_mock and hasattr(active_broker, "ltp"):
+            try:
+                quote_key = f"{exchange}:{tradingsymbol}" if ":" not in tradingsymbol else tradingsymbol
+                quote_data = None
+                if hasattr(active_broker, "quote"):
+                    quote_data = active_broker.quote(quote_key)
+                if isinstance(quote_data, dict):
+                    q_inner = quote_data.get(quote_key, {})
+                    depth = q_inner.get("depth", {})
+                    bids = depth.get("buy", [])
+                    asks = depth.get("sell", [])
+                    if bids and asks:
+                        best_bid = float(bids[0].get("price", 0.0) or 0.0)
+                        best_ask = float(asks[0].get("price", 0.0) or 0.0)
+                        if best_bid > 0 and best_ask > 0:
+                            spread_pct = ((best_ask - best_bid) / best_bid) * 100.0
+                            if spread_pct > 3.5:
+                                logger.warning(
+                                    f"⚠️ [SmartExec] High Bid-Ask Spread ({spread_pct:.2f}% > 3.5%) on {tradingsymbol}. "
+                                    f"Pausing 1.0s for quotes to tighten..."
+                                )
+                                await asyncio.sleep(1.0)
+            except Exception as spread_e:
+                logger.debug(f"Pre-flight spread check skipped: {spread_e}")
+
         # 3. Live Execution: Step 1 Initial Limit Placement
         initial_offset = round(ref_price * 0.001, 1)  # 0.1% passive buffer
         current_limit_price = round(

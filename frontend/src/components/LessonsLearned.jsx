@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, CheckCircle2, ShieldCheck, Database, Cpu, Sparkles, Search, PlusCircle, Layers, RefreshCw, AlertCircle, Zap, Target, TrendingUp } from 'lucide-react';
+import { BookOpen, CheckCircle2, ShieldCheck, Database, Cpu, Sparkles, Search, PlusCircle, Layers, RefreshCw, AlertCircle, Zap, Target, TrendingUp, Gauge } from 'lucide-react';
 import HUDCard from './ui/HUDCard';
 import { API_URL } from '../config/api';
 
@@ -225,6 +225,18 @@ const LessonsLearned = () => {
                 { title: "Fractional Kelly 40% Exposure Cap", detail: "Strict mathematical ceiling: no single trade may ever commit more than 40% of cash margin (currently ₹3,046 on ₹7,616 balance), preventing catastrophic ruin." },
                 { title: "Capital-Phased Sizing (1 -> 2 -> 3 Lots)", detail: "Preservation Phase (<= ₹12,000) caps size strictly at 1 lot. Growth Phase (₹12k - ₹20k) enables 2 lots, and Compounding Phase (>= ₹20k) enables 3 lots." },
                 { title: "Anti-Martingale Drawdown Defense", detail: "If nursing any daily loss (> ₹0), position sizing automatically locks back to 1 lot, while the daily loss limit dynamically scales to 10% of portfolio equity (min ₹1,000)." }
+            ]
+        },
+        {
+            category: "13. CONSTITUENT LEADERSHIP, MIDDAY LOCKOUT & VIX MODULATION",
+            icon: Gauge,
+            color: "text-amber-400",
+            borderColor: "border-amber-500/20",
+            bgColor: "bg-amber-500/5",
+            items: [
+                { title: "Heavyweight Constituent Confluence (Gate 6)", detail: "Index breakouts are vetoed if top two heavyweight constituents (e.g. HDFC Bank & ICICI Bank controlling 51.9% of BankNifty) diverge against the spot signal. No counter-constituent entries permitted." },
+                { title: "Midday Lunch-Lull Lockout (11:30 - 13:15 IST)", detail: "Blocks low-volume choppy consolidation entries during the typical 65-70% volume drop on NSE unless AI conviction exceeds 82% with an active CPR or Gamma expansion breakout." },
+                { title: "India VIX Adaptive Profit Ladders & Liquidity Guard", detail: "VIX < 12.5 tightens profit targets to +35% and accelerates breakeven at +14% to combat rapid theta decay; VIX > 18.0 widens trailing distance to 18% to endure high-beta swings. Pre-flight bid-ask spread check blocks illiquid options (>3.5% spread)." }
             ]
         }
     ];

@@ -239,19 +239,21 @@ def get_hybrid_trailing_profile(
     confidence: float = 0.0,
     technical_score: float = 0.0,
     spot_atr: float = 0.0,
-    entry_price: float = 0.0
+    entry_price: float = 0.0,
+    vix: float = 14.0
 ) -> dict:
     """
     Computes dynamic risk, target, and trailing stop-loss percentages based on live market regime,
-    macro trend expansion, technical conviction, sentiment mood, and 5m ATR volatility.
+    macro trend expansion, technical conviction, sentiment mood, 5m ATR volatility, and India VIX.
     
-    Institutional F&O Profit Ladder:
+    Institutional F&O Profit Ladder & VIX Modulator:
     - Adaptive Initial Stop-Loss: -14.0% to -18.0% calibrated via 5m ATR (room to breathe on option noise).
     - Breakeven Lock: At +18% to +20% peak, lock SL at +1.5% net profit (covers STT/charges, zero risk).
     - Stage 1 Trail: At +30% peak, trail SL to +15% (locks in solid base win).
     - Stage 2 Runner: At +50% peak, trail SL to +30% (locks in major win).
     - Stage 3 Mega-Gamma Trail: At +75% peak, trail 18% behind peak (rides 0DTE multi-bagger runners).
-    - Target: +50% to +100% with Runner Exemption.
+    - VIX Multiplier: Low VIX (< 12.5) tightens target to +35% (theta defense); High VIX (> 18.0) widens trailing gap to 18%.
+    - Target: +35% to +100% with Runner Exemption.
     """
     reg_upper = (regime or "").upper()
     is_high_conviction = abs(technical_score) >= 0.8 or confidence >= 0.72 or abs(sentiment_score) >= 0.7
@@ -267,27 +269,29 @@ def get_hybrid_trailing_profile(
     
     # 1. Trending Expansion Days (High Momentum / High Conviction Breakout)
     if any(k in reg_upper for k in ("TREND", "EXPANSION", "POWER_HOUR")) or is_high_conviction:
+        target_pct = 100.0 if vix >= 13.0 else 50.0
+        trail_gap = 18.0 if vix >= 18.0 else 15.0
         return {
             "regime_profile": "TRENDING_EXPANSION",
-            "target_pct": 100.0,            # Ride high delta & gamma expansion multi-baggers
+            "target_pct": target_pct,       # Ride high delta & gamma expansion multi-baggers
             "stop_loss_pct": base_sl_pct,   # ATR-calibrated stop loss (-14% to -18%)
             "breakeven_trigger_pct": 20.0,  # Once +20.0% reached, lock breakeven
             "breakeven_lock_pct": 1.5,      # Lock +1.5% net profit (covers STT/charges + green)
             "stage1_trigger_pct": 30.0,     # Once +30.0%, trail starts
-            "stage1_trail_gap": 15.0,       # Trail 15.0% behind peak (locks +15% win)
+            "stage1_trail_gap": trail_gap,  # Trail behind peak (locks profit)
             "stage2_trigger_pct": 50.0,     # Once +50.0%, super-runner engages
-            "stage2_trail_gap": 15.0,       # Trail 15.0% behind peak (locks +35% win)
+            "stage2_trail_gap": trail_gap,  # Trail behind peak
             "stage3_trigger_pct": 75.0,     # Once +75.0%, mega-gamma trail engages
-            "stage3_trail_gap": 18.0,       # Trail 18.0% behind peak up to +100%+
+            "stage3_trail_gap": trail_gap + 3.0,  # Trail behind peak up to +100%+
             "max_hold_minutes": 55,         # Base hold; Runner Exemption protects profitable trends
         }
     
     # 2. Volatile / Choppy / High VIX Regimes
-    if any(k in reg_upper for k in ("VOLATIL", "CHOP", "CRASH")):
+    if any(k in reg_upper for k in ("VOLATIL", "CHOP", "CRASH")) or vix >= 18.0:
         return {
             "regime_profile": "VOLATILITY_DEFENSE",
-            "target_pct": 35.0,             # Swift target before mean reversion
-            "stop_loss_pct": min(-12.0, base_sl_pct),  # Tighter risk cut (-12.0%)
+            "target_pct": 40.0 if vix >= 18.0 else 30.0,  # Swift target before mean reversion
+            "stop_loss_pct": min(-12.0, base_sl_pct),      # Tighter risk cut (-12.0%)
             "breakeven_trigger_pct": 15.0,  # Early breakeven lock at +15%
             "breakeven_lock_pct": 1.5,      # Cover brokerage + 1.5%
             "stage1_trigger_pct": 25.0,     # Quick trail
@@ -299,12 +303,14 @@ def get_hybrid_trailing_profile(
             "max_hold_minutes": 25,         # Quick exit before theta decay hits
         }
 
-    # 3. Standard / Balanced Market Regimes
+    # 3. Standard / Balanced Market Regimes (Low VIX defense)
+    target_bal = 35.0 if vix < 12.5 else 60.0
+    be_trig_bal = 15.0 if vix < 12.5 else 18.0
     return {
         "regime_profile": "BALANCED_NOMINAL",
-        "target_pct": 60.0,
+        "target_pct": target_bal,
         "stop_loss_pct": base_sl_pct if base_sl_pct != -16.0 else -15.0,
-        "breakeven_trigger_pct": 18.0,
+        "breakeven_trigger_pct": be_trig_bal,
         "breakeven_lock_pct": 1.5,
         "stage1_trigger_pct": 30.0,
         "stage1_trail_gap": 15.0,
@@ -3993,6 +3999,20 @@ async def execute_autopilot(
                     logger.info(f"⚡ [Autopilot] Gate 5 Passed: Institutional OI & PCR Confluence (PCR: {pcr_val:.2f}, Walls: {gex_analysis.get('put_wall')} - {gex_analysis.get('call_wall')})")
     except Exception as oie:
         logger.debug(f"Institutional OI Gate check skipped: {oie}")
+
+    # Gate 6: Heavyweight Constituent Divergence Veto (Rule #19)
+    try:
+        from component_leader_engine import component_leader_engine
+        comp_gate = await asyncio.to_thread(component_leader_engine.validate_constituent_confluence, symbol=symbol, signal=signal)
+        if not comp_gate.get("allow"):
+            return {
+                "status": "HOLD",
+                "reason": f"Heavyweight Divergence Veto: {comp_gate.get('reason')} (Rule #19).",
+                "analysis": analysis
+            }
+        logger.info(f"⚡ [Autopilot] Gate 6 Passed: Constituent Confluence ({comp_gate.get('reason')})")
+    except Exception as cge:
+        logger.debug(f"Constituent confluence check skipped: {cge}")
 
     u_sym = symbol.upper().replace("NSE:", "").replace("NFO:", "")
     base_index = None

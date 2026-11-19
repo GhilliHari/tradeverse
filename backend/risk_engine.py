@@ -126,6 +126,17 @@ class RiskEngine:
                 return {"allowed": False, "reason": "OPENING RANGE GUARD: Waiting for 09:15-09:30 IST 15m opening range to settle."}
             if (now.hour == 14 and now.minute >= 35) or now.hour >= 15:
                 return {"allowed": False, "reason": "LATE-SESSION THETA GUARD: New option-buying entries blocked after 14:35 IST to avoid 3 PM institutional whipsaw & theta crush."}
+            # MIDDAY LUNCH-LULL LOCKOUT (11:30 - 13:15 IST):
+            # Preserves cash during the 65% volume drop window before European open.
+            is_lunch_lull = (now.hour == 11 and now.minute >= 30) or (now.hour == 12) or (now.hour == 13 and now.minute < 15)
+            if is_lunch_lull:
+                conf = float(order_details.get("confidence") or 0.0)
+                is_high_conv = bool(order_details.get("is_high_conviction", False)) or (conf >= 82.0)
+                if not is_high_conv:
+                    return {
+                        "allowed": False, 
+                        "reason": "MIDDAY LUNCH-LULL LOCKOUT (11:30 - 13:15 IST): Institutional volume dry-up window. Preserving buying power for 13:15 European Open & Power-Hour gamma expansion."
+                    }
             if getattr(self, "trades_today_count", 0) >= getattr(self, "max_trades_per_day", 2):
                 return {"allowed": False, "reason": f"FEE DISCIPLINE CAP: Max daily trades ({self.max_trades_per_day}) reached for today."}
 

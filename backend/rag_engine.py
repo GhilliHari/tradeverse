@@ -357,6 +357,17 @@ SEED_JOURNAL = [
             "6. Dynamic Daily Loss Limit: Scales automatically to 10% of portfolio equity (floored at ₹1,000 minimum) to safeguard 90% of account equity."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "capital_compounding", "priority": "critical", "date": "2026-11-19"}
+    },
+    {
+        "id": "rule_19_constituent_divergence_lunch_lull",
+        "document": (
+            "Trader Rule #19 (19-Nov-2026 Lesson) — Heavyweight Constituent Divergence, Midday Lockout & VIX Multiplier Protocol:\n"
+            "1. Gate 6 Heavyweight Constituent Divergence Veto: HDFC Bank + ICICI Bank command 51.9% of Bank Nifty, and Reliance + HDFC Bank command 17.8% of Nifty 50. If top 2 heavyweight stocks diverge against the breakout (e.g. HDFC & ICICI both negative on BUY_CE), veto the signal as an institutional divergence trap.\n"
+            "2. Midday Lunch-Lull Lockout (11:30 - 13:15 IST): Institutional volume drops by 65-70% before European markets open. Option entries are locked out unless accompanied by exceptional volume (>1.8x) and conviction (>= 82%), preserving cash for 13:15 Power-Hour.\n"
+            "3. India VIX Strategy Multiplier: Low VIX (< 12.5) activates theta defense (+35% target, +14% breakeven); High VIX (> 18.0) widens trailing gap to 18% to absorb 100-point swings without premature shakeouts.\n"
+            "4. Bid-Ask Spread Guard: Pauses execution 1.0s if option bid-ask spread friction exceeds 3.5%, avoiding instant market maker slippage."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "constituent_divergence_time_guard", "priority": "critical", "date": "2026-11-19"}
     }
 ]
 
