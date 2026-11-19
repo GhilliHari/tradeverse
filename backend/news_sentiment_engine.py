@@ -19,8 +19,13 @@ class NewsSentimentEngine:
         if self.api_key:
             try:
                 genai.configure(api_key=self.api_key)
-                self.model = genai.GenerativeModel('gemini-1.5-flash')
-                logger.info("📰 NewsSentimentEngine Initialized with Gemini 1.5 Flash")
+                for m_candidate in ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-lite-latest", "gemini-2.5-flash"]:
+                    try:
+                        self.model = genai.GenerativeModel(m_candidate)
+                        logger.info(f"📰 NewsSentimentEngine Initialized with {m_candidate}")
+                        break
+                    except Exception:
+                        continue
             except Exception as e:
                 logger.warning(f"Gemini Init Warning in NewsSentimentEngine: {e}")
                 self.model = None

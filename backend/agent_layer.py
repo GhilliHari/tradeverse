@@ -77,10 +77,14 @@ class IntelligenceLayer:
                 genai.configure(api_key=gemini_api_key)
             except Exception as e:
                 logger.warning(f"genai.configure failed: {e}")
-        try:
-            self.model = genai.GenerativeModel('gemini-flash-lite-latest')
-        except Exception:
-            self.model = genai.GenerativeModel('gemini-2.5-flash')
+        self.model_name = "gemini-3.8-flash"
+        for m_candidate in ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-lite-latest", "gemini-2.5-flash"]:
+            try:
+                self.model = genai.GenerativeModel(m_candidate)
+                self.model_name = m_candidate
+                break
+            except Exception:
+                continue
         self.scraper = NewsScraper()
         
         # Core flags and status
@@ -294,7 +298,7 @@ class IntelligenceLayer:
             # Record Token Usage
             if response.usage_metadata:
                 self.token_manager.add_usage(
-                    model_name="gemini-2.5-flash",
+                    model_name=getattr(self, "model_name", "gemini-3.8-flash"),
                     input_tokens=response.usage_metadata.prompt_token_count,
                     output_tokens=response.usage_metadata.candidates_token_count
                 )
