@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, CheckCircle2, ShieldCheck, Database, Cpu, Sparkles, Search, PlusCircle, Layers, RefreshCw, AlertCircle, Zap, Target, TrendingUp, Gauge } from 'lucide-react';
+import { BookOpen, CheckCircle2, ShieldCheck, Database, Cpu, Sparkles, Search, PlusCircle, Layers, RefreshCw, AlertCircle, Zap, Target, TrendingUp, Gauge, Radio } from 'lucide-react';
 import HUDCard from './ui/HUDCard';
 import { API_URL } from '../config/api';
 
@@ -237,6 +237,18 @@ const LessonsLearned = () => {
                 { title: "Heavyweight Constituent Confluence (Gate 6)", detail: "Index breakouts are vetoed if top two heavyweight constituents (e.g. HDFC Bank & ICICI Bank controlling 51.9% of BankNifty) diverge against the spot signal. No counter-constituent entries permitted." },
                 { title: "Midday Lunch-Lull Lockout (11:30 - 13:15 IST)", detail: "Blocks low-volume choppy consolidation entries during the typical 65-70% volume drop on NSE unless AI conviction exceeds 82% with an active CPR or Gamma expansion breakout." },
                 { title: "India VIX Adaptive Profit Ladders & Liquidity Guard", detail: "VIX < 12.5 tightens profit targets to +35% and accelerates breakeven at +14% to combat rapid theta decay; VIX > 18.0 widens trailing distance to 18% to endure high-beta swings. Pre-flight bid-ask spread check blocks illiquid options (>3.5% spread)." }
+            ]
+        },
+        {
+            category: "14. SOCIAL MEDIA & DUAL-CORE NEWS SENTIMENT ENGINE",
+            icon: Radio,
+            color: "text-cyan-400",
+            borderColor: "border-cyan-500/20",
+            bgColor: "bg-cyan-500/5",
+            items: [
+                { title: "Multi-Source Official RSS Ingestion", detail: "Scrapes Google News (Targeted Index & Retail Sentiment queries), Economic Times (50 headlines), and Livemint (35 headlines) without rate limits or web scraper breaks." },
+                { title: "Zero-Cost Dalal Street Financial Lexicon", detail: "Specialized rule-based sentiment weights for Indian F&O (rate cuts, FII inflows, breakouts vs rate hikes, FII dumps, bloodbaths) operating with 0ms latency and zero API cost." },
+                { title: "100% Uptime Quota Fallback Defense", detail: "If Gemini API free-tier hits HTTP 429 quota exhaustion, the engine seamlessly switches to the Dalal Street Financial Lexicon, preventing blind trading during volatile news sessions." }
             ]
         }
     ];

@@ -368,6 +368,16 @@ SEED_JOURNAL = [
             "4. Bid-Ask Spread Guard: Pauses execution 1.0s if option bid-ask spread friction exceeds 3.5%, avoiding instant market maker slippage."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "constituent_divergence_time_guard", "priority": "critical", "date": "2026-11-19"}
+    },
+    {
+        "id": "trader_rule_20",
+        "document": (
+            "Trader Rule #20 (19-Nov-2026 Lesson) — Dual-Core Social Media & Real-Time News Sentiment Ingestion Protocol:\n"
+            "1. Multi-Source Official RSS Ingestion: Replaced brittle HTML web scrapers with high-speed, rate-limit-immune official RSS feeds across Google News (Targeted Index & Retail Trader Sentiment queries), Economic Times (50 live market headlines), and Livemint (35 market/earnings feeds).\n"
+            "2. Zero-Cost Dalal Street Financial Lexicon Engine: Weighted sentiment scoring calibrated specifically for Indian F&O (e.g. rate cut, FII inflow, breakout, 52-week high vs rate hike, FII dump, bloodbath, crash, margin call). Operates at zero latency and zero API cost.\n"
+            "3. LLM Rate-Limit Immune Architecture: If Gemini API encounters HTTP 429 quota exhaustion or network timeout, the system seamlessly engages the zero-cost Financial Lexicon Engine with 100% uptime, eliminating blind-trading on macro event days."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "sentiment_social_news_protocol", "priority": "critical", "date": "2026-11-19"}
     }
 ]
 

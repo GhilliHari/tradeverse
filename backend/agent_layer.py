@@ -276,52 +276,42 @@ class IntelligenceLayer:
         self.workflow = self._create_workflow()
         self.token_manager = TokenManager() # Initialize Token Manager
 
-    def _sentiment_agent(self, state: AgentState):
-        """Analyzes market sentiment from news."""
-        news = self.scraper.fetch_latest_news(state['symbol'])
-        prompt = f"Analyze the overall market sentiment for {state['symbol']} by synthesizing both financial news headlines and social media mood (Reddit/Retail discussions): {news}.\n" \
-                 f"1. Is the aggregate sentiment POSITIVE, NEGATIVE, or NEUTRAL?\n" \
-                 f"2. Provide a brief reason that highlights any consensus or conflict between news and social media.\n" \
-                 f"Format: SENTIMENT: [Label], REASON: [Text]"
-        
-        try:
-            # Short-circuit if using MOCK_KEY to avoid API errors tanking convergence tests
-            if getattr(self, "api_key", "") == "MOCK_KEY" or "MOCK" in str(self.model):
-                 raise ValueError("Mock API Key detected.")
-                 
-            # Execute via specialized Sentiment model with automatic fallback to Scanner model
-            active_model_name = getattr(self, "sentiment_model_name", "gemini-3.5-flash")
+    @property
+    def sentiment_engine(self):
+        if getattr(self, "_sentiment_engine", None) is None:
             try:
-                response = self.sentiment_model.generate_content(prompt)
-            except Exception as se_err:
-                logger.warning(f"Specialized sentiment model failed ({se_err}). Falling back to scanner model.")
-                response = self.scanner_model.generate_content(prompt)
-                active_model_name = getattr(self, "scanner_model_name", "gemini-3.8-flash")
-            
-            res_text = response.text.upper()
-            
-            # Record Token Usage
-            if response.usage_metadata:
-                self.token_manager.add_usage(
-                    model_name=active_model_name,
-                    input_tokens=response.usage_metadata.prompt_token_count,
-                    output_tokens=response.usage_metadata.candidates_token_count
-                )
-        except Exception as e:
-            logger.warning(f"Sentiment Analysis Bypassed: {e} Using fallback baseline.")
-            # For backtesting to work without real LLM fetching, we provide a neutral/slightly bullish
-            # baseline so that pure technical signals can still achieve convergence > 0.3
-            res_text = "SENTIMENT: POSITIVE, REASON: Baseline Backtest Override (API Bypass)"
-        
+                from news_sentiment_engine import NewsSentimentEngine
+                self._sentiment_engine = NewsSentimentEngine(getattr(self, "api_key", None))
+            except Exception as e:
+                logger.error(f"Lazy Load NewsSentimentEngine Failed: {e}")
+                self._sentiment_engine = None
+        return self._sentiment_engine
+
+    def _sentiment_agent(self, state: AgentState):
+        """Analyzes market sentiment from live multi-source news and retail social feeds."""
+        sym = state.get('symbol', 'BANKNIFTY')
+        try:
+            if self.sentiment_engine:
+                sent_res = self.sentiment_engine.analyze_news_sentiment(sym)
+                score = float(sent_res.get('sentiment_score', 0.0))
+                label = "POSITIVE" if score >= 0.20 else ("NEGATIVE" if score <= -0.20 else "NEUTRAL")
+                reason = f"Synthesized from {sent_res.get('headlines_count', 0)} headlines via {sent_res.get('engine', 'Engine')}. Top: {sent_res.get('top_headline', '')[:80]}"
+                res_text = f"SENTIMENT: {label}, SCORE: {score:+.3f}, REASON: {reason}"
+                news = sent_res.get('news_context') or []
+                return {
+                    "sentiment_analysis": res_text,
+                    "sentiment_label": label,
+                    "sentiment_score": score,
+                    "news_context": news
+                }
+        except Exception as se:
+            logger.warning(f"Specialized sentiment engine warning ({se}). Falling back to baseline news scraper.")
+
+        # Fallback to direct scraper if engine fails
+        news = self.scraper.fetch_latest_news(sym)
         label = "NEUTRAL"
         score = 0.0
-        if "POSITIVE" in res_text: 
-            label = "POSITIVE"
-            score = 0.50 # Reduced from 0.75 so technicals must still be strong
-        elif "NEGATIVE" in res_text: 
-            label = "NEGATIVE"
-            score = -0.75 # Default quantized negative
-        
+        res_text = "SENTIMENT: NEUTRAL, REASON: Scraper Baseline"
         return {"sentiment_analysis": res_text, "sentiment_label": label, "sentiment_score": score, "news_context": news}
 
     def _options_agent(self, state: AgentState):
