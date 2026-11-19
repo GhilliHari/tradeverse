@@ -34,6 +34,13 @@ import logging
 import json
 import asyncio
 from datetime import datetime, time, timedelta
+from zoneinfo import ZoneInfo
+
+IST = ZoneInfo("Asia/Kolkata")
+
+def get_ist_now() -> datetime:
+    """Returns timezone-aware Indian Standard Time (IST), completely immune to host server clock settings."""
+    return datetime.now(IST)
 
 
 
@@ -404,7 +411,7 @@ async def monitor_live_positions_step():
         if not isinstance(positions, list):
             return
 
-        now = datetime.now()
+        now = get_ist_now()
         is_eod_squareoff = now.time() >= time(15, 20)
 
         for pos in positions:
@@ -598,7 +605,7 @@ def get_daily_fno_basket() -> List[tuple]:
     - Friday (4): Multi-Index Momentum
     Format: [(symbol, lot_qty, index_name)]
     """
-    weekday = datetime.now().weekday()
+    weekday = get_ist_now().weekday()
     base_specs = {
         "^NSMIDCP": (50, "MIDCPNIFTY"),
         "^CNXFIN": (25, "FINNIFTY"),
@@ -634,7 +641,7 @@ async def run_autonomous_trading():
                 continue
                 
             # 2. Market Hours & Holiday check (IST)
-            now = datetime.now()
+            now = get_ist_now()
             current_time = now.time()
             today_str = now.strftime("%Y-%m-%d")
             is_trading_day = simulation_engine.is_trading_day(now)
@@ -843,7 +850,7 @@ async def cloud_autonomous_pulse(trigger_cycle: bool = False):
     Ensures the Render cloud server stays awake during NSE market hours even when the iMac is powered OFF,
     verifies Angel One session health, monitors open positions, and triggers autonomous cycle if overdue.
     """
-    now = datetime.now()
+    now = get_ist_now()
     is_trading_day = simulation_engine.is_trading_day(now)
     is_market_hours = is_trading_day and (time(9, 15) <= now.time() <= time(15, 30))
 
@@ -3906,7 +3913,7 @@ async def execute_autopilot(
         opt_type = "CE" if signal in ["BUY", "BUY_CE"] else "PE"
 
     # --- POST-MORTEM 16-NOV-2026 LESSONS LEARNED GUARDRAILS ---
-    now = datetime.now()
+    now = get_ist_now()
     cur_time = now.time()
 
     # Gate 1: Hard Minimum Confidence Threshold

@@ -1,8 +1,15 @@
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from typing import Dict, Optional
 from notifier import notifier
 from kill_switch import KillSwitch
 import logging
+
+IST = ZoneInfo("Asia/Kolkata")
+
+def get_ist_now() -> datetime:
+    """Returns timezone-aware Indian Standard Time (IST), immune to host server clock settings."""
+    return datetime.now(IST)
 
 logger = logging.getLogger("RiskEngine")
 
@@ -113,7 +120,7 @@ class RiskEngine:
             return {"allowed": False, "reason": "Daily loss limit reached."}
 
         # --- NEW: Prime Intraday Entry Window & EOD Theta-Crush Block ---
-        now = datetime.now()
+        now = get_ist_now()
         today_str = now.strftime("%Y-%m-%d")
         if getattr(self, "last_reset_date", None) != today_str:
             self.current_daily_loss = 0.0

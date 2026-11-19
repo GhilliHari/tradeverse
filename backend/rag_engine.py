@@ -378,6 +378,16 @@ SEED_JOURNAL = [
             "3. LLM Rate-Limit Immune Architecture: If Gemini API encounters HTTP 429 quota exhaustion or network timeout, the system seamlessly engages the zero-cost Financial Lexicon Engine with 100% uptime, eliminating blind-trading on macro event days."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "sentiment_social_news_protocol", "priority": "critical", "date": "2026-11-19"}
+    },
+    {
+        "id": "trader_rule_21",
+        "document": (
+            "Trader Rule #21 (19-Nov-2026 Lesson) — Zero-Assumption Timezone & Market Hours Architecture:\n"
+            "1. Cloud OS Timezone Bias Vulnerability: Cloud Linux VMs (Oracle, AWS, Docker) default system clocks to UTC/GMT. When market opens at 09:15 AM IST, the cloud clock reads 03:45 AM GMT. Python's naive datetime.now() interprets this as midnight/closed, completely silencing the autonomous trading engine during market hours.\n"
+            "2. Permanent Operating System Sync: The host server must have timedatectl permanently locked to 'Asia/Kolkata' (IST, +0530).\n"
+            "3. Code-Level Timezone Guarantee: All trading time checks, pre-market warmups, lunch-lull lockouts, and EOD square-offs must strictly invoke get_ist_now() using ZoneInfo('Asia/Kolkata'). Never rely on host server default clocks."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "timezone_resilience_protocol", "priority": "critical", "date": "2026-11-19"}
     }
 ]
 

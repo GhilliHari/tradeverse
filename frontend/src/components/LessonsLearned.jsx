@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, CheckCircle2, ShieldCheck, Database, Cpu, Sparkles, Search, PlusCircle, Layers, RefreshCw, AlertCircle, Zap, Target, TrendingUp, Gauge, Radio } from 'lucide-react';
+import { BookOpen, CheckCircle2, ShieldCheck, Database, Cpu, Sparkles, Search, PlusCircle, Layers, RefreshCw, AlertCircle, Zap, Target, TrendingUp, Gauge, Radio, Clock } from 'lucide-react';
 import HUDCard from './ui/HUDCard';
 import { API_URL } from '../config/api';
 
@@ -249,6 +249,18 @@ const LessonsLearned = () => {
                 { title: "Multi-Source Official RSS Ingestion", detail: "Scrapes Google News (Targeted Index & Retail Sentiment queries), Economic Times (50 headlines), and Livemint (35 headlines) without rate limits or web scraper breaks." },
                 { title: "Zero-Cost Dalal Street Financial Lexicon", detail: "Specialized rule-based sentiment weights for Indian F&O (rate cuts, FII inflows, breakouts vs rate hikes, FII dumps, bloodbaths) operating with 0ms latency and zero API cost." },
                 { title: "100% Uptime Quota Fallback Defense", detail: "If Gemini API free-tier hits HTTP 429 quota exhaustion, the engine seamlessly switches to the Dalal Street Financial Lexicon, preventing blind trading during volatile news sessions." }
+            ]
+        },
+        {
+            category: "15. ZERO-ASSUMPTION TIMEZONE & MARKET HOURS ARCHITECTURE",
+            icon: Clock,
+            color: "text-emerald-400",
+            borderColor: "border-emerald-500/20",
+            bgColor: "bg-emerald-500/5",
+            items: [
+                { title: "Cloud OS UTC Offset Immunity", detail: "Cloud Linux VMs default to UTC/GMT, causing naive datetime checks to read 03:45 AM at Indian market open. We permanently locked host server timedatectl to 'Asia/Kolkata' (IST)." },
+                { title: "Code-Level Timezone Guarantee", detail: "All trading time checks, pre-market logins, lunch lockouts, and EOD exits enforce get_ist_now() with explicit ZoneInfo('Asia/Kolkata'), eliminating dependence on server OS settings." },
+                { title: "Deterministic NSE Trading Calendar", detail: "Prevents day-of-week and holiday mismatches between overseas host servers and the National Stock Exchange." }
             ]
         }
     ];
