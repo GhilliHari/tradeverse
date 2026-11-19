@@ -87,8 +87,12 @@ class TelegramBotService:
                                 self._last_update_id = update["update_id"]
                                 await self._handle_update(update)
                     else:
-                        logger.warning(f"Telegram polling returned {resp.status_code}: {resp.text}")
-                        await asyncio.sleep(5)
+                        if resp.status_code == 409:
+                            logger.warning("Telegram polling returned 409 Conflict (another instance active). Backing off 30s...")
+                            await asyncio.sleep(30)
+                        else:
+                            logger.warning(f"Telegram polling returned {resp.status_code}: {resp.text}")
+                            await asyncio.sleep(5)
             except asyncio.CancelledError:
                 break
             except Exception as e:

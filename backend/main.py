@@ -237,70 +237,82 @@ def get_hybrid_trailing_profile(
     regime: str = "NOMINAL", 
     sentiment_score: float = 0.0,
     confidence: float = 0.0,
-    technical_score: float = 0.0
+    technical_score: float = 0.0,
+    spot_atr: float = 0.0,
+    entry_price: float = 0.0
 ) -> dict:
     """
     Computes dynamic risk, target, and trailing stop-loss percentages based on live market regime,
-    macro trend expansion, technical conviction, and sentiment mood.
+    macro trend expansion, technical conviction, sentiment mood, and 5m ATR volatility.
     
-    Regimes:
-    - TRENDING_EXPANSION / HIGH CONVICTION: Extended target (+45% to +50%), early breakeven lock (+3.0%),
-      and 3-stage dynamic trailing (trailing 2% -> 3% -> 4%) with Runner Exemption to ride mega-gamma runners.
-    - VOLATILE / OPENING_VOLATILITY: Quick targets (+15%), tighter breakeven (+2.5%), tighter trailing
-      to protect profits against sharp whipsaws.
-    - NOMINAL / LUNCH_LULL / RANGE_BOUND: Balanced scalping (+30% target, +3.0% breakeven).
+    Institutional F&O Profit Ladder:
+    - Adaptive Initial Stop-Loss: -14.0% to -18.0% calibrated via 5m ATR (room to breathe on option noise).
+    - Breakeven Lock: At +18% to +20% peak, lock SL at +1.5% net profit (covers STT/charges, zero risk).
+    - Stage 1 Trail: At +30% peak, trail SL to +15% (locks in solid base win).
+    - Stage 2 Runner: At +50% peak, trail SL to +30% (locks in major win).
+    - Stage 3 Mega-Gamma Trail: At +75% peak, trail 18% behind peak (rides 0DTE multi-bagger runners).
+    - Target: +50% to +100% with Runner Exemption.
     """
     reg_upper = (regime or "").upper()
     is_high_conviction = abs(technical_score) >= 0.8 or confidence >= 0.72 or abs(sentiment_score) >= 0.7
+
+    # Calculate ATR-adaptive initial option stop loss if spot ATR and entry price are known
+    # Typical ATM option delta ≈ 0.50. 1.5x 5m ATR spot move ≈ 0.75x ATR option move.
+    base_sl_pct = -16.0
+    if spot_atr > 0.0 and entry_price > 0.0:
+        atr_opt_pts = 0.75 * spot_atr
+        calc_sl = (atr_opt_pts / entry_price) * 100.0
+        # Bound initial SL between -12.0% (strict defense) and -18.0% (maximum noise tolerance)
+        base_sl_pct = -round(min(18.0, max(12.0, calc_sl)), 1)
     
     # 1. Trending Expansion Days (High Momentum / High Conviction Breakout)
     if any(k in reg_upper for k in ("TREND", "EXPANSION", "POWER_HOUR")) or is_high_conviction:
         return {
             "regime_profile": "TRENDING_EXPANSION",
-            "target_pct": 50.0,             # Ride high delta & gamma expansion multi-baggers
-            "stop_loss_pct": -5.0,          # Strict risk cap
-            "breakeven_trigger_pct": 3.0,   # Once +3.0% reached, lock breakeven immediately
-            "breakeven_lock_pct": 0.8,      # Lock +0.8% net profit (covers STT/charges + green)
-            "stage1_trigger_pct": 5.0,      # Once +5.0%, trail starts
-            "stage1_trail_gap": 2.0,        # Trail 2.0% behind peak
-            "stage2_trigger_pct": 10.0,     # Once +10.0%, super-runner engages
-            "stage2_trail_gap": 3.0,        # Trail 3.0% behind peak
-            "stage3_trigger_pct": 20.0,     # Once +20.0%, mega-gamma trail engages
-            "stage3_trail_gap": 4.0,        # Trail 4.0% behind peak up to +50%
-            "max_hold_minutes": 45,         # Base hold; Runner Exemption protects profitable trends
+            "target_pct": 100.0,            # Ride high delta & gamma expansion multi-baggers
+            "stop_loss_pct": base_sl_pct,   # ATR-calibrated stop loss (-14% to -18%)
+            "breakeven_trigger_pct": 20.0,  # Once +20.0% reached, lock breakeven
+            "breakeven_lock_pct": 1.5,      # Lock +1.5% net profit (covers STT/charges + green)
+            "stage1_trigger_pct": 30.0,     # Once +30.0%, trail starts
+            "stage1_trail_gap": 15.0,       # Trail 15.0% behind peak (locks +15% win)
+            "stage2_trigger_pct": 50.0,     # Once +50.0%, super-runner engages
+            "stage2_trail_gap": 15.0,       # Trail 15.0% behind peak (locks +35% win)
+            "stage3_trigger_pct": 75.0,     # Once +75.0%, mega-gamma trail engages
+            "stage3_trail_gap": 18.0,       # Trail 18.0% behind peak up to +100%+
+            "max_hold_minutes": 55,         # Base hold; Runner Exemption protects profitable trends
         }
     
     # 2. Volatile / Choppy / High VIX Regimes
     if any(k in reg_upper for k in ("VOLATIL", "CHOP", "CRASH")):
         return {
             "regime_profile": "VOLATILITY_DEFENSE",
-            "target_pct": 15.0,             # Swift target before mean reversion
-            "stop_loss_pct": -4.5,          # Tighter risk cut
-            "breakeven_trigger_pct": 2.5,   # Early breakeven lock
-            "breakeven_lock_pct": 0.6,      # Cover brokerage + 0.6%
-            "stage1_trigger_pct": 4.5,      # Quick trail
-            "stage1_trail_gap": 2.0,        # Tight 2.0% gap
-            "stage2_trigger_pct": 8.0,      # Tighter runner lock
-            "stage2_trail_gap": 2.5,        # 2.5% gap
-            "stage3_trigger_pct": 14.0,     # Stage 3 trail
-            "stage3_trail_gap": 3.5,        # 3.5% gap
+            "target_pct": 35.0,             # Swift target before mean reversion
+            "stop_loss_pct": min(-12.0, base_sl_pct),  # Tighter risk cut (-12.0%)
+            "breakeven_trigger_pct": 15.0,  # Early breakeven lock at +15%
+            "breakeven_lock_pct": 1.5,      # Cover brokerage + 1.5%
+            "stage1_trigger_pct": 25.0,     # Quick trail
+            "stage1_trail_gap": 12.0,       # 12.0% gap
+            "stage2_trigger_pct": 40.0,     # Tighter runner lock
+            "stage2_trail_gap": 14.0,       # 14.0% gap
+            "stage3_trigger_pct": 60.0,     # Stage 3 trail
+            "stage3_trail_gap": 16.0,       # 16.0% gap
             "max_hold_minutes": 25,         # Quick exit before theta decay hits
         }
 
     # 3. Standard / Balanced Market Regimes
     return {
         "regime_profile": "BALANCED_NOMINAL",
-        "target_pct": 30.0,
-        "stop_loss_pct": -5.0,
-        "breakeven_trigger_pct": 3.0,
-        "breakeven_lock_pct": 0.8,
-        "stage1_trigger_pct": 5.0,
-        "stage1_trail_gap": 2.0,
-        "stage2_trigger_pct": 10.0,
-        "stage2_trail_gap": 3.0,
-        "stage3_trigger_pct": 20.0,
-        "stage3_trail_gap": 4.0,
-        "max_hold_minutes": 35,
+        "target_pct": 60.0,
+        "stop_loss_pct": base_sl_pct if base_sl_pct != -16.0 else -15.0,
+        "breakeven_trigger_pct": 18.0,
+        "breakeven_lock_pct": 1.5,
+        "stage1_trigger_pct": 30.0,
+        "stage1_trail_gap": 15.0,
+        "stage2_trigger_pct": 50.0,
+        "stage2_trail_gap": 15.0,
+        "stage3_trigger_pct": 75.0,
+        "stage3_trail_gap": 18.0,
+        "max_hold_minutes": 40,
     }
 
 def record_live_trade_to_observatory(
@@ -428,7 +440,7 @@ async def monitor_live_positions_step():
             if tsym not in active_live_positions:
                 # Resolve market regime from autonomous_state or simulation_engine
                 detected_regime = autonomous_state.get("last_regime") or "NOMINAL"
-                profile = get_hybrid_trailing_profile(detected_regime, sentiment_score=0.0)
+                profile = get_hybrid_trailing_profile(detected_regime, sentiment_score=0.0, entry_price=entry_price)
                 active_live_positions[tsym] = {
                     "tradingsymbol": tsym,
                     "exchange": exch,
@@ -445,8 +457,8 @@ async def monitor_live_positions_step():
                     "stage1_trail_gap": profile["stage1_trail_gap"],
                     "stage2_trigger_pct": profile["stage2_trigger_pct"],
                     "stage2_trail_gap": profile["stage2_trail_gap"],
-                    "stage3_trigger_pct": profile.get("stage3_trigger_pct", 20.0),
-                    "stage3_trail_gap": profile.get("stage3_trail_gap", 4.0),
+                    "stage3_trigger_pct": profile.get("stage3_trigger_pct", 75.0),
+                    "stage3_trail_gap": profile.get("stage3_trail_gap", 18.0),
                     "max_hold_minutes": profile["max_hold_minutes"],
                 }
                 tracked = active_live_positions[tsym]
@@ -472,15 +484,15 @@ async def monitor_live_positions_step():
             elapsed_mins = (now - entry_time).total_seconds() / 60.0
 
             # Hybrid Dynamic Ratcheting Trailing Stop-Loss (Adaptive to Expansion vs Defense):
-            current_sl_pct = float(tracked.get("stop_loss_pct", -5.0))
-            be_trigger = float(tracked.get("breakeven_trigger_pct", 3.0))
-            be_lock = float(tracked.get("breakeven_lock_pct", 0.8))
-            st1_trigger = float(tracked.get("stage1_trigger_pct", 5.0))
-            st1_gap = float(tracked.get("stage1_trail_gap", 2.0))
-            st2_trigger = float(tracked.get("stage2_trigger_pct", 10.0))
-            st2_gap = float(tracked.get("stage2_trail_gap", 3.0))
-            st3_trigger = float(tracked.get("stage3_trigger_pct", 20.0))
-            st3_gap = float(tracked.get("stage3_trail_gap", 4.0))
+            current_sl_pct = float(tracked.get("stop_loss_pct", -16.0))
+            be_trigger = float(tracked.get("breakeven_trigger_pct", 20.0))
+            be_lock = float(tracked.get("breakeven_lock_pct", 1.5))
+            st1_trigger = float(tracked.get("stage1_trigger_pct", 30.0))
+            st1_gap = float(tracked.get("stage1_trail_gap", 15.0))
+            st2_trigger = float(tracked.get("stage2_trigger_pct", 50.0))
+            st2_gap = float(tracked.get("stage2_trail_gap", 15.0))
+            st3_trigger = float(tracked.get("stage3_trigger_pct", 75.0))
+            st3_gap = float(tracked.get("stage3_trail_gap", 18.0))
 
             # 1. Breakeven Lock: once position moves safely into the green
             if peak_pct >= be_trigger and current_sl_pct < be_lock:
@@ -753,8 +765,12 @@ async def startup_event():
     asyncio.create_task(keep_awake_pinger())
     # Start 2-Way Interactive Telegram Command Bot
     try:
-        from telegram_bot_service import telegram_bot
-        asyncio.create_task(telegram_bot.start())
+        import os
+        if os.getenv("DISABLE_TELEGRAM_POLLING", "").lower() in ("true", "1"):
+            logger.info("ℹ️ Telegram Bot Polling disabled via DISABLE_TELEGRAM_POLLING.")
+        else:
+            from telegram_bot_service import telegram_bot
+            asyncio.create_task(telegram_bot.start())
     except Exception as e:
         logger.warning(f"Telegram Bot Startup skipped/failed: {e}")
 
@@ -3840,6 +3856,7 @@ async def execute_autopilot(
                 analysis["final_signal"] = signal
                 analysis["confidence"] = round(intra_conf * 100.0, 1)
                 analysis["regime"] = intra_eval.get("regime", "TRENDING_INTRADAY")
+                analysis["spot_atr"] = float(intra_eval.get("atr_14") or 0.0)
                 analysis["trade_recommendation"] = {
                     "strike": atm_strike,
                     "option_type": opt_t,
@@ -4149,7 +4166,9 @@ async def execute_autopilot(
                 detected_regime, 
                 sentiment_score=sent_score,
                 confidence=conf_val,
-                technical_score=tech_score
+                technical_score=tech_score,
+                spot_atr=float(analysis.get("spot_atr") or 0.0),
+                entry_price=fill_price
             )
             
             active_live_positions[resolved_symbol] = {
@@ -4168,8 +4187,8 @@ async def execute_autopilot(
                 "stage1_trail_gap": profile["stage1_trail_gap"],
                 "stage2_trigger_pct": profile["stage2_trigger_pct"],
                 "stage2_trail_gap": profile["stage2_trail_gap"],
-                "stage3_trigger_pct": profile.get("stage3_trigger_pct", 20.0),
-                "stage3_trail_gap": profile.get("stage3_trail_gap", 4.0),
+                "stage3_trigger_pct": profile.get("stage3_trigger_pct", 75.0),
+                "stage3_trail_gap": profile.get("stage3_trail_gap", 18.0),
                 "max_hold_minutes": profile["max_hold_minutes"],
                 "analysis": analysis,
             }

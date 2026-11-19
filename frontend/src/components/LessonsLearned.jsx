@@ -178,6 +178,18 @@ const LessonsLearned = () => {
                 { title: "Capital Efficiency Guarantee", detail: "All 4 index options require ₹1,500 - ₹3,500 margin, safely fitting within ₹7,616.56 cash margin while single-stock F&O (requiring ₹25k+) is filtered out." },
                 { title: "Highest-Conviction Tournament (≥68%)", detail: "Scans all 4 indices in parallel every cycle and executes only the single highest-conviction setup across the entire market (Max 1 open position)." }
             ]
+        },
+        {
+            category: "9. PROFIT LADDER & ATR TRAILING STOP ARCHITECTURE",
+            icon: ShieldCheck,
+            color: "text-amber-400",
+            borderColor: "border-amber-500/20",
+            bgColor: "bg-amber-500/5",
+            items: [
+                { title: "ATR-Adaptive Initial Stop-Loss (-14% to -18%)", detail: "Calibrated via 5m spot ATR (0.75x ATR / entry price) to absorb normal option premium noise without tripping premature shakeouts while strictly capping drawdown." },
+                { title: "Breakeven Lock (+18% to +20% Peak)", detail: "Once position reaches +18-20% profit, SL automatically ratchets to +1.5% net profit. The trade becomes 100% risk-free, guaranteeing taxes and STT are covered." },
+                { title: "3-Stage Profit Ladder & Runner Trail", detail: "+30% peak locks +15% profit, +50% peak locks +30% profit, and +75%+ peak trails 18% behind peak to capture explosive multi-bagger 0DTE gamma expansions." }
+            ]
         }
     ];
 

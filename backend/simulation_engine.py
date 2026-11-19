@@ -286,6 +286,13 @@ class SimulationEngine:
             df_5m['MACD_Hist'] = macd - macd.ewm(span=9, adjust=False).mean()
             df_5m['Ret_3'] = df_5m['Close'].pct_change(3).fillna(0.0)
 
+            # 14-period True Range & ATR calculation for adaptive volatility stops
+            high_low = df_5m['High'] - df_5m['Low']
+            high_close = (df_5m['High'] - df_5m['Close'].shift()).abs()
+            low_close = (df_5m['Low'] - df_5m['Close'].shift()).abs()
+            tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+            atr_14 = float(tr.rolling(14, min_periods=1).mean().iloc[-1])
+
             spot_price = float(df_5m['Close'].iloc[-1])
             vix_val = self._get_vix(broker=broker)
             eval_res = self._evaluate_intraday_bar_signal(df_5m, len(df_5m) - 1, vix_val)
@@ -339,9 +346,10 @@ class SimulationEngine:
             eval_res["ema_21"] = ema_21
             eval_res["vwap"] = vwap_val
             eval_res["ema_spread_pct"] = round(ema_spread_pct, 4)
+            eval_res["atr_14"] = round(atr_14, 2)
             eval_res["reason"] = (
                 f"5m Confluence ({eval_res['regime']}): Spot ₹{spot_price:,.1f}, "
-                f"EMA9 ₹{ema_9:,.1f}, EMA21 ₹{ema_21:,.1f}, RSI {rsi_val}"
+                f"EMA9 ₹{ema_9:,.1f}, EMA21 ₹{ema_21:,.1f}, RSI {rsi_val}, ATR14 ₹{eval_res['atr_14']}"
             )
             return eval_res
         except Exception as e:
@@ -406,6 +414,13 @@ class SimulationEngine:
             macd = exp1 - exp2
             df_5m['MACD_Hist'] = macd - macd.ewm(span=9, adjust=False).mean()
             df_5m['Ret_3'] = df_5m['Close'].pct_change(3).fillna(0.0)
+
+            # 14-period True Range & ATR calculation for adaptive volatility stops
+            high_low = df_5m['High'] - df_5m['Low']
+            high_close = (df_5m['High'] - df_5m['Close'].shift()).abs()
+            low_close = (df_5m['Low'] - df_5m['Close'].shift()).abs()
+            tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+            atr_14 = float(tr.rolling(14, min_periods=1).mean().iloc[-1])
 
             latest = df_5m.iloc[-1]
             spot_price = float(latest['Close'])

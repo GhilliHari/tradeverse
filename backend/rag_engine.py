@@ -302,6 +302,20 @@ SEED_JOURNAL = [
             "Execution Rule: Autonomous cycle evaluates the day's expiry index first, then scans remaining indices in parallel. Only the single highest-conviction setup (AI Conf >= 68%) is routed to Angel One (Max 1 active position)."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "multi_index_rotation", "priority": "critical", "date": "2026-11-19"}
+    },
+    {
+        "id": "rule_15_profit_ladder_atr_trailing",
+        "document": (
+            "Trader Rule #15 (19-Nov-2026 Lesson) — Institutional F&O Profit Ladder & ATR Trailing Stop Architecture:\n"
+            "Index options experience normal ±5% to ±8% noise on minor index fluctuations. Fixed 5% stops guarantee premature shakeouts.\n"
+            "1. Adaptive Initial Stop-Loss: Set at -14.0% to -18.0% calibrated dynamically using 5m spot ATR (0.75 * ATR / Entry Price). Gives the trade space to develop while strictly capping total risk per lot under ₹450 (well below the daily ₹1,000 drawdown limit).\n"
+            "2. Breakeven Lock (+18% to +20% Peak): When option reaches +18-20% gain, immediately ratchet SL to +1.5% net profit. The trade becomes 100% risk-free, guaranteeing that taxes, exchange fees, and STT are covered.\n"
+            "3. Stage 1 Profit Lock (+30% Peak): Ratchet SL to +15% profit (locks in half the gain in the bank).\n"
+            "4. Stage 2 Super-Runner (+50% Peak): Ratchet SL to +30% profit (locks in major runner gain).\n"
+            "5. Stage 3 Mega-Gamma Trail (+75%+ Peak): Ratchet SL to Peak - 18% to capture parabolic 0DTE expiry squeezes without premature clock exits.\n"
+            "6. Telegram Anti-Collision: Gracefully back off on HTTP 409 conflict so primary cloud instance maintains uninterrupted command & notification feed."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "profit_ladder_atr_exit", "priority": "critical", "date": "2026-11-19"}
     }
 ]
 
