@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, CheckCircle2, ShieldCheck, Database, Cpu, Sparkles, Search, PlusCircle, Layers, RefreshCw, AlertCircle, Zap, Target } from 'lucide-react';
+import { BookOpen, CheckCircle2, ShieldCheck, Database, Cpu, Sparkles, Search, PlusCircle, Layers, RefreshCw, AlertCircle, Zap, Target, TrendingUp } from 'lucide-react';
 import HUDCard from './ui/HUDCard';
 import { API_URL } from '../config/api';
 
@@ -213,6 +213,18 @@ const LessonsLearned = () => {
                 { title: "Slight ITM on High-Conviction Breakouts (Delta ≈ 0.60)", detail: "Dynamically selects 1-strike in-the-money options (atm - step for Calls, atm + step for Puts) on trending days to capture 60% delta movement with intrinsic cushion." },
                 { title: "Theta Decay Defense on Afternoon 0DTE", detail: "Intrinsic value protects against rapid midday time decay, ensuring positions do not decay to zero if the underlying consolidates." },
                 { title: "Elimination of Hero-or-Zero OTM Trap", detail: "Deep OTM gambling strikes are strictly prohibited by the quant engine to protect and compound small capital bases." }
+            ]
+        },
+        {
+            category: "12. FRACTIONAL KELLY COMPOUNDING & DYNAMIC RISK SCALING",
+            icon: TrendingUp,
+            color: "text-emerald-400",
+            borderColor: "border-emerald-500/20",
+            bgColor: "bg-emerald-500/5",
+            items: [
+                { title: "Fractional Kelly 40% Exposure Cap", detail: "Strict mathematical ceiling: no single trade may ever commit more than 40% of cash margin (currently ₹3,046 on ₹7,616 balance), preventing catastrophic ruin." },
+                { title: "Capital-Phased Sizing (1 -> 2 -> 3 Lots)", detail: "Preservation Phase (<= ₹12,000) caps size strictly at 1 lot. Growth Phase (₹12k - ₹20k) enables 2 lots, and Compounding Phase (>= ₹20k) enables 3 lots." },
+                { title: "Anti-Martingale Drawdown Defense", detail: "If nursing any daily loss (> ₹0), position sizing automatically locks back to 1 lot, while the daily loss limit dynamically scales to 10% of portfolio equity (min ₹1,000)." }
             ]
         }
     ];

@@ -855,6 +855,8 @@ async def cloud_autonomous_pulse(trigger_cycle: bool = False):
                         "net": float(f_res.get("net") or 0.0),
                         "utiliseddebits": float(f_res.get("utiliseddebits") or 0.0),
                     }
+                    if risk_engine and funds_summary["availablecash"] > 0:
+                        risk_engine.sync_with_capital(funds_summary["availablecash"])
     except Exception as e:
         logger.debug(f"Cloud pulse broker check error: {e}")
 
@@ -4063,21 +4065,19 @@ async def execute_autopilot(
             target_exchange = res_exch
             resolved_symbol = res_sym
 
-    # 3b. Align quantity with Exchange-Mandated Lot Size (e.g. 15 for BANKNIFTY, 25 for NIFTY)
+    # 3b. Align quantity with Exchange-Mandated Lot Size & Fractional Kelly Sizing
     lot_size = 1
     if hasattr(broker, "get_lot_size"):
         try:
             lot_size = int(broker.get_lot_size(target_exchange, target_symbol) or 1)
         except Exception:
-            lot_size = 15 if base_index == "BANKNIFTY" else (25 if base_index in ("NIFTY", "FINNIFTY") else 1)
+            lot_size = 15 if base_index == "BANKNIFTY" else (25 if base_index in ("NIFTY", "FINNIFTY") else (50 if base_index == "MIDCPNIFTY" else 1))
     elif base_index == "BANKNIFTY":
         lot_size = 15
     elif base_index in ("NIFTY", "FINNIFTY"):
         lot_size = 25
-
-    if lot_size > 1:
-        lots = max(1, int(quantity or lot_size) // lot_size)
-        quantity = lots * lot_size
+    elif base_index == "MIDCPNIFTY":
+        lot_size = 50
 
     ltp_val = 0.0
     try:
@@ -4086,6 +4086,32 @@ async def execute_autopilot(
         ltp_val = float((ltp_res.get(ltp_key) or ltp_res.get(resolved_symbol) or {}).get("last_price", 0.0) or 0.0)
     except Exception:
         ltp_val = 0.0
+
+    # Optimization #5: Dynamic Capital Compounding (Fractional Kelly Sizing)
+    lots = 1
+    if not is_mock_broker and risk_engine and hasattr(broker, "get_funds"):
+        try:
+            funds_info = await asyncio.to_thread(broker.get_funds)
+            if isinstance(funds_info, dict) and funds_info.get("status"):
+                avail_cash = float(funds_info.get("availablecash") or 0.0)
+                if avail_cash > 0:
+                    risk_engine.sync_with_capital(avail_cash)
+                    conf_val = float(analysis.get("confidence") or 70.0)
+                    sizing_res = risk_engine.calculate_compounded_position_size(
+                        available_cash=avail_cash,
+                        lot_size=lot_size,
+                        option_ltp=ltp_val if ltp_val > 0 else 120.0,
+                        confidence=conf_val
+                    )
+                    lots = sizing_res["lots"]
+                    logger.info(
+                        f"💰 [Autopilot] Kelly Compounding: {lots} Lot(s) ({lots * lot_size} qty) | "
+                        f"Cap: ₹{avail_cash:,.2f} | Phase: {sizing_res['phase']}"
+                    )
+        except Exception as k_err:
+            logger.debug(f"Kelly position sizing fallback: {k_err}")
+
+    quantity = lots * lot_size
 
     # 3c. Dynamic OTM Strike Stepping if ATM Lot Cost exceeds 96% of MAX_POSITION_SIZE (₹9,600 buffer for charges/chasing)
     max_budget = float(getattr(config, "MAX_POSITION_SIZE", 10000.0) or 10000.0) * 0.96

@@ -28,6 +28,66 @@ class RiskEngine:
         self.last_loss_time = None
         self.cool_off_duration = timedelta(minutes=30) # 30 min cool-off after a loss
 
+    def sync_with_capital(self, available_cash: float):
+        """
+        Dynamically scales daily risk limit and max position size as capital compounds.
+        - Daily Loss Limit: 10% of portfolio, floored at ₹1,000 minimum.
+        - Max Single Position Size: 50% of available cash.
+        """
+        if available_cash > 0:
+            self.daily_loss_limit = max(1000.0, round(available_cash * 0.10, 2))
+            self.max_position_size = max(3800.0, round(available_cash * 0.50, 2))
+
+    def calculate_compounded_position_size(
+        self,
+        available_cash: float,
+        lot_size: int,
+        option_ltp: float,
+        confidence: float = 70.0
+    ) -> Dict:
+        """
+        Calculates Fractional Kelly Position Sizing with Capital Compounding Guardrails:
+        - Strict preservation phase (Cash <= ₹12,000): 1 Lot only
+        - Single-trade exposure cap: Maximum 40% of available cash margin
+        - Growth phase (Cash ₹12,000 - ₹20,000): Up to 2 Lots (if cost <= 40% cash)
+        - Compounding phase (Cash >= ₹20,000): Up to 3 Lots
+        - Drawdown defense: If daily loss > 0, downsize to 1 lot immediately
+        """
+        if available_cash <= 0 or lot_size <= 0:
+            return {"lots": 1, "quantity": max(1, lot_size), "exposure": 0.0, "phase": "PRESERVATION_DEFAULT"}
+
+        opt_price = max(10.0, float(option_ltp))
+        cost_per_lot = opt_price * lot_size
+        max_trade_budget = available_cash * 0.40
+
+        # Drawdown defense: If nursing any daily loss today, strictly 1 lot
+        if self.current_daily_loss > 0:
+            phase = "DRAWDOWN_DEFENSE (1 Lot Cap)"
+            max_allowed_lots = 1
+        elif available_cash >= 20000.0 and confidence >= 75.0:
+            phase = "COMPOUNDING_PHASE (Up to 3 Lots)"
+            max_allowed_lots = 3
+        elif available_cash >= 12000.0 and confidence >= 72.0:
+            phase = "GROWTH_PHASE (Up to 2 Lots)"
+            max_allowed_lots = 2
+        else:
+            phase = "PRESERVATION_PHASE (1 Lot Strict)"
+            max_allowed_lots = 1
+
+        raw_lots = int(max_trade_budget // cost_per_lot) if cost_per_lot > 0 else 1
+        final_lots = max(1, min(max_allowed_lots, raw_lots))
+        final_quantity = final_lots * lot_size
+        total_exposure = round(final_quantity * opt_price, 2)
+
+        return {
+            "lots": final_lots,
+            "quantity": final_quantity,
+            "exposure": total_exposure,
+            "phase": phase,
+            "max_budget": max_trade_budget,
+            "cost_per_lot": round(cost_per_lot, 2)
+        }
+
     def validate_order(self, order_details: Dict) -> Dict:
         """
         Validates if an order complies with risk rules.

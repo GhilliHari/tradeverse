@@ -343,6 +343,20 @@ SEED_JOURNAL = [
             "3. Elimination of Retail OTM Gambling: Deep OTM ('Hero or Zero') options are banned by the Quant architecture to preserve trading capital."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "dynamic_moneyness", "priority": "critical", "date": "2026-11-19"}
+    },
+    {
+        "id": "rule_18_fractional_kelly_compounding",
+        "document": (
+            "Trader Rule #18 (19-Nov-2026 Lesson) — Fractional Kelly Capital Compounding & Dynamic Drawdown Guard:\n"
+            "Static 1-lot trading permanently caps revenue potential as account equity grows, while excessive scaling during drawdown risks ruin.\n"
+            "1. Fractional Kelly Exposure Ceiling: No single option trade may ever commit more than 40% of available cash balance.\n"
+            "2. Preservation Phase (Cash <= ₹12,000): Enforce strict 1-Lot maximum (₹7,616 account baseline) to prioritize capital preservation.\n"
+            "3. Growth Phase (Cash ₹12,000 - ₹20,000): Scale up to 2 Lots on high conviction (Conf >= 72%) if cost per lot fits within 40% cash ceiling.\n"
+            "4. Compounding Phase (Cash >= ₹20,000): Scale up to 3 Lots on high conviction (Conf >= 75%).\n"
+            "5. Dynamic Drawdown Guard (Anti-Martingale): If today's realized loss > ₹0, immediately force downsize position size back to 1 Lot.\n"
+            "6. Dynamic Daily Loss Limit: Scales automatically to 10% of portfolio equity (floored at ₹1,000 minimum) to safeguard 90% of account equity."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "capital_compounding", "priority": "critical", "date": "2026-11-19"}
     }
 ]
 
