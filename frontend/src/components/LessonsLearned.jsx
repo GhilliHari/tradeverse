@@ -153,6 +153,18 @@ const LessonsLearned = () => {
                 { title: "3-Stage Ratcheting Trailing Stop", detail: "+3% profit locks breakeven (+0.8%), +5% profit trails 2% gap, +10% trails 3% gap, and +20% trails 4% gap up to +50% max target." },
                 { title: "High-Conviction Auto-Upgrade (≥72% / |Tech| ≥ 0.8)", detail: "High-conviction trend breakouts automatically promote to 'TRENDING_EXPANSION' regime, preventing restrictive low-target scalping." }
             ]
+        },
+        {
+            category: "7. FOUNDATION AI MODEL SELECTION PROTOCOL (19-NOV-2026 LESSON)",
+            icon: Layers,
+            color: "text-cyan-400",
+            borderColor: "border-cyan-500/20",
+            bgColor: "bg-cyan-500/5",
+            items: [
+                { title: "Gemini 3.8 Flash for Intraday Live Trading", detail: "Sub-second turnaround (250-400ms) minimizes option premium slippage, eliminates 429 quota exhaustion during high-frequency volatility, and enforces strict sentiment/macro gates." },
+                { title: "Gemini 4 Hydrogen for EOD Synthesis", detail: "1M token context and 65k token output buffer deployed for deep multi-week trade log auditing, vector RAG memory ingestion, and post-market journal synthesis." },
+                { title: "Preview Quota Gate Protection", detail: "Strictly guards live execution against zero-limit elemental preview models (Neon/Argon/Carbon on Free Tier) to prevent mid-trade API lockouts." }
+            ]
         }
     ];
 

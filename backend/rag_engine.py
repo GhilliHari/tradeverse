@@ -265,6 +265,17 @@ SEED_JOURNAL = [
             "When technical momentum score is strong (|tech| >= 0.8) or AI confidence is >= 72.0%, position profile must auto-upgrade to 'TRENDING_EXPANSION'. Never box a strong trend trade into low-target nominal scalping parameters."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "regime_classification", "priority": "high", "date": "2026-11-18"}
+    },
+    {
+        "id": "journal_rule_post_mortem_20261119_model_tier_alignment",
+        "document": (
+            "Trader Rule #12 (19-Nov-2026 Lesson) — Foundation AI Model Selection Protocol:\n"
+            "Always bifurcate AI model roles strictly by latency vs compute density:\n"
+            "1. Real-Time Intraday Trading (09:15-15:30 IST): Must use Gemini 3.8 Flash (or 3.5 Flash). Sub-second latency (250-400ms) prevents option premium slippage on BankNifty/Nifty, and high throughput avoids 429 quota exhaustion.\n"
+            "2. Post-Market Synthesis & Journaling (After 15:30 IST): Use Gemini 4 Hydrogen. Its 1M token context window and 65k output limit enable full-day multi-trade log auditing and deep vector memory RAG ingestion.\n"
+            "3. Quota Gate Warning: Never point live trading to unverified elemental preview models (Neon/Argon/Carbon on Free Tier) as zero-request limits trigger mid-session 429 execution lockouts."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "ai_infrastructure", "priority": "critical", "date": "2026-11-19"}
     }
 ]
 
