@@ -570,6 +570,36 @@ async def monitor_live_positions_step():
     except Exception as e:
         logger.debug(f"Live position monitor check error: {e}")
 
+def get_daily_fno_basket() -> List[tuple]:
+    """
+    Returns prioritized 4-Index F&O Basket with Day-of-Week Expiry Weighting:
+    - Monday (0): MIDCPNIFTY Expiry (Lot 50, Step 25)
+    - Tuesday (1): FINNIFTY Expiry (Lot 25, Step 50)
+    - Wednesday (2): BANKNIFTY Expiry (Lot 15, Step 100)
+    - Thursday (3): NIFTY 50 Expiry (Lot 25, Step 50)
+    - Friday (4): Multi-Index Momentum
+    Format: [(symbol, lot_qty, index_name)]
+    """
+    weekday = datetime.now().weekday()
+    base_specs = {
+        "^NSMIDCP": (50, "MIDCPNIFTY"),
+        "^CNXFIN": (25, "FINNIFTY"),
+        "^NSEBANK": (15, "BANKNIFTY"),
+        "^NSEI": (25, "NIFTY")
+    }
+    if weekday == 0:  # Monday: Midcap
+        order = ["^NSMIDCP", "^CNXFIN", "^NSEBANK", "^NSEI"]
+    elif weekday == 1:  # Tuesday: FinNifty
+        order = ["^CNXFIN", "^NSEBANK", "^NSEI", "^NSMIDCP"]
+    elif weekday == 2:  # Wednesday: BankNifty
+        order = ["^NSEBANK", "^CNXFIN", "^NSEI", "^NSMIDCP"]
+    elif weekday == 3:  # Thursday: Nifty 50
+        order = ["^NSEI", "^NSEBANK", "^CNXFIN", "^NSMIDCP"]
+    else:  # Friday / Weekend
+        order = ["^NSEBANK", "^NSEI", "^CNXFIN", "^NSMIDCP"]
+
+    return [(sym, base_specs[sym][0], base_specs[sym][1]) for sym in order]
+
 async def run_autonomous_trading():
     """
     Stand-alone 24/7 Cloud Autonomous Trading loop that:
@@ -649,12 +679,14 @@ async def run_autonomous_trading():
                 await asyncio.sleep(30)
                 continue
             
-            logger.info("🤖 Autonomous Trading: Initiating execution cycle (scanning NIFTY -> BANKNIFTY)...")
+            fno_basket = get_daily_fno_basket()
+            logger.info(f"🤖 Autonomous Trading: Initiating 4-Index F&O Basket scan ({', '.join(b[2] for b in fno_basket)})...")
             mode = "LIVE" if config.ENV == "LIVE" else "PAPER"
-            res = {"status": "HOLD", "reason": "No signal"}
-            for scan_sym, default_qty in [("^NSEI", 65), ("^NSEBANK", 30)]:
+            res = {"status": "HOLD", "reason": "No high-conviction signal across F&O basket"}
+            for scan_sym, default_qty, name in fno_basket:
                 res = await execute_autopilot(symbol=scan_sym, quantity=default_qty, mode=mode, greedy=False)
                 if res.get("status") in ("EXECUTED", "SKIPPED_DUPLICATE_POSITION", "RISK_REJECTED"):
+                    logger.info(f"⚡ [F&O Basket] Executed trade in {name} ({scan_sym}) x {default_qty} qty")
                     break
             status = res.get("status", "UNKNOWN")
             autonomous_state["last_cycle_at"] = datetime.now().isoformat()
@@ -825,7 +857,13 @@ async def cloud_autonomous_pulse(trigger_cycle: bool = False):
                     is_stale = True
             if (trigger_cycle or is_stale) and getattr(config, "TRADING_MODE", "MANUAL").upper() == "AUTO":
                 mode = "LIVE" if config.ENV == "LIVE" else "PAPER"
-                triggered_result = await execute_autopilot(symbol="^NSEBANK", quantity=15, mode=mode, greedy=False)
+                fno_basket = get_daily_fno_basket()
+                triggered_result = {"status": "HOLD", "reason": "No high-conviction signal across F&O basket"}
+                for scan_sym, default_qty, name in fno_basket:
+                    triggered_result = await execute_autopilot(symbol=scan_sym, quantity=default_qty, mode=mode, greedy=False)
+                    if triggered_result.get("status") in ("EXECUTED", "SKIPPED_DUPLICATE_POSITION", "RISK_REJECTED"):
+                        logger.info(f"⚡ [Pulse F&O Basket] Executed trade in {name} ({scan_sym}) x {default_qty} qty")
+                        break
                 autonomous_state["last_cycle_at"] = datetime.now().isoformat()
                 autonomous_state["last_signal"] = triggered_result.get("signal") or (triggered_result.get("analysis") or {}).get("final_signal", "HOLD")
                 autonomous_state["last_status"] = triggered_result.get("status", "UNKNOWN")
@@ -3795,7 +3833,7 @@ async def execute_autopilot(
             intra_reason = intra_eval.get("reason", "5m Intraday Confluence")
             if intra_action in ("BUY_CE", "BUY_PE") and intra_conf >= 0.70:
                 spot_now = float(intra_eval.get("spot_price") or 0.0)
-                step = 100 if "BANK" in symbol.upper() else 50
+                step = 100 if "BANK" in symbol.upper() else (25 if "MID" in symbol.upper() else 50)
                 atm_strike = int(round(spot_now / step) * step) if spot_now > 0 else 0
                 opt_t = "CE" if intra_action == "BUY_CE" else "PE"
                 signal = intra_action

@@ -289,6 +289,19 @@ SEED_JOURNAL = [
             "Rule: If any specialized route hits a rate-limit error, the engine must auto-fallback to Gemini 3.8 Flash within 50ms without dropping orders."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "moa_architecture", "priority": "critical", "date": "2026-11-19"}
+    },
+    {
+        "id": "journal_rule_post_mortem_20261119_daily_expiry_rotation",
+        "document": (
+            "Trader Rule #14 (19-Nov-2026 Lesson) — 4-Day Daily Expiry F&O Rotation Protocol:\n"
+            "Expand trading universe beyond BankNifty to all 4 high-liquidity NSE index derivatives with capital <= ₹7,616:\n"
+            "1. Monday Expiry Priority: Midcap Nifty (^NSMIDCP, Lot 50, Step 25). Explosive gamma percentage expansion.\n"
+            "2. Tuesday Expiry Priority: FinNifty (^CNXFIN, Lot 25, Step 50). Clean private banking + NBFC trending runs.\n"
+            "3. Wednesday Expiry Priority: BankNifty (^NSEBANK, Lot 15, Step 100). High-volatility institutional scalping.\n"
+            "4. Thursday Expiry Priority: Nifty 50 (^NSEI, Lot 25, Step 50). Macro heavyweight trend momentum.\n"
+            "Execution Rule: Autonomous cycle evaluates the day's expiry index first, then scans remaining indices in parallel. Only the single highest-conviction setup (AI Conf >= 68%) is routed to Angel One (Max 1 active position)."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "multi_index_rotation", "priority": "critical", "date": "2026-11-19"}
     }
 ]
 

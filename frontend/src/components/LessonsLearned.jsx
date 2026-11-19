@@ -166,6 +166,18 @@ const LessonsLearned = () => {
                 { title: "High-Frequency News: Gemini 3.5 Flash-Lite", detail: "Ultra-low latency binary classification scoring breaking macro and RBI events before market absorption." },
                 { title: "EOD Synthesis & RAG: Gemini 4 Hydrogen", detail: "1M token context and 65k output buffer deployed for deep multi-week trade log auditing, vector RAG memory ingestion, and post-market journal synthesis." }
             ]
+        },
+        {
+            category: "8. 4-INDEX F&O ROTATION & EXPIRY TOURNAMENT (19-NOV-2026 LESSON)",
+            icon: Sparkles,
+            color: "text-emerald-400",
+            borderColor: "border-emerald-500/20",
+            bgColor: "bg-emerald-500/5",
+            items: [
+                { title: "4-Day Daily Expiry Alignment", detail: "Monday (Midcap Nifty), Tuesday (FinNifty), Wednesday (BankNifty), Thursday (Nifty 50) captures maximum zero-day-to-expiry (0DTE) gamma expansion." },
+                { title: "Capital Efficiency Guarantee", detail: "All 4 index options require ₹1,500 - ₹3,500 margin, safely fitting within ₹7,616.56 cash margin while single-stock F&O (requiring ₹25k+) is filtered out." },
+                { title: "Highest-Conviction Tournament (≥68%)", detail: "Scans all 4 indices in parallel every cycle and executes only the single highest-conviction setup across the entire market (Max 1 open position)." }
+            ]
         }
     ];
 
