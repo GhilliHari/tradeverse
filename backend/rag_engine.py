@@ -316,6 +316,19 @@ SEED_JOURNAL = [
             "6. Telegram Anti-Collision: Gracefully back off on HTTP 409 conflict so primary cloud instance maintains uninterrupted command & notification feed."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "profit_ladder_atr_exit", "priority": "critical", "date": "2026-11-19"}
+    },
+    {
+        "id": "rule_16_delta_oi_trap_protection",
+        "document": (
+            "Trader Rule #16 (19-Nov-2026 Lesson) — Institutional Real-Time Delta OI Velocity & Trap Protection Protocol:\n"
+            "Candle patterns frequently generate fake breakouts when retail traders chase price while institutional market makers aggressively build opposing option walls.\n"
+            "1. Gate 5 Institutional Pre-Trade Veto: Before firing any BUY_CE or BUY_PE order, query the live broker option chain around ATM strikes.\n"
+            "2. Put-Call Ratio (PCR) Boundaries: Block BUY_CE if PCR < 0.65 (heavy call writing ceiling). Block BUY_PE if PCR > 1.45 (heavy put writing floor cushion).\n"
+            "3. Bull Trap Detection: If spot is moving up, but Delta CE OI expands > 35% faster than Delta PE OI, institutional writers are selling calls into the rally. Veto BUY_CE.\n"
+            "4. Bear Trap Detection: If spot is falling, but Delta PE OI expands > 35% faster than Delta CE OI, institutional writers are selling puts into the drop. Veto BUY_PE.\n"
+            "5. Short Covering & Squeeze Exemption: If Call writers are actively unwinding (Delta CE < 0) as spot approaches Call Wall, allow breakout execution to ride dealer short covering."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "delta_oi_trap_guard", "priority": "critical", "date": "2026-11-19"}
     }
 ]
 

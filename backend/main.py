@@ -3936,6 +3936,45 @@ async def execute_autopilot(
             "analysis": analysis
         }
 
+    # Gate 5: Institutional Real-Time Delta OI & PCR Momentum Gate (Rule #16)
+    try:
+        broker_oi = get_broker_client(config.OWNER_EMAIL)
+        if broker_oi and hasattr(broker_oi, "get_option_chain") and "Mock" not in broker_oi.__class__.__name__:
+            from gex_engine import gex_engine
+            opt_chain = await asyncio.to_thread(broker_oi.get_option_chain, symbol)
+            if opt_chain:
+                spot_for_gex = float(analysis.get("spot_price") or 0.0)
+                if spot_for_gex <= 0.0:
+                    rec_strike = int(rec.get("strike") or 0)
+                    spot_for_gex = float(rec_strike) if rec_strike > 0 else 0.0
+                if spot_for_gex > 0.0:
+                    gex_analysis = gex_engine.analyze_chain(
+                        chain_data=opt_chain,
+                        spot_price=spot_for_gex,
+                        symbol=symbol
+                    )
+                    oi_gate = gex_engine.get_safety_gate(signal=signal, spot_price=spot_for_gex)
+                    pcr_val = float(gex_analysis.get("pcr", 1.0))
+                    analysis["oi_analytics"] = {
+                        "pcr": pcr_val,
+                        "pcr_atm": gex_analysis.get("pcr_atm", pcr_val),
+                        "call_wall": gex_analysis.get("call_wall"),
+                        "put_wall": gex_analysis.get("put_wall"),
+                        "delta_ce_oi": gex_analysis.get("delta_ce_oi", 0),
+                        "delta_pe_oi": gex_analysis.get("delta_pe_oi", 0),
+                        "oi_momentum": gex_analysis.get("oi_momentum", 0.0),
+                        "gamma_regime": gex_analysis.get("gamma_regime")
+                    }
+                    if not oi_gate.get("allow"):
+                        return {
+                            "status": "HOLD",
+                            "reason": f"Institutional OI Veto: {oi_gate.get('reason')} (Rule #16).",
+                            "analysis": analysis
+                        }
+                    logger.info(f"⚡ [Autopilot] Gate 5 Passed: Institutional OI & PCR Confluence (PCR: {pcr_val:.2f}, Walls: {gex_analysis.get('put_wall')} - {gex_analysis.get('call_wall')})")
+    except Exception as oie:
+        logger.debug(f"Institutional OI Gate check skipped: {oie}")
+
     u_sym = symbol.upper().replace("NSE:", "").replace("NFO:", "")
     base_index = None
     if "BANK" in u_sym:

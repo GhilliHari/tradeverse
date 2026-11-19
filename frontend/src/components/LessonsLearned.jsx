@@ -190,6 +190,18 @@ const LessonsLearned = () => {
                 { title: "Breakeven Lock (+18% to +20% Peak)", detail: "Once position reaches +18-20% profit, SL automatically ratchets to +1.5% net profit. The trade becomes 100% risk-free, guaranteeing taxes and STT are covered." },
                 { title: "3-Stage Profit Ladder & Runner Trail", detail: "+30% peak locks +15% profit, +50% peak locks +30% profit, and +75%+ peak trails 18% behind peak to capture explosive multi-bagger 0DTE gamma expansions." }
             ]
+        },
+        {
+            category: "10. INSTITUTIONAL DELTA OI & PCR MOMENTUM TRAP PROTECTION",
+            icon: Zap,
+            color: "text-purple-400",
+            borderColor: "border-purple-500/20",
+            bgColor: "bg-purple-500/5",
+            items: [
+                { title: "Gate 5 Pre-Trade Institutional OI Veto", detail: "Evaluates real-time 11-strike option chain data from Angel One before firing orders, ensuring price breakouts are confirmed by institutional positioning." },
+                { title: "Put-Call Ratio (PCR) Boundaries", detail: "Vetoes BUY_CE if PCR < 0.65 (heavy call writing ceiling). Vetoes BUY_PE if PCR > 1.45 (heavy put writing floor cushion)." },
+                { title: "Delta OI Bull & Bear Trap Filter", detail: "Detects institutional writing absorbing retail breakout orders. Vetoes BUY_CE if Call writers aggressively add (+35%) into rallies; vetoes BUY_PE if Put writers build floors into dips." }
+            ]
         }
     ];
 

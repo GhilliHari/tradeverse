@@ -39,6 +39,8 @@ class GEXEngine:
     def __init__(self, risk_free_rate: float = 0.07):
         self.r = risk_free_rate
         self.last_analysis: Dict[str, Any] = {}
+        # Historical snapshots per symbol: symbol -> list of {time, total_ce_oi, total_pe_oi, pcr, spot}
+        self.oi_history: Dict[str, List[Dict[str, Any]]] = {}
 
     def calculate_bs_gamma(self, S: float, K: float, T: float, v: float) -> float:
         """Calculates Black-Scholes Gamma."""
@@ -51,16 +53,19 @@ class GEXEngine:
         self,
         chain_data: List[Dict[str, Any]],
         spot_price: float,
+        symbol: str = "DEFAULT",
         lot_size: int = 30,
         days_to_expiry: float = 4.0,
         vix: float = 13.5
     ) -> Dict[str, Any]:
         """
-        Comprehensive Option Chain GEX Analysis including Zero Gamma and Squeeze triggers.
+        Comprehensive Option Chain GEX Analysis including Delta OI, Zero Gamma, and Squeeze triggers.
         """
         if not chain_data or spot_price <= 0:
             return {}
 
+        import time
+        now_ts = time.time()
         df = pd.DataFrame(chain_data)
         T = max(1.0, days_to_expiry) / 365.0
         v = max(0.08, vix / 100.0)
@@ -72,10 +77,81 @@ class GEXEngine:
         call_wall = int(df.loc[call_wall_idx, "strike"])
         put_wall = int(df.loc[put_wall_idx, "strike"])
 
-        # 2. PCR (Put-Call Ratio)
+        # 2. PCR (Put-Call Ratio) - Total & ATM Battlefield
         total_ce_oi = int(df["oi_ce"].sum())
         total_pe_oi = int(df["oi_pe"].sum())
         pcr = round(total_pe_oi / total_ce_oi, 3) if total_ce_oi > 0 else 1.0
+
+        # ATM Strike and nearest ±1 strike
+        atm_strike = int(min(df["strike"], key=lambda k: abs(k - spot_price)))
+        step = 100 if "BANK" in symbol.upper() else (25 if "MID" in symbol.upper() else 50)
+        atm_mask = (df["strike"] >= atm_strike - step) & (df["strike"] <= atm_strike + step)
+        atm_ce_oi = int(df.loc[atm_mask, "oi_ce"].sum()) if atm_mask.any() else total_ce_oi
+        atm_pe_oi = int(df.loc[atm_mask, "oi_pe"].sum()) if atm_mask.any() else total_pe_oi
+        pcr_atm = round(atm_pe_oi / atm_ce_oi, 3) if atm_ce_oi > 0 else pcr
+
+        # 2b. Real-Time Delta OI Velocity & Trap Detection
+        delta_ce_oi = 0
+        delta_pe_oi = 0
+        oi_momentum = 0.0
+        bull_trap_risk = False
+        bear_trap_risk = False
+        short_covering = False
+        long_unwinding = False
+
+        sym_key = symbol.upper().replace("^", "").replace("NSE:", "").replace("NFO:", "")
+        history = self.oi_history.get(sym_key, [])
+        if history:
+            # Find snapshot from 3 to 15 minutes ago, or use previous snapshot
+            target_snap = history[-1]
+            for snap in reversed(history):
+                age_mins = (now_ts - snap["time"]) / 60.0
+                if 3.0 <= age_mins <= 20.0:
+                    target_snap = snap
+                    break
+
+            prev_ce = target_snap.get("total_ce_oi", total_ce_oi)
+            prev_pe = target_snap.get("total_pe_oi", total_pe_oi)
+            prev_spot = target_snap.get("spot", spot_price)
+
+            delta_ce_oi = total_ce_oi - prev_ce
+            delta_pe_oi = total_pe_oi - prev_pe
+            denom = max(1000, abs(delta_ce_oi) + abs(delta_pe_oi))
+            oi_momentum = round((delta_pe_oi - delta_ce_oi) / denom, 3)
+
+            # Spot direction between snapshots
+            spot_change = spot_price - prev_spot
+
+            # Bull Trap: Price attempting to rise but Call writers are aggressively piling in (+30% more than PE)
+            if spot_change > 0 and delta_ce_oi > 0 and delta_ce_oi > (1.35 * max(1, delta_pe_oi)):
+                bull_trap_risk = True
+
+            # Bear Trap: Price attempting to drop but Put writers are aggressively defending (+30% more than CE)
+            if spot_change < 0 and delta_pe_oi > 0 and delta_pe_oi > (1.35 * max(1, delta_ce_oi)):
+                bear_trap_risk = True
+
+            # Short Covering: Net CE open interest dropping sharply into resistance
+            if delta_ce_oi < -2000 or (prev_ce > 0 and (delta_ce_oi / prev_ce) <= -0.04):
+                short_covering = True
+
+            # Long Unwinding: Net PE open interest dropping sharply into support
+            if delta_pe_oi < -2000 or (prev_pe > 0 and (delta_pe_oi / prev_pe) <= -0.04):
+                long_unwinding = True
+
+        # Append current snapshot into history
+        if sym_key not in self.oi_history:
+            self.oi_history[sym_key] = []
+        self.oi_history[sym_key].append({
+            "time": now_ts,
+            "total_ce_oi": total_ce_oi,
+            "total_pe_oi": total_pe_oi,
+            "atm_ce_oi": atm_ce_oi,
+            "atm_pe_oi": atm_pe_oi,
+            "pcr": pcr,
+            "spot": spot_price
+        })
+        if len(self.oi_history[sym_key]) > 30:
+            self.oi_history[sym_key] = self.oi_history[sym_key][-30:]
 
         # 3. Max Pain Approximation
         pain_scores = []
@@ -198,15 +274,25 @@ class GEXEngine:
             "gamma_regime_desc": gamma_regime_desc,
             "is_positive_gamma": is_positive_gamma,
             "pcr": pcr,
+            "pcr_atm": pcr_atm,
+            "delta_ce_oi": delta_ce_oi,
+            "delta_pe_oi": delta_pe_oi,
+            "oi_momentum": oi_momentum,
+            "bull_trap_risk": bull_trap_risk,
+            "bear_trap_risk": bear_trap_risk,
+            "short_covering": short_covering,
+            "long_unwinding": long_unwinding,
             "squeeze_alert": squeeze_alert,
             "squeeze_urgency": squeeze_urgency,
             "squeeze_message": squeeze_message,
             "magnet_point": int(magnet_point),
             "magnet_strength": float(magnet_strength),
-            "sentiment": "BULLISH" if pcr > 1.1 else "BEARISH" if pcr < 0.7 else "NEUTRAL",
+            "sentiment": "BULLISH" if pcr > 1.15 else "BEARISH" if pcr < 0.80 else "NEUTRAL",
             "is_live": bool(total_ce_oi > 0),
             "total_ce_oi": total_ce_oi,
             "total_pe_oi": total_pe_oi,
+            "atm_ce_oi": atm_ce_oi,
+            "atm_pe_oi": atm_pe_oi,
             "strike_gex": strike_gex_list
         }
 
@@ -214,21 +300,81 @@ class GEXEngine:
         return analysis
 
     def get_safety_gate(self, signal: str, spot_price: float) -> Dict[str, Any]:
-        """Safety gate checking against Call/Put walls and Zero Gamma cascades."""
+        """
+        Institutional Safety Gate checking against Call/Put walls, PCR barriers,
+        Zero Gamma cascades, and Delta OI bull/bear trap setups.
+        """
         if not self.last_analysis:
-            return {"allow": True, "reason": "No GEX data"}
+            return {"allow": True, "reason": "No GEX/OI data available"}
 
         call_wall = self.last_analysis.get("call_wall", 0)
         put_wall = self.last_analysis.get("put_wall", 0)
-        zero_gamma = self.last_analysis.get("zero_gamma_level", 0)
+        pcr = float(self.last_analysis.get("pcr", 1.0))
+        pcr_atm = float(self.last_analysis.get("pcr_atm", pcr))
+        bull_trap = bool(self.last_analysis.get("bull_trap_risk", False))
+        bear_trap = bool(self.last_analysis.get("bear_trap_risk", False))
+        short_cov = bool(self.last_analysis.get("short_covering", False))
+        long_unwind = bool(self.last_analysis.get("long_unwinding", False))
+        d_ce = int(self.last_analysis.get("delta_ce_oi", 0))
+        d_pe = int(self.last_analysis.get("delta_pe_oi", 0))
 
-        if signal == "BUY" and spot_price > (call_wall - 30):
-            return {"allow": False, "reason": f"APPROACHING HEAVY CALL WALL @ {call_wall}"}
+        sig_upper = (signal or "").upper()
+        is_bullish = sig_upper in ("BUY", "BUY_CE")
+        is_bearish = sig_upper in ("SELL", "BUY_PE")
 
-        if signal == "SELL" and spot_price < (put_wall + 30):
-            return {"allow": False, "reason": f"APPROACHING HEAVY PUT WALL @ {put_wall}"}
+        if is_bullish:
+            # 1. Extreme low PCR = overwhelming call writing barrier
+            if pcr < 0.65 or pcr_atm < 0.60:
+                return {
+                    "allow": False, 
+                    "reason": f"Heavy Call Writing Barrier (PCR: {pcr:.2f}, ATM PCR: {pcr_atm:.2f} < 0.65). Institutions capping upside."
+                }
+            # 2. Bull Trap: Call writers aggressively piling on into the rally
+            if bull_trap and not short_cov:
+                return {
+                    "allow": False, 
+                    "reason": f"Bull Trap Alert: Call writers adding aggressively (+{d_ce:,} contracts) into this rally."
+                }
+            # 3. Call Wall proximity (unless short covering underway)
+            if spot_price > (call_wall - 35) and not short_cov:
+                return {
+                    "allow": False, 
+                    "reason": f"Approaching Heavy Call Wall @ {call_wall}. High rejection probability without short covering."
+                }
+            # 4. Extreme overbought bubble
+            if pcr > 1.70:
+                return {
+                    "allow": False, 
+                    "reason": f"Extreme Overbought Bubble (PCR {pcr:.2f} > 1.70). High long-unwinding risk."
+                }
 
-        return {"allow": True, "reason": "Path clear"}
+        elif is_bearish:
+            # 1. Extreme high PCR = heavy put writing cushion
+            if pcr > 1.45 or pcr_atm > 1.50:
+                return {
+                    "allow": False, 
+                    "reason": f"Strong Put Writing Cushion (PCR: {pcr:.2f}, ATM PCR: {pcr_atm:.2f} > 1.45). Institutions defending floor."
+                }
+            # 2. Bear Trap: Put writers aggressively building a floor into the dip
+            if bear_trap and not long_unwind:
+                return {
+                    "allow": False, 
+                    "reason": f"Bear Trap Alert: Put writers adding aggressively (+{d_pe:,} contracts) into this drop."
+                }
+            # 3. Put Wall proximity (unless long unwinding waterfall underway)
+            if spot_price < (put_wall + 35) and not long_unwind:
+                return {
+                    "allow": False, 
+                    "reason": f"Approaching Heavy Put Wall @ {put_wall}. Rebound risk without long unwinding."
+                }
+            # 4. Extreme oversold floor
+            if pcr < 0.45:
+                return {
+                    "allow": False, 
+                    "reason": f"Extreme Oversold Reversal Zone (PCR {pcr:.2f} < 0.45). Short squeeze risk."
+                }
+
+        return {"allow": True, "reason": "Path clear (Institutional OI Confluence Validated)"}
 
 
 # Global singleton instance
