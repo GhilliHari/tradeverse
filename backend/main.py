@@ -3852,17 +3852,34 @@ async def execute_autopilot(
                 step = 100 if "BANK" in symbol.upper() else (25 if "MID" in symbol.upper() else 50)
                 atm_strike = int(round(spot_now / step) * step) if spot_now > 0 else 0
                 opt_t = "CE" if intra_action == "BUY_CE" else "PE"
+
+                # Optimization #4: Dynamic Moneyness & Delta Selector
+                # High-conviction trending breakouts (Conf >= 72% or Trending Regime):
+                # Select Slight ITM (Delta ≈ 0.60):
+                # - BUY_CE: atm_strike - step
+                # - BUY_PE: atm_strike + step
+                # Provides real intrinsic value cushion and minimizes rapid theta decay.
+                # Standard Nominal: Select ATM (Delta ≈ 0.50).
+                is_trending_conviction = (intra_conf >= 0.72) or any(k in str(intra_eval.get("regime", "")).upper() for k in ("TREND", "EXPANSION", "BREAKOUT"))
+                if is_trending_conviction and atm_strike > 0:
+                    selected_strike = (atm_strike - step) if opt_t == "CE" else (atm_strike + step)
+                    moneyness_desc = "Slight ITM (Delta ≈ 0.60 - Intrinsic Buffer)"
+                else:
+                    selected_strike = atm_strike
+                    moneyness_desc = "ATM (Delta ≈ 0.50 - Standard)"
+
                 signal = intra_action
                 analysis["final_signal"] = signal
                 analysis["confidence"] = round(intra_conf * 100.0, 1)
                 analysis["regime"] = intra_eval.get("regime", "TRENDING_INTRADAY")
                 analysis["spot_atr"] = float(intra_eval.get("atr_14") or 0.0)
                 analysis["trade_recommendation"] = {
-                    "strike": atm_strike,
+                    "strike": selected_strike,
                     "option_type": opt_t,
-                    "reasoning": f"Intraday 5m Sniper ({int(intra_conf*100)}%): {intra_reason}",
+                    "moneyness": moneyness_desc,
+                    "reasoning": f"Intraday 5m Sniper ({int(intra_conf*100)}% | {moneyness_desc}): {intra_reason}",
                 }
-                logger.info(f"⚡ [Autopilot] 5m Intraday Sniper triggered {signal} @ Strike {atm_strike}{opt_t} ({intra_reason})")
+                logger.info(f"⚡ [Autopilot] 5m Intraday Sniper triggered {signal} @ Strike {selected_strike}{opt_t} ({moneyness_desc})")
         except Exception as ie:
             logger.debug(f"Intraday 5m sniper fallback check skipped: {ie}")
 

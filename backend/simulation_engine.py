@@ -521,11 +521,11 @@ class SimulationEngine:
 
         
         if signal in ["BUY_CE", "BUY"]:
-            # Slightly OTM for calls
-            return atm_strike + strike_step
-        elif signal in ["BUY_PE", "SELL"]:
-            # Slightly OTM for puts
+            # Slight ITM on calls for intrinsic protection and Delta 0.60
             return atm_strike - strike_step
+        elif signal in ["BUY_PE", "SELL"]:
+            # Slight ITM on puts for intrinsic protection and Delta -0.60
+            return atm_strike + strike_step
         else:
             # ATM for HOLD
             return atm_strike

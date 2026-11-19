@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, CheckCircle2, ShieldCheck, Database, Cpu, Sparkles, Search, PlusCircle, Layers, RefreshCw, AlertCircle } from 'lucide-react';
+import { BookOpen, CheckCircle2, ShieldCheck, Database, Cpu, Sparkles, Search, PlusCircle, Layers, RefreshCw, AlertCircle, Zap, Target } from 'lucide-react';
 import HUDCard from './ui/HUDCard';
 import { API_URL } from '../config/api';
 
@@ -201,6 +201,18 @@ const LessonsLearned = () => {
                 { title: "Gate 5 Pre-Trade Institutional OI Veto", detail: "Evaluates real-time 11-strike option chain data from Angel One before firing orders, ensuring price breakouts are confirmed by institutional positioning." },
                 { title: "Put-Call Ratio (PCR) Boundaries", detail: "Vetoes BUY_CE if PCR < 0.65 (heavy call writing ceiling). Vetoes BUY_PE if PCR > 1.45 (heavy put writing floor cushion)." },
                 { title: "Delta OI Bull & Bear Trap Filter", detail: "Detects institutional writing absorbing retail breakout orders. Vetoes BUY_CE if Call writers aggressively add (+35%) into rallies; vetoes BUY_PE if Put writers build floors into dips." }
+            ]
+        },
+        {
+            category: "11. DYNAMIC MONEYNESS & DELTA STRIKE SELECTION",
+            icon: Target,
+            color: "text-blue-400",
+            borderColor: "border-blue-500/20",
+            bgColor: "bg-blue-500/5",
+            items: [
+                { title: "Slight ITM on High-Conviction Breakouts (Delta ≈ 0.60)", detail: "Dynamically selects 1-strike in-the-money options (atm - step for Calls, atm + step for Puts) on trending days to capture 60% delta movement with intrinsic cushion." },
+                { title: "Theta Decay Defense on Afternoon 0DTE", detail: "Intrinsic value protects against rapid midday time decay, ensuring positions do not decay to zero if the underlying consolidates." },
+                { title: "Elimination of Hero-or-Zero OTM Trap", detail: "Deep OTM gambling strikes are strictly prohibited by the quant engine to protect and compound small capital bases." }
             ]
         }
     ];

@@ -329,6 +329,20 @@ SEED_JOURNAL = [
             "5. Short Covering & Squeeze Exemption: If Call writers are actively unwinding (Delta CE < 0) as spot approaches Call Wall, allow breakout execution to ride dealer short covering."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "delta_oi_trap_guard", "priority": "critical", "date": "2026-11-19"}
+    },
+    {
+        "id": "rule_17_dynamic_moneyness_delta_selection",
+        "document": (
+            "Trader Rule #17 (19-Nov-2026 Lesson) — Dynamic Moneyness & Delta Strike Selection Architecture:\n"
+            "Out-of-the-Money (OTM) options lose 100% of value to afternoon theta decay on 0DTE expiries and have sluggish delta (0.30 - 0.40).\n"
+            "1. High-Conviction Trend Expansion (Conf >= 72% or Trending Regime): Dynamically select 1-Strike In-The-Money (Slight ITM, Delta ≈ 0.60):\n"
+            "   - BUY_CE: strike = atm_strike - step (e.g. 57,800 CE when spot is 57,900).\n"
+            "   - BUY_PE: strike = atm_strike + step (e.g. 58,000 PE when spot is 57,900).\n"
+            "   Captures 60% of underlying spot movement immediately with built-in intrinsic value protection against theta decay.\n"
+            "2. Nominal Scalping / Range Bound: Select strictly At-The-Money (ATM, Delta ≈ 0.50) strike.\n"
+            "3. Elimination of Retail OTM Gambling: Deep OTM ('Hero or Zero') options are banned by the Quant architecture to preserve trading capital."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "dynamic_moneyness", "priority": "critical", "date": "2026-11-19"}
     }
 ]
 

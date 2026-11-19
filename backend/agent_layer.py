@@ -780,21 +780,20 @@ class IntelligenceLayer:
                 strike_step = 25
             
             strike_offset = 0
-            position_type = "ATM (Standard Risk)"
+            position_type = "ATM (Delta ≈ 0.50 - Balanced Standard)"
             
-            if confidence > 85 and regime in ["TRENDING_INTRADAY", "POWER_HOUR_TREND", "VOLATILE"]:
-                # On Expiry, we can go 2x Strike Step OTM for "Gamma Explosion" if conviction is extreme
-                if is_expiry and confidence > 92:
-                    strike_offset = (2 * strike_step) if final_signal == "BUY" else (-2 * strike_step)
-                    position_type = "EXPIRY SNIPER: OTM (Hero or Zero - Gamma Blast)"
-                else:
-                    strike_offset = strike_step if final_signal == "BUY" else -strike_step
-                    position_type = "OTM (High Leverage - Gamma Sniper)"
-            elif confidence < 65:
-                # Higher Delta (ITM) to buffer against Theta decay
+            # Dynamic Moneyness Selection (Optimization #4):
+            # High Conviction Trend (Conf >= 72% or Trending Regime): Select Slight ITM (Delta ≈ 0.60)
+            # - For BUY (Calls): strike_offset = -strike_step (e.g. 57,800 CE when spot is 57,900)
+            # - For SELL (Puts): strike_offset = +strike_step (e.g. 58,000 PE when spot is 57,900)
+            # Intrinsic value protection + lower theta decay rate on expiry.
+            # Nominal / Scalp: Select ATM (Delta ≈ 0.50)
+            if confidence >= 72 or regime in ["TRENDING_INTRADAY", "POWER_HOUR_TREND", "TRENDING_EXPANSION"]:
                 strike_offset = -strike_step if final_signal == "BUY" else strike_step
-                position_type = "ITM (Safety First - Delta Heavy)"
-                if is_expiry: position_type += " [Theta Defense]"
+                position_type = "SLIGHT_ITM (Delta ≈ 0.60 - Intrinsic Value & Low Theta Cushion)"
+            else:
+                strike_offset = 0
+                position_type = "ATM (Delta ≈ 0.50 - Balanced Standard)"
 
 
             
