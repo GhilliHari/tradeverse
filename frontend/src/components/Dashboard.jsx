@@ -38,13 +38,14 @@ import OptionChainGEX from './OptionChainGEX';
 import TradeChecklist from './TradeChecklist';
 import GreeksCheatSheet from './GreeksCheatSheet';
 import LessonsLearned from './LessonsLearned';
+import IssueLog from './IssueLog';
 import KnowledgeGraphVisualizer from './KnowledgeGraphVisualizer';
 import GeminiAssistant from './GeminiAssistant';
 import GannAstrologyIndicator from './GannAstrologyIndicator';
 import HybridEnsembleIndicator from './HybridEnsembleIndicator';
 import ElliottWaveIndicator from './ElliottWaveIndicator';
 import InstitutionalRadar from './InstitutionalRadar';
-import { Waves, Telescope, ScrollText, BookOpen, Layers, ShieldCheck, Clock, Sparkles, Compass, Target, Network, Landmark } from 'lucide-react';
+import { Waves, Telescope, ScrollText, BookOpen, Layers, ShieldCheck, Clock, Sparkles, Compass, Target, Network, Landmark, AlertOctagon } from 'lucide-react';
 import MarketClock from './MarketClock';
 import MyScriptsTab from './MyScriptsTab';
 import { auth } from '../firebase';
@@ -1092,6 +1093,7 @@ const DashboardWithLogic = () => {
         { icon: HeartPulse, label: 'System Health' },
         { icon: Network, label: 'Knowledge Graph' },
         { icon: BookOpen, label: 'Lessons Learned' },
+        { icon: AlertOctagon, label: 'Issue Log' },
         { icon: Settings, label: 'Settings' },
     ];
 
@@ -2679,6 +2681,8 @@ const DashboardWithLogic = () => {
                         <KnowledgeGraphVisualizer />
                     ) : activeTab.toLowerCase() === 'lessons learned' ? (
                         <LessonsLearned />
+                    ) : activeTab.toLowerCase() === 'issue log' ? (
+                        <IssueLog />
                     ) : activeTab.toLowerCase() === 'backtest' ? (
                         <Backtest />
                     ) : activeTab.toLowerCase() === 'analytics' ? (
