@@ -399,6 +399,17 @@ SEED_JOURNAL = [
             "4. Automated 08:45 AM Pre-Market Daemon Reset: A root systemd cron (45 8 * * 1-5 /usr/bin/systemctl restart tradeverse) executes every weekday morning at 08:45 AM IST on the Oracle Cloud static IP (129.225.125.13). This cleans memory, executes a fresh TOTP handshake, downloads today's active NFO contracts, and guarantees the engine is 100% armed and ready for the 09:15:00 AM IST market bell."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "session_auto_healing_protocol", "priority": "critical", "date": "2026-11-20"}
+    },
+    {
+        "id": "trader_rule_23_multi_account_copy_trading",
+        "document": (
+            "Trader Rule #23 (20-Nov-2026 Architectural Advancement) — Multi-Account Copy-Trading & Independent Margin Isolation Protocol:\n"
+            "1. Isolated Capital Preservation: Multi-account copy-trading maintains strict capital isolation. Every active Angel One account calculates position sizing independently based strictly on its own available cash margin, never pooled or commingled.\n"
+            "2. Fractional Kelly Sizing Per Account: Each account undergoes independent Kelly sizing guardrails: strict 1-lot preservation if available cash <= ₹12,000, 40% maximum single-trade margin ceiling, and immediate downsizing to 1 lot if nursing any daily loss.\n"
+            "3. Simultaneous Parallel Fan-Out: When the AI Intraday Sniper generates a validated signal (>=68% confidence passing all 6 risk vetoes), limit-chase orders are dispatched to all active accounts simultaneously, ensuring identical entry prices and eliminating manual copy delay.\n"
+            "4. Independent Trailing SL & Exit Orchestration: Stop-Loss (-15%), Target (+25%), Breakeven Locks (+1.5%), and EOD Auto Square-Off (15:20 IST) are tracked and executed per account key (account_id:symbol), ensuring one account's balance or execution status never impacts another."
+        ),
+        "metadata": {"author": "architect", "rule_type": "multi_account_copy_trading", "priority": "critical", "date": "2026-11-20"}
     }
 ]
 

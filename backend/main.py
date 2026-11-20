@@ -19,7 +19,7 @@ importlib.metadata.distribution = _patched_distribution
 from mock_kite import MockKiteConnect
 from risk_engine import RiskEngine
 # Heavy modules (AgentLayer, DataPipeline, ModelEngine) are now lazy-loaded
-from broker_factory import get_broker_client
+from broker_factory import get_broker_client, get_all_active_broker_clients
 # NewsScraper -> Lazy load
 from config import config
 import numpy as np
@@ -399,199 +399,203 @@ def record_live_trade_to_observatory(
 
 async def monitor_live_positions_step():
     """
-    Monitors open live broker positions for Stop-Loss (-15%), Target (+25%),
-    Max Hold Duration (15 min), and EOD Square-Off (15:20 IST), and feeds realized PnL to RiskEngine.
+    Monitors open live broker positions across all active Angel One accounts
+    for Stop-Loss (-15%), Target (+25%), Max Hold Duration (15 min), and EOD Square-Off (15:20 IST),
+    and feeds realized PnL to RiskEngine.
     """
     try:
-        broker = get_broker_client(config.OWNER_EMAIL)
-        if not broker or not hasattr(broker, "positions"):
-            return
-
-        positions = await asyncio.to_thread(broker.positions)
-        if not isinstance(positions, list):
-            return
-
+        active_clients = await asyncio.to_thread(get_all_active_broker_clients)
         now = get_ist_now()
         is_eod_squareoff = now.time() >= time(15, 20)
 
-        for pos in positions:
-            tsym = pos.get("tradingsymbol")
-            net_qty = int(pos.get("netqty", 0) or 0)
-            exch = pos.get("exchange", "NFO")
-            if not tsym:
+        for acct_id, broker, acct_dict in active_clients:
+            if not broker or not hasattr(broker, "positions"):
                 continue
 
-            # If a previously tracked position was manually closed on broker, record realized PnL and Observatory outcome
-            if net_qty == 0:
-                if tsym in active_live_positions:
-                    tracked = active_live_positions.pop(tsym, None)
-                    realised_pnl = float(pos.get("realised") or pos.get("pnl") or 0.0)
-                    autonomous_state["last_trade_exit_at"] = now
-                    autonomous_state["last_trade_option_type"] = "PE" if "PE" in tsym.upper() else "CE"
-                    autonomous_state["last_trade_pnl_inr"] = realised_pnl
-                    if risk_engine and realised_pnl != 0.0:
-                        risk_engine.update_pnl(realised_pnl, trade_id=f"CLOSED_{tsym}_{now.strftime('%Y%m%d')}")
-                    entry_p = float((tracked or {}).get("entry_price") or 0.0)
-                    exit_p = float(pos.get("ltp") or entry_p)
-                    pnl_pct = ((exit_p - entry_p) / entry_p * 100.0) if entry_p > 0 else 0.0
-                    elapsed = (now - ((tracked or {}).get("entry_time") or now)).total_seconds() / 60.0
-                    record_live_trade_to_observatory(
-                        tsym=tsym,
-                        tracked=tracked or {},
-                        exit_price=exit_p,
-                        exit_reason="MANUAL / BROKER CLOSED",
-                        pnl_inr=realised_pnl,
-                        pnl_pct=pnl_pct,
-                        elapsed_mins=elapsed,
-                        net_qty=int((tracked or {}).get("quantity") or 1)
-                    )
+            positions = await asyncio.to_thread(broker.positions)
+            if not isinstance(positions, list):
                 continue
 
-            tracked = active_live_positions.get(tsym)
-            entry_price = float((tracked or {}).get("entry_price") or pos.get("buyavgprice") or 0.0)
-            entry_time = (tracked or {}).get("entry_time") or now
-            if tsym not in active_live_positions:
-                # Resolve market regime from autonomous_state or simulation_engine
-                detected_regime = autonomous_state.get("last_regime") or "NOMINAL"
-                profile = get_hybrid_trailing_profile(detected_regime, sentiment_score=0.0, entry_price=entry_price)
-                active_live_positions[tsym] = {
-                    "tradingsymbol": tsym,
-                    "exchange": exch,
-                    "quantity": abs(net_qty),
-                    "entry_price": entry_price,
-                    "entry_time": entry_time,
-                    "peak_price": entry_price,
-                    "regime_profile": profile["regime_profile"],
-                    "stop_loss_pct": profile["stop_loss_pct"],
-                    "target_pct": profile["target_pct"],
-                    "breakeven_trigger_pct": profile["breakeven_trigger_pct"],
-                    "breakeven_lock_pct": profile["breakeven_lock_pct"],
-                    "stage1_trigger_pct": profile["stage1_trigger_pct"],
-                    "stage1_trail_gap": profile["stage1_trail_gap"],
-                    "stage2_trigger_pct": profile["stage2_trigger_pct"],
-                    "stage2_trail_gap": profile["stage2_trail_gap"],
-                    "stage3_trigger_pct": profile.get("stage3_trigger_pct", 75.0),
-                    "stage3_trail_gap": profile.get("stage3_trail_gap", 18.0),
-                    "max_hold_minutes": profile["max_hold_minutes"],
-                }
-                tracked = active_live_positions[tsym]
-                logger.info(f"📊 [LivePositionMonitor] Initialized {profile['regime_profile']} exit profile for {tsym}: Target +{profile['target_pct']}%, Breakeven @ +{profile['breakeven_trigger_pct']}%, Hold {profile['max_hold_minutes']}m")
+            for pos in positions:
+                tsym = pos.get("tradingsymbol")
+                net_qty = int(pos.get("netqty", 0) or 0)
+                exch = pos.get("exchange", "NFO")
+                if not tsym:
+                    continue
 
-            ltp_val = float(pos.get("ltp") or 0.0)
-            if ltp_val <= 0.0:
-                ltp_key = f"{exch}:{tsym}"
-                ltp_res = await asyncio.to_thread(broker.ltp, ltp_key)
-                ltp_val = float((ltp_res.get(ltp_key) or {}).get("last_price", 0.0) or 0.0)
+                acct_pos_key = f"{acct_id}:{tsym}"
+                pos_key = acct_pos_key if acct_pos_key in active_live_positions else (tsym if tsym in active_live_positions else acct_pos_key)
 
-            if entry_price <= 0.0 or ltp_val <= 0.0:
-                continue
+                # If a previously tracked position was manually closed on broker, record realized PnL and Observatory outcome
+                if net_qty == 0:
+                    if pos_key in active_live_positions:
+                        tracked = active_live_positions.pop(pos_key, None)
+                        realised_pnl = float(pos.get("realised") or pos.get("pnl") or 0.0)
+                        autonomous_state["last_trade_exit_at"] = now
+                        autonomous_state["last_trade_option_type"] = "PE" if "PE" in tsym.upper() else "CE"
+                        autonomous_state["last_trade_pnl_inr"] = realised_pnl
+                        if risk_engine and realised_pnl != 0.0:
+                            risk_engine.update_pnl(realised_pnl, trade_id=f"CLOSED_{acct_id}_{tsym}_{now.strftime('%Y%m%d')}")
+                        entry_p = float((tracked or {}).get("entry_price") or 0.0)
+                        exit_p = float(pos.get("ltp") or entry_p)
+                        pnl_pct = ((exit_p - entry_p) / entry_p * 100.0) if entry_p > 0 else 0.0
+                        elapsed = (now - ((tracked or {}).get("entry_time") or now)).total_seconds() / 60.0
+                        record_live_trade_to_observatory(
+                            tsym=tsym,
+                            tracked=tracked or {},
+                            exit_price=exit_p,
+                            exit_reason="MANUAL / BROKER CLOSED",
+                            pnl_inr=realised_pnl,
+                            pnl_pct=pnl_pct,
+                            elapsed_mins=elapsed,
+                            net_qty=int((tracked or {}).get("quantity") or 1)
+                        )
+                    continue
 
-            peak_price = float(tracked.get("peak_price") or entry_price)
-            if ltp_val > peak_price:
-                peak_price = ltp_val
-                tracked["peak_price"] = peak_price
-
-            peak_pct = ((peak_price - entry_price) / entry_price) * 100.0 if net_qty > 0 else ((entry_price - peak_price) / entry_price) * 100.0
-            pnl_pct = ((ltp_val - entry_price) / entry_price) * 100.0 if net_qty > 0 else ((entry_price - ltp_val) / entry_price) * 100.0
-            pnl_inr = (ltp_val - entry_price) * net_qty
-            elapsed_mins = (now - entry_time).total_seconds() / 60.0
-
-            # Hybrid Dynamic Ratcheting Trailing Stop-Loss (Adaptive to Expansion vs Defense):
-            current_sl_pct = float(tracked.get("stop_loss_pct", -16.0))
-            be_trigger = float(tracked.get("breakeven_trigger_pct", 20.0))
-            be_lock = float(tracked.get("breakeven_lock_pct", 1.5))
-            st1_trigger = float(tracked.get("stage1_trigger_pct", 30.0))
-            st1_gap = float(tracked.get("stage1_trail_gap", 15.0))
-            st2_trigger = float(tracked.get("stage2_trigger_pct", 50.0))
-            st2_gap = float(tracked.get("stage2_trail_gap", 15.0))
-            st3_trigger = float(tracked.get("stage3_trigger_pct", 75.0))
-            st3_gap = float(tracked.get("stage3_trail_gap", 18.0))
-
-            # 1. Breakeven Lock: once position moves safely into the green
-            if peak_pct >= be_trigger and current_sl_pct < be_lock:
-                current_sl_pct = be_lock
-                tracked["stop_loss_pct"] = current_sl_pct
-                logger.info(f"🔒 [LivePositionMonitor] Breakeven Lock activated for {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
-
-            # 2. Stage 3 Mega-Gamma Trail (riding monster +20% to +50% moves)
-            if peak_pct >= st3_trigger:
-                trail_sl_pct = round(peak_pct - st3_gap, 2)
-                if trail_sl_pct > current_sl_pct:
-                    current_sl_pct = trail_sl_pct
-                    tracked["stop_loss_pct"] = current_sl_pct
-                    logger.info(f"⚡ [LivePositionMonitor] Stage-3 Mega-Gamma Trail raised for {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
-            # 3. Stage 2 Super-Runner Trail (riding trending expansion moves)
-            elif peak_pct >= st2_trigger:
-                trail_sl_pct = round(peak_pct - st2_gap, 2)
-                if trail_sl_pct > current_sl_pct:
-                    current_sl_pct = trail_sl_pct
-                    tracked["stop_loss_pct"] = current_sl_pct
-                    logger.info(f"🚀 [LivePositionMonitor] Stage-2 Super-Runner Trailing SL raised for {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
-            # 4. Stage 1 Runner Trail
-            elif peak_pct >= st1_trigger:
-                trail_sl_pct = round(peak_pct - st1_gap, 2)
-                if trail_sl_pct > current_sl_pct:
-                    current_sl_pct = trail_sl_pct
-                    tracked["stop_loss_pct"] = current_sl_pct
-                    logger.info(f"📈 [LivePositionMonitor] Stage-1 Trailing SL raised for {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
-
-            exit_reason = None
-            if is_eod_squareoff:
-                exit_reason = f"EOD AUTO SQUARE-OFF (15:20 IST) | PnL: ₹{pnl_inr:+.2f} ({pnl_pct:+.1f}%)"
-            elif pnl_pct <= current_sl_pct:
-                exit_reason = f"STOP-LOSS / TRAILING-LOCK HIT ({pnl_pct:+.1f}% <= {current_sl_pct:+.1f}%) | PnL: ₹{pnl_inr:+.2f}"
-            elif pnl_pct >= tracked.get("target_pct", 30.0):
-                exit_reason = f"TARGET HIT ({pnl_pct:+.1f}%) | PnL: ₹{pnl_inr:+.2f}"
-            elif elapsed_mins >= tracked.get("max_hold_minutes", 35):
-                # RUNNER EXEMPTION:
-                # If position is safely locked in profit/breakeven, DO NOT prematurely cut a winning trend on a clock timer.
-                # Only time-exit if position is stagnant/underwater (< be_lock) or exceeds absolute safety limit (90 mins).
-                is_locked_in_profit = current_sl_pct >= be_lock
-                if is_locked_in_profit and elapsed_mins < 90.0:
-                    logger.debug(f"🏃 [LivePositionMonitor] Runner Exemption active for {tsym} ({elapsed_mins:.1f}m): Locked at +{current_sl_pct:.2f}%. Continuing trail.")
-                else:
-                    exit_reason = f"TIME-EXIT ({int(elapsed_mins)}m) | PnL: ₹{pnl_inr:+.2f} ({pnl_pct:+.1f}%)"
-
-            if exit_reason:
-                exit_side = "SELL" if net_qty > 0 else "BUY"
-                logger.warning(f"🛡️ [LivePositionMonitor] Exiting {exch}:{tsym} ({exit_side} x {abs(net_qty)}): {exit_reason}")
-                from smart_execution import smart_execution_engine
-                smart_execution_engine.set_broker(broker)
-                smart_execution_engine.notifier = notifier
-                exit_res = await smart_execution_engine.execute_smart_order(
-                    order_request={
+                tracked = active_live_positions.get(pos_key)
+                entry_price = float((tracked or {}).get("entry_price") or pos.get("buyavgprice") or 0.0)
+                entry_time = (tracked or {}).get("entry_time") or now
+                if pos_key not in active_live_positions:
+                    # Resolve market regime from autonomous_state or simulation_engine
+                    detected_regime = autonomous_state.get("last_regime") or "NOMINAL"
+                    profile = get_hybrid_trailing_profile(detected_regime, sentiment_score=0.0, entry_price=entry_price)
+                    active_live_positions[pos_key] = {
+                        "account_id": acct_id,
+                        "account_name": acct_dict.get("name", acct_id),
                         "tradingsymbol": tsym,
                         "exchange": exch,
-                        "transaction_type": exit_side,
                         "quantity": abs(net_qty),
-                        "product": "MIS",
-                        "target_price": ltp_val,
-                        "is_exit": True,
-                    },
-                    broker=broker,
-                    user_id=config.OWNER_EMAIL,
-                )
-                active_live_positions.pop(tsym, None)
-                autonomous_state["last_trade_exit_at"] = now
-                autonomous_state["last_trade_option_type"] = "PE" if "PE" in tsym.upper() else "CE"
-                autonomous_state["last_trade_pnl_inr"] = pnl_inr
-                if risk_engine:
-                    risk_engine.update_pnl(pnl_inr, trade_id=f"EXIT_{tsym}_{int(now.timestamp())}")
-                record_live_trade_to_observatory(
-                    tsym=tsym,
-                    tracked=tracked,
-                    exit_price=ltp_val,
-                    exit_reason=exit_reason,
-                    pnl_inr=pnl_inr,
-                    pnl_pct=pnl_pct,
-                    elapsed_mins=elapsed_mins,
-                    net_qty=net_qty
-                )
-                notifier.notify_sync(
-                    f"🛡️ *Live Auto-Exit ({tsym})*\n"
-                    f"Reason: {exit_reason}\n"
-                    f"Exit Status: `{exit_res.get('status')}`"
-                )
+                        "entry_price": entry_price,
+                        "entry_time": entry_time,
+                        "peak_price": entry_price,
+                        "regime_profile": profile["regime_profile"],
+                        "stop_loss_pct": profile["stop_loss_pct"],
+                        "target_pct": profile["target_pct"],
+                        "breakeven_trigger_pct": profile["breakeven_trigger_pct"],
+                        "breakeven_lock_pct": profile["breakeven_lock_pct"],
+                        "stage1_trigger_pct": profile["stage1_trigger_pct"],
+                        "stage1_trail_gap": profile["stage1_trail_gap"],
+                        "stage2_trigger_pct": profile["stage2_trigger_pct"],
+                        "stage2_trail_gap": profile["stage2_trail_gap"],
+                        "stage3_trigger_pct": profile.get("stage3_trigger_pct", 75.0),
+                        "stage3_trail_gap": profile.get("stage3_trail_gap", 18.0),
+                        "max_hold_minutes": profile["max_hold_minutes"],
+                    }
+                    tracked = active_live_positions[pos_key]
+                    logger.info(f"📊 [LivePositionMonitor] Initialized {profile['regime_profile']} exit profile for [{acct_id}] {tsym}: Target +{profile['target_pct']}%, Breakeven @ +{profile['breakeven_trigger_pct']}%, Hold {profile['max_hold_minutes']}m")
+
+                ltp_val = float(pos.get("ltp") or 0.0)
+                if ltp_val <= 0.0:
+                    ltp_key = f"{exch}:{tsym}"
+                    ltp_res = await asyncio.to_thread(broker.ltp, ltp_key)
+                    ltp_val = float((ltp_res.get(ltp_key) or {}).get("last_price", 0.0) or 0.0)
+
+                if entry_price <= 0.0 or ltp_val <= 0.0:
+                    continue
+
+                peak_price = float(tracked.get("peak_price") or entry_price)
+                if ltp_val > peak_price:
+                    peak_price = ltp_val
+                    tracked["peak_price"] = peak_price
+
+                peak_pct = ((peak_price - entry_price) / entry_price) * 100.0 if net_qty > 0 else ((entry_price - peak_price) / entry_price) * 100.0
+                pnl_pct = ((ltp_val - entry_price) / entry_price) * 100.0 if net_qty > 0 else ((entry_price - ltp_val) / entry_price) * 100.0
+                pnl_inr = (ltp_val - entry_price) * net_qty
+                elapsed_mins = (now - entry_time).total_seconds() / 60.0
+
+                # Hybrid Dynamic Ratcheting Trailing Stop-Loss (Adaptive to Expansion vs Defense):
+                current_sl_pct = float(tracked.get("stop_loss_pct", -16.0))
+                be_trigger = float(tracked.get("breakeven_trigger_pct", 20.0))
+                be_lock = float(tracked.get("breakeven_lock_pct", 1.5))
+                st1_trigger = float(tracked.get("stage1_trigger_pct", 30.0))
+                st1_gap = float(tracked.get("stage1_trail_gap", 15.0))
+                st2_trigger = float(tracked.get("stage2_trigger_pct", 50.0))
+                st2_gap = float(tracked.get("stage2_trail_gap", 15.0))
+                st3_trigger = float(tracked.get("stage3_trigger_pct", 75.0))
+                st3_gap = float(tracked.get("stage3_trail_gap", 18.0))
+
+                # 1. Breakeven Lock: once position moves safely into the green
+                if peak_pct >= be_trigger and current_sl_pct < be_lock:
+                    current_sl_pct = be_lock
+                    tracked["stop_loss_pct"] = current_sl_pct
+                    logger.info(f"🔒 [LivePositionMonitor] Breakeven Lock activated for [{acct_id}] {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
+
+                # 2. Stage 3 Mega-Gamma Trail (riding monster +20% to +50% moves)
+                if peak_pct >= st3_trigger:
+                    trail_sl_pct = round(peak_pct - st3_gap, 2)
+                    if trail_sl_pct > current_sl_pct:
+                        current_sl_pct = trail_sl_pct
+                        tracked["stop_loss_pct"] = current_sl_pct
+                        logger.info(f"⚡ [LivePositionMonitor] Stage-3 Mega-Gamma Trail raised for [{acct_id}] {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
+                # 3. Stage 2 Super-Runner Trail (riding trending expansion moves)
+                elif peak_pct >= st2_trigger:
+                    trail_sl_pct = round(peak_pct - st2_gap, 2)
+                    if trail_sl_pct > current_sl_pct:
+                        current_sl_pct = trail_sl_pct
+                        tracked["stop_loss_pct"] = current_sl_pct
+                        logger.info(f"🚀 [LivePositionMonitor] Stage-2 Super-Runner Trailing SL raised for [{acct_id}] {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
+                # 4. Stage 1 Runner Trail
+                elif peak_pct >= st1_trigger:
+                    trail_sl_pct = round(peak_pct - st1_gap, 2)
+                    if trail_sl_pct > current_sl_pct:
+                        current_sl_pct = trail_sl_pct
+                        tracked["stop_loss_pct"] = current_sl_pct
+                        logger.info(f"📈 [LivePositionMonitor] Stage-1 Trailing SL raised for [{acct_id}] {tsym} (Peak: +{peak_pct:.2f}% -> SL locked at +{current_sl_pct:.2f}%)")
+
+                exit_reason = None
+                if is_eod_squareoff:
+                    exit_reason = f"EOD AUTO SQUARE-OFF (15:20 IST) | PnL: ₹{pnl_inr:+.2f} ({pnl_pct:+.1f}%)"
+                elif pnl_pct <= current_sl_pct:
+                    exit_reason = f"STOP-LOSS / TRAILING-LOCK HIT ({pnl_pct:+.1f}% <= {current_sl_pct:+.1f}%) | PnL: ₹{pnl_inr:+.2f}"
+                elif pnl_pct >= tracked.get("target_pct", 30.0):
+                    exit_reason = f"TARGET HIT ({pnl_pct:+.1f}%) | PnL: ₹{pnl_inr:+.2f}"
+                elif elapsed_mins >= tracked.get("max_hold_minutes", 35):
+                    is_locked_in_profit = current_sl_pct >= be_lock
+                    if is_locked_in_profit and elapsed_mins < 90.0:
+                        logger.debug(f"🏃 [LivePositionMonitor] Runner Exemption active for [{acct_id}] {tsym} ({elapsed_mins:.1f}m): Locked at +{current_sl_pct:.2f}%. Continuing trail.")
+                    else:
+                        exit_reason = f"TIME-EXIT ({int(elapsed_mins)}m) | PnL: ₹{pnl_inr:+.2f} ({pnl_pct:+.1f}%)"
+
+                if exit_reason:
+                    exit_side = "SELL" if net_qty > 0 else "BUY"
+                    logger.warning(f"🛡️ [LivePositionMonitor] Exiting [{acct_id}] {exch}:{tsym} ({exit_side} x {abs(net_qty)}): {exit_reason}")
+                    from smart_execution import smart_execution_engine
+                    smart_execution_engine.set_broker(broker)
+                    smart_execution_engine.notifier = notifier
+                    exit_res = await smart_execution_engine.execute_smart_order(
+                        order_request={
+                            "tradingsymbol": tsym,
+                            "exchange": exch,
+                            "transaction_type": exit_side,
+                            "quantity": abs(net_qty),
+                            "product": "MIS",
+                            "target_price": ltp_val,
+                            "is_exit": True,
+                        },
+                        broker=broker,
+                        user_id=acct_id,
+                    )
+                    active_live_positions.pop(pos_key, None)
+                    autonomous_state["last_trade_exit_at"] = now
+                    autonomous_state["last_trade_option_type"] = "PE" if "PE" in tsym.upper() else "CE"
+                    autonomous_state["last_trade_pnl_inr"] = pnl_inr
+                    if risk_engine:
+                        risk_engine.update_pnl(pnl_inr, trade_id=f"EXIT_{acct_id}_{tsym}_{int(now.timestamp())}")
+                    record_live_trade_to_observatory(
+                        tsym=tsym,
+                        tracked=tracked,
+                        exit_price=ltp_val,
+                        exit_reason=exit_reason,
+                        pnl_inr=pnl_inr,
+                        pnl_pct=pnl_pct,
+                        elapsed_mins=elapsed_mins,
+                        net_qty=net_qty
+                    )
+                    notifier.notify_sync(
+                        f"🛡️ *Live Auto-Exit [{acct_dict.get('name', acct_id)}]* (`{tsym}`)\n"
+                        f"Reason: {exit_reason}\n"
+                        f"Exit Status: `{exit_res.get('status')}`"
+                    )
     except Exception as e:
         logger.debug(f"Live position monitor check error: {e}")
 
@@ -650,28 +654,35 @@ async def run_autonomous_trading():
             if is_trading_day and time(8, 45) <= current_time < time(9, 15):
                 if autonomous_state.get("pre_market_ready_date") != today_str:
                     try:
-                        logger.info("🌅 [CloudAutopilot] Running Pre-Market Angel One Session Refresh & ScripMaster Warmup...")
-                        broker = await asyncio.to_thread(get_broker_client, config.OWNER_EMAIL)
-                        if hasattr(broker, "ensure_session"):
-                            await asyncio.to_thread(broker.ensure_session, True)
-                        if hasattr(broker, "_load_nfo_scrip_master"):
-                            await asyncio.to_thread(broker._load_nfo_scrip_master)
-                        funds = await asyncio.to_thread(broker.get_funds) if hasattr(broker, "get_funds") else {}
-                        avail_cash = float(funds.get("availablecash") or 0.0)
+                        logger.info("🌅 [CloudAutopilot] Running Pre-Market Multi-Account Session Refresh & ScripMaster Warmup...")
+                        active_clients = await asyncio.to_thread(get_all_active_broker_clients)
+                        total_avail_cash = 0.0
+                        account_summaries = []
+                        for acct_id, b_inst, acct_dict in active_clients:
+                            if hasattr(b_inst, "ensure_session"):
+                                await asyncio.to_thread(b_inst.ensure_session, True)
+                            if hasattr(b_inst, "_load_nfo_scrip_master"):
+                                await asyncio.to_thread(b_inst._load_nfo_scrip_master)
+                            funds = await asyncio.to_thread(b_inst.get_funds) if hasattr(b_inst, "get_funds") else {}
+                            acct_cash = float(funds.get("availablecash") or 0.0)
+                            total_avail_cash += acct_cash
+                            account_summaries.append(f"• *{acct_dict.get('name', acct_id)}* (`{acct_id}`): ₹{acct_cash:,.2f}")
+
                         autonomous_state["pre_market_ready_date"] = today_str
                         autonomous_state["cycles_today"] = 0
                         autonomous_state["trades_today"] = 0
                         autonomous_state["last_status"] = "PRE_MARKET_READY"
-                        autonomous_state["last_reason"] = f"Angel One connected. Available Cash: ₹{avail_cash:,.2f}"
+                        autonomous_state["last_reason"] = f"Multi-Account ready ({len(active_clients)} active). Total Cash: ₹{total_avail_cash:,.2f}"
                         pos_count = len(active_live_positions)
+                        accts_msg = "\n".join(account_summaries) if account_summaries else f"• `{config.ANGEL_CLIENT_ID}`: ₹{total_avail_cash:,.2f}"
                         notifier.notify_sync(
                             f"🛡️ *Tradeverse 24/7 Cloud Autopilot Ready ({today_str})*\n"
                             f"🏦 *Broker:* `{config.ACTIVE_BROKER}` (`{config.ENV}`) — ✅ *CONNECTED*\n"
-                            f"👤 *Client ID:* `{config.ANGEL_CLIENT_ID}`\n"
-                            f"💰 *Available Cash:* *₹{avail_cash:,.2f}*\n"
+                            f"👥 *Active Accounts ({len(active_clients)}):*\n{accts_msg}\n"
+                            f"💰 *Total Available Cash:* *₹{total_avail_cash:,.2f}*\n"
                             f"📊 *Open Positions:* `{pos_count}` | Mode: `{config.TRADING_MODE}`\n"
                             f"🔒 *Risk Caps:* Max `₹{config.MAX_POSITION_SIZE:,.0f}` | Daily Loss `₹{config.DAILY_LOSS_LIMIT:,.0f}`\n"
-                            f"🎯 *Safeguards:* Conf Gate >=68% | 10m Cool-off | Tech Trend Veto Active"
+                            f"🎯 *Safeguards:* Conf Gate >=68% | 10m Cool-off | Multi-Account Copy-Trade Active"
                         )
                     except Exception as pme:
                         logger.warning(f"Pre-market warmup warning: {pme}")
@@ -685,9 +696,10 @@ async def run_autonomous_trading():
             # Ensure Angel One session is refreshed if container started mid-day or crossed midnight
             if autonomous_state.get("pre_market_ready_date") != today_str:
                 try:
-                    broker = await asyncio.to_thread(get_broker_client, config.OWNER_EMAIL)
-                    if hasattr(broker, "ensure_session"):
-                        await asyncio.to_thread(broker.ensure_session, False)
+                    active_clients = await asyncio.to_thread(get_all_active_broker_clients)
+                    for _, b_inst, _ in active_clients:
+                        if hasattr(b_inst, "ensure_session"):
+                            await asyncio.to_thread(b_inst.ensure_session, False)
                     autonomous_state["pre_market_ready_date"] = today_str
                     autonomous_state["cycles_today"] = 0
                     autonomous_state["trades_today"] = 0
@@ -924,73 +936,114 @@ async def cloud_autonomous_pulse(trigger_cycle: bool = False):
 @app.get("/api/broker/funds")
 async def get_broker_funds():
     """
-    Returns real-time Angel One RMS funds, available cash, and risk limits.
+    Returns real-time Angel One RMS funds, available cash, and risk limits across all copy-trading accounts.
     """
     try:
-        broker = await asyncio.to_thread(get_broker_client, config.OWNER_EMAIL)
-        is_mock = broker is None or "Mock" in broker.__class__.__name__
-        funds = {"status": False, "availablecash": 0.0, "net": 0.0, "utiliseddebits": 0.0}
-        if broker and hasattr(broker, "get_funds") and not is_mock:
-            funds = await asyncio.to_thread(broker.get_funds)
-        return {
-            "status": "success",
-            "env": config.ENV,
-            "broker": config.ACTIVE_BROKER,
-            "is_live": not is_mock and bool(funds.get("status")),
-            "availablecash": float(funds.get("availablecash") or 0.0),
-            "net": float(funds.get("net") or 0.0),
-            "utiliseddebits": float(funds.get("utiliseddebits") or 0.0),
-            "collateral": float(funds.get("collateral") or 0.0),
-            "max_position_size": config.MAX_POSITION_SIZE,
-            "daily_loss_limit": config.DAILY_LOSS_LIMIT,
-            "risk": risk_engine.get_risk_status() if risk_engine else {},
-        }
-    except Exception as e:
-        logger.error(f"Error fetching broker funds: {e}")
-        return {"status": "error", "message": str(e), "availablecash": 0.0, "net": 0.0}
+        active_clients = await asyncio.to_thread(get_all_active_broker_clients)
+        total_cash = 0.0
+        total_net = 0.0
+        total_utilised = 0.0
+        total_collateral = 0.0
+        accounts_data = []
 
-@app.get("/api/broker/positions")
-async def get_broker_positions():
-    """
-    Returns real-time Angel One positions enriched with automated SL / Target / Hold telemetry.
-    """
-    try:
-        broker = await asyncio.to_thread(get_broker_client, config.OWNER_EMAIL)
-        is_mock = broker is None or "Mock" in broker.__class__.__name__
-        raw_positions = []
-        if broker and hasattr(broker, "positions") and not is_mock:
-            raw_positions = await asyncio.to_thread(broker.positions) or []
+        for acct_id, broker, acct_dict in active_clients:
+            is_mock = broker is None or "Mock" in broker.__class__.__name__
+            funds = {"status": False, "availablecash": 0.0, "net": 0.0, "utiliseddebits": 0.0, "collateral": 0.0}
+            if broker and hasattr(broker, "get_funds") and not is_mock:
+                try:
+                    funds = await asyncio.to_thread(broker.get_funds)
+                except Exception:
+                    pass
+            cash = float(funds.get("availablecash") or 0.0)
+            net = float(funds.get("net") or 0.0)
+            utilised = float(funds.get("utiliseddebits") or 0.0)
+            collat = float(funds.get("collateral") or 0.0)
+            total_cash += cash
+            total_net += net
+            total_utilised += utilised
+            total_collateral += collat
 
-        enriched = []
-        total_pnl = 0.0
-        open_count = 0
-        for p in raw_positions:
-            tsym = p.get("tradingsymbol", "")
-            net_qty = int(p.get("netqty", 0) or 0)
-            buy_avg = float(p.get("buyavgprice") or 0.0)
-            ltp_val = float(p.get("ltp") or 0.0)
-            pnl_val = float(p.get("pnl") or 0.0)
-            if pnl_val == 0.0 and net_qty != 0 and buy_avg > 0 and ltp_val > 0:
-                pnl_val = (ltp_val - buy_avg) * net_qty
-            total_pnl += pnl_val
-            if net_qty != 0:
-                open_count += 1
-            tracked = active_live_positions.get(tsym, {})
-            enriched.append({
-                **p,
-                "pnl": round(pnl_val, 2),
-                "is_open": net_qty != 0,
-                "stop_loss_pct": tracked.get("stop_loss_pct", -15.0),
-                "target_pct": tracked.get("target_pct", 25.0),
-                "max_hold_minutes": tracked.get("max_hold_minutes", 15),
-                "entry_time": tracked.get("entry_time").isoformat() if hasattr(tracked.get("entry_time"), "isoformat") else str(tracked.get("entry_time", "")),
+            accounts_data.append({
+                "account_id": acct_id,
+                "name": acct_dict.get("name", acct_id),
+                "active": acct_dict.get("active", True),
+                "is_live": not is_mock and bool(funds.get("status")),
+                "availablecash": cash,
+                "net": net,
+                "utiliseddebits": utilised,
+                "collateral": collat,
             })
 
         return {
             "status": "success",
             "env": config.ENV,
             "broker": config.ACTIVE_BROKER,
-            "is_live": not is_mock,
+            "is_live": any(a["is_live"] for a in accounts_data),
+            "availablecash": total_cash,
+            "net": total_net,
+            "utiliseddebits": total_utilised,
+            "collateral": total_collateral,
+            "accounts": accounts_data,
+            "max_position_size": config.MAX_POSITION_SIZE,
+            "daily_loss_limit": config.DAILY_LOSS_LIMIT,
+            "risk": risk_engine.get_risk_status() if risk_engine else {},
+        }
+    except Exception as e:
+        logger.error(f"Error fetching broker funds: {e}")
+        return {"status": "error", "message": str(e), "availablecash": 0.0, "net": 0.0, "accounts": []}
+
+@app.get("/api/broker/positions")
+async def get_broker_positions():
+    """
+    Returns real-time Angel One positions across all active copy-trading accounts enriched with automated SL / Target / Hold telemetry.
+    """
+    try:
+        active_clients = await asyncio.to_thread(get_all_active_broker_clients)
+        enriched = []
+        total_pnl = 0.0
+        open_count = 0
+        is_live_any = False
+
+        for acct_id, broker, acct_dict in active_clients:
+            is_mock = broker is None or "Mock" in broker.__class__.__name__
+            raw_positions = []
+            if broker and hasattr(broker, "positions") and not is_mock:
+                try:
+                    raw_positions = await asyncio.to_thread(broker.positions) or []
+                    is_live_any = True
+                except Exception:
+                    pass
+
+            for p in raw_positions:
+                tsym = p.get("tradingsymbol", "")
+                net_qty = int(p.get("netqty", 0) or 0)
+                buy_avg = float(p.get("buyavgprice") or 0.0)
+                ltp_val = float(p.get("ltp") or 0.0)
+                pnl_val = float(p.get("pnl") or 0.0)
+                if pnl_val == 0.0 and net_qty != 0 and buy_avg > 0 and ltp_val > 0:
+                    pnl_val = (ltp_val - buy_avg) * net_qty
+                total_pnl += pnl_val
+                if net_qty != 0:
+                    open_count += 1
+                pos_key = f"{acct_id}:{tsym}"
+                tracked = active_live_positions.get(pos_key) or active_live_positions.get(tsym, {})
+                enriched.append({
+                    **p,
+                    "account_id": acct_id,
+                    "account_name": acct_dict.get("name", acct_id),
+                    "pnl": round(pnl_val, 2),
+                    "is_open": net_qty != 0,
+                    "stop_loss_pct": tracked.get("stop_loss_pct", -15.0),
+                    "target_pct": tracked.get("target_pct", 25.0),
+                    "max_hold_minutes": tracked.get("max_hold_minutes", 15),
+                    "entry_time": tracked.get("entry_time").isoformat() if hasattr(tracked.get("entry_time"), "isoformat") else str(tracked.get("entry_time", "")),
+                })
+
+        return {
+            "status": "success",
+            "env": config.ENV,
+            "broker": config.ACTIVE_BROKER,
+            "is_live": is_live_any,
             "open_count": open_count,
             "total_pnl": round(total_pnl, 2),
             "positions": enriched,
@@ -4214,98 +4267,179 @@ async def execute_autopilot(
             except Exception as nfe:
                 logger.debug(f"NIFTY capital-fit fallback skipped: {nfe}")
 
-    # Check open positions count to avoid duplicate stacking on the same contract
-    open_positions_count = len(active_live_positions)
-    if not is_mock_broker and hasattr(broker, "positions"):
-        try:
-            live_pos = await asyncio.to_thread(broker.positions)
-            active_syms = {p.get("tradingsymbol") for p in live_pos if int(p.get("netqty", 0) or 0) != 0}
-            open_positions_count = len(active_syms)
-            if resolved_symbol in active_syms or target_symbol in active_syms:
+    # 4. Multi-Account Execution via SmartExecutionEngine (Fan-out Copy-Trading)
+    try:
+        active_clients = await asyncio.to_thread(get_all_active_broker_clients)
+        if not active_clients:
+            active_clients = [(config.ANGEL_CLIENT_ID or "PRIMARY", broker, {"name": "Primary Account", "active": True})]
+
+        executed_accounts = []
+        skipped_accounts = []
+        last_order_id = None
+        last_telemetry = {}
+
+        for acct_id, b_client, acct_dict in active_clients:
+            acct_name = acct_dict.get("name", acct_id)
+            # Check if this account already has open positions on this contract
+            active_syms = set()
+            if not is_mock_broker and hasattr(b_client, "positions"):
+                try:
+                    live_pos = await asyncio.to_thread(b_client.positions)
+                    active_syms = {p.get("tradingsymbol") for p in (live_pos or []) if int(p.get("netqty", 0) or 0) != 0}
+                    if resolved_symbol in active_syms or target_symbol in active_syms:
+                        logger.info(f"⏭️ [Autopilot Copy-Trade] Account {acct_name} ({acct_id}) already holds {resolved_symbol}. Skipping duplicate.")
+                        skipped_accounts.append({"account_id": acct_id, "reason": "DUPLICATE_POSITION"})
+                        continue
+                except Exception as pe:
+                    logger.debug(f"Positions check for account {acct_id}: {pe}")
+
+            # Account-specific Kelly position sizing based on this account's available cash margin
+            acct_cash = 0.0
+            if not is_mock_broker and hasattr(b_client, "get_funds"):
+                try:
+                    f_info = await asyncio.to_thread(b_client.get_funds)
+                    if isinstance(f_info, dict) and f_info.get("status"):
+                        acct_cash = float(f_info.get("availablecash") or 0.0)
+                except Exception:
+                    pass
+
+            acct_lots = 1
+            if acct_cash > 0 and risk_engine:
+                conf_val = float(analysis.get("confidence") or 70.0)
+                sizing_res = risk_engine.calculate_compounded_position_size(
+                    available_cash=acct_cash,
+                    lot_size=lot_size,
+                    option_ltp=ltp_val if ltp_val > 0 else 120.0,
+                    confidence=conf_val
+                )
+                acct_lots = sizing_res["lots"]
+            else:
+                acct_lots = lots
+
+            acct_quantity = acct_lots * lot_size
+            acct_max_budget = min(float(getattr(config, "MAX_POSITION_SIZE", 10000.0) or 10000.0) * 0.96, acct_cash * 0.96) if acct_cash > 0 else float(getattr(config, "MAX_POSITION_SIZE", 10000.0) or 10000.0) * 0.96
+
+            if ltp_val > 0 and (ltp_val * acct_quantity > acct_max_budget):
+                acct_quantity = lot_size  # Enforce 1-lot preservation if compounding lots exceed single-trade margin cap
+
+            if acct_cash > 0 and ltp_val > 0 and (ltp_val * acct_quantity > acct_cash):
+                logger.warning(f"⚠️ [Autopilot Copy-Trade] Account {acct_name} ({acct_id}) insufficient cash (₹{acct_cash:.2f} < ₹{ltp_val * acct_quantity:.2f}). Skipping.")
+                skipped_accounts.append({"account_id": acct_id, "reason": "INSUFFICIENT_FUNDS"})
+                continue
+
+            order_data = {
+                "tradingsymbol": resolved_symbol,
+                "transaction_type": tx_type,
+                "quantity": acct_quantity,
+                "exchange": target_exchange,
+                "product": "MIS",
+                "price": ltp_val,
+                "require_live_price": not is_mock_broker,
+                "open_positions_count": len(active_syms),
+            }
+
+            # Validate order risk for this account
+            risk_val = risk_engine.validate_order(order_data)
+            if not risk_val["allowed"]:
+                logger.warning(f"🛡️ [Autopilot Copy-Trade] Risk engine rejected order for {acct_name}: {risk_val['reason']}")
+                skipped_accounts.append({"account_id": acct_id, "reason": risk_val["reason"]})
+                continue
+
+            # Execute Smart Order on this account
+            try:
+                from smart_execution import smart_execution_engine
+                smart_execution_engine.set_broker(b_client)
+                smart_execution_engine.notifier = notifier
+                telemetry = await smart_execution_engine.execute_smart_order(
+                    order_request=order_data,
+                    broker=b_client,
+                    user_id=acct_id
+                )
+                exec_status = telemetry.get("status", "ERROR")
+                if exec_status in ["COMPLETE", "FILLED", "MOCK_FILLED"]:
+                    fill_price = float(telemetry.get("executed_price") or ltp_val or 0.0)
+                    if risk_engine:
+                        risk_engine.trades_today_count = int(getattr(risk_engine, "trades_today_count", 0)) + 1
+
+                    detected_regime = analysis.get("regime") or autonomous_state.get("last_regime") or "NOMINAL"
+                    sent_score = float((analysis.get("model_scores") or {}).get("sentiment") or 0.0)
+                    tech_score = float((analysis.get("model_scores") or {}).get("technical") or 0.0)
+                    conf_val = float(analysis.get("confidence") or 0.0)
+                    profile = get_hybrid_trailing_profile(
+                        detected_regime,
+                        sentiment_score=sent_score,
+                        confidence=conf_val,
+                        technical_score=tech_score,
+                        spot_atr=float(analysis.get("spot_atr") or 0.0),
+                        entry_price=fill_price
+                    )
+
+                    acct_pos_key = f"{acct_id}:{resolved_symbol}"
+                    active_live_positions[acct_pos_key] = {
+                        "account_id": acct_id,
+                        "account_name": acct_name,
+                        "tradingsymbol": resolved_symbol,
+                        "exchange": target_exchange,
+                        "quantity": acct_quantity,
+                        "entry_price": fill_price,
+                        "entry_time": datetime.now(),
+                        "peak_price": fill_price,
+                        "regime_profile": profile["regime_profile"],
+                        "stop_loss_pct": profile["stop_loss_pct"],
+                        "target_pct": profile["target_pct"],
+                        "breakeven_trigger_pct": profile["breakeven_trigger_pct"],
+                        "breakeven_lock_pct": profile["breakeven_lock_pct"],
+                        "stage1_trigger_pct": profile["stage1_trigger_pct"],
+                        "stage1_trail_gap": profile["stage1_trail_gap"],
+                        "stage2_trigger_pct": profile["stage2_trigger_pct"],
+                        "stage2_trail_gap": profile["stage2_trail_gap"],
+                        "stage3_trigger_pct": profile.get("stage3_trigger_pct", 75.0),
+                        "stage3_trail_gap": profile.get("stage3_trail_gap", 18.0),
+                        "max_hold_minutes": profile["max_hold_minutes"],
+                        "analysis": analysis,
+                    }
+                    logger.info(f"🎯 [Autopilot Copy-Trade] Registered position for [{acct_name}] {resolved_symbol}: Qty {acct_quantity} @ ₹{fill_price:.2f}")
+                    executed_accounts.append({
+                        "account_id": acct_id,
+                        "account_name": acct_name,
+                        "order_id": telemetry.get("order_id"),
+                        "quantity": acct_quantity,
+                        "fill_price": fill_price,
+                    })
+                    last_order_id = telemetry.get("order_id")
+                    last_telemetry = telemetry
+                    notifier.notify_sync(
+                        f"🚀 *Autonomous Copy-Trade Executed*\n"
+                        f"👤 *Account:* `{acct_name}` (`{acct_id}`)\n"
+                        f"📊 *Contract:* `{resolved_symbol}` ({tx_type} x {acct_quantity} qty)\n"
+                        f"💰 *Fill Price:* *₹{fill_price:.2f}* (Margin: ₹{fill_price * acct_quantity:,.2f})\n"
+                        f"🎯 *Profile:* `{profile['regime_profile']}` | Target: `+{profile['target_pct']}%` | SL: `{profile['stop_loss_pct']}%`"
+                    )
+                else:
+                    skipped_accounts.append({"account_id": acct_id, "reason": f"Execution status {exec_status}"})
+            except Exception as exec_err:
+                logger.error(f"Execution error on account {acct_id}: {exec_err}")
+                skipped_accounts.append({"account_id": acct_id, "reason": str(exec_err)})
+
+        if not executed_accounts:
+            if skipped_accounts and all(s.get("reason") == "DUPLICATE_POSITION" for s in skipped_accounts):
                 return {
                     "status": "SKIPPED_DUPLICATE_POSITION",
-                    "reason": f"Position already open for {resolved_symbol}.",
+                    "reason": f"Position already open for {resolved_symbol} on all accounts.",
                     "analysis": analysis,
                 }
-        except Exception:
-            pass
-
-    # 3b. Risk Engine Validation (Only for Broker trades)
-    order_data = {
-        "tradingsymbol": resolved_symbol,
-        "transaction_type": tx_type,
-        "quantity": quantity,
-        "exchange": target_exchange,
-        "product": "MIS",
-        "price": ltp_val,
-        "require_live_price": not is_mock_broker,
-        "open_positions_count": open_positions_count,
-    }
-    
-    risk_val = risk_engine.validate_order(order_data)
-    if not risk_val["allowed"]:
-        return {
-            "status": "RISK_REJECTED",
-            "reason": risk_val["reason"],
-            "analysis": analysis
-        }
-    
-    # 4. Final Execution via SmartExecutionEngine (Limit Chase + Slippage Cap)
-    try:
-        from smart_execution import smart_execution_engine
-        smart_execution_engine.set_broker(broker)
-        smart_execution_engine.notifier = notifier
-        telemetry = await smart_execution_engine.execute_smart_order(
-            order_request=order_data,
-            broker=broker,
-            user_id=config.OWNER_EMAIL
-        )
-        exec_status = telemetry.get("status", "ERROR")
-        if exec_status in ["COMPLETE", "FILLED", "MOCK_FILLED"]:
-            fill_price = float(telemetry.get("executed_price") or ltp_val or 0.0)
-            if risk_engine:
-                risk_engine.trades_today_count = int(getattr(risk_engine, "trades_today_count", 0)) + 1
-            
-            # Resolve dynamic hybrid profile from current market analysis
-            detected_regime = analysis.get("regime") or autonomous_state.get("last_regime") or "NOMINAL"
-            sent_score = float((analysis.get("model_scores") or {}).get("sentiment") or 0.0)
-            tech_score = float((analysis.get("model_scores") or {}).get("technical") or 0.0)
-            conf_val = float(analysis.get("confidence") or 0.0)
-            profile = get_hybrid_trailing_profile(
-                detected_regime, 
-                sentiment_score=sent_score,
-                confidence=conf_val,
-                technical_score=tech_score,
-                spot_atr=float(analysis.get("spot_atr") or 0.0),
-                entry_price=fill_price
-            )
-            
-            active_live_positions[resolved_symbol] = {
-                "tradingsymbol": resolved_symbol,
-                "exchange": target_exchange,
-                "quantity": quantity,
-                "entry_price": fill_price,
-                "entry_time": datetime.now(),
-                "peak_price": fill_price,
-                "regime_profile": profile["regime_profile"],
-                "stop_loss_pct": profile["stop_loss_pct"],
-                "target_pct": profile["target_pct"],
-                "breakeven_trigger_pct": profile["breakeven_trigger_pct"],
-                "breakeven_lock_pct": profile["breakeven_lock_pct"],
-                "stage1_trigger_pct": profile["stage1_trigger_pct"],
-                "stage1_trail_gap": profile["stage1_trail_gap"],
-                "stage2_trigger_pct": profile["stage2_trigger_pct"],
-                "stage2_trail_gap": profile["stage2_trail_gap"],
-                "stage3_trigger_pct": profile.get("stage3_trigger_pct", 75.0),
-                "stage3_trail_gap": profile.get("stage3_trail_gap", 18.0),
-                "max_hold_minutes": profile["max_hold_minutes"],
+            return {
+                "status": "RISK_REJECTED" if any("Risk" in str(s.get("reason")) for s in skipped_accounts) else "ERROR",
+                "reason": f"Copy-trade execution failed or skipped across accounts: {skipped_accounts}",
                 "analysis": analysis,
             }
-            logger.info(f"🎯 [Autopilot] Position {resolved_symbol} registered with {profile['regime_profile']} profile: Target +{profile['target_pct']}%, Breakeven @ +{profile['breakeven_trigger_pct']}%, Hold {profile['max_hold_minutes']}m")
+
         return {
-            "status": "EXECUTED" if exec_status in ["COMPLETE", "FILLED", "MOCK_FILLED"] else exec_status,
-            "order_id": telemetry.get("order_id"),
-            "telemetry": telemetry,
+            "status": "EXECUTED",
+            "order_id": last_order_id,
+            "telemetry": last_telemetry,
+            "executed_accounts": executed_accounts,
+            "skipped_accounts": skipped_accounts,
             "signal": signal,
             "tradingsymbol": resolved_symbol,
             "exchange": target_exchange,

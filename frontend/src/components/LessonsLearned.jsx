@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, CheckCircle2, ShieldCheck, Database, Cpu, Sparkles, Search, PlusCircle, Layers, RefreshCw, AlertCircle, Zap, Target, TrendingUp, Gauge, Radio, Clock } from 'lucide-react';
+import { BookOpen, CheckCircle2, ShieldCheck, Database, Cpu, Sparkles, Search, PlusCircle, Layers, RefreshCw, AlertCircle, Zap, Target, TrendingUp, Gauge, Radio, Clock, ShieldAlert, Users } from 'lucide-react';
 import HUDCard from './ui/HUDCard';
 import { API_URL } from '../config/api';
 
@@ -273,6 +273,18 @@ const LessonsLearned = () => {
                 { title: "Midnight JWT Invalidation Auto-Recovery", detail: "Angel One invalidates JWT tokens every midnight (AB1007/AG8003). Expanded _is_session_expired_response to recognize all invalidation codes and force TOTP renewal automatically." },
                 { title: "is_connected() Fallback Hardening", detail: "Eliminated false-positive connection checks on stale tokens. Any authentication exception now forces an immediate live re-login." },
                 { title: "Automated 08:45 AM Pre-Market Daemon Reset", detail: "A root cron executes at 08:45 AM IST on the Oracle Cloud static IP (129.225.125.13) to clean memory, renew TOTP, and pre-cache NFO contracts for 09:15 AM market open." }
+            ]
+        },
+        {
+            category: "17. MULTI-ACCOUNT COPY-TRADING & INDEPENDENT MARGIN ISOLATION",
+            icon: Users,
+            color: "text-purple-400",
+            borderColor: "border-purple-500/20",
+            bgColor: "bg-purple-500/5",
+            items: [
+                { title: "Autonomous Parallel Fan-Out Execution", detail: "When a high-conviction AI signal passes all 6 risk gates, the trade is automatically copied and dispatched simultaneously to all active Angel One accounts with zero manual latency." },
+                { title: "Independent Kelly Margin Isolation", detail: "Each account calculates position sizing strictly against its own available cash. Balances <= ₹12,000 enforce 1 lot, while a 40% margin cap prevents capital overexposure on any individual account." },
+                { title: "Isolated Position Monitoring & EOD Exits", detail: "Dynamic breakeven locks (+1.5%), trailing profit ladders, and 15:20 IST EOD square-offs are tracked and executed independently per account key without cross-account interference." }
             ]
         }
     ];

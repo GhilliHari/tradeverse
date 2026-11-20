@@ -177,3 +177,64 @@ def get_broker_client(user_id: str = None):
 
     # Default / Fallback
     return MockAngelClient(f"MOCK_{user_id}")
+
+
+def get_angel_client_for_account(account_dict: dict):
+    """
+    Returns an AngelClient instance for a specific account dictionary.
+    Caches the instance in BROKER_CACHE under key f"angel_account_{client_id}".
+    """
+    client_id = (account_dict.get("client_id") or "").strip()
+    api_key = (account_dict.get("api_key") or "").strip()
+    password = (account_dict.get("password") or "").strip()
+    totp_key = (account_dict.get("totp_key") or "").strip()
+
+    if not client_id or not api_key:
+        return MockAngelClient(f"MOCK_{client_id or 'UNKNOWN'}")
+
+    cache_key = f"angel_account_{client_id}"
+    cred_hash = _get_credentials_hash({
+        "ANGEL_API_KEY": api_key,
+        "ANGEL_CLIENT_ID": client_id,
+        "ANGEL_PASSWORD": password,
+        "ANGEL_TOTP_KEY": totp_key
+    })
+
+    cached_data = BROKER_CACHE.get(cache_key)
+    if cached_data and cached_data.get("credentials_hash") == cred_hash:
+        cached_client = cached_data.get("client")
+        if hasattr(cached_client, "is_connected") and cached_client.is_connected():
+            return cached_client
+
+    logger.info(f"Creating AngelClient instance for Account: {client_id} ({account_dict.get('name', 'Account')})")
+    client = AngelClient(api_key, client_id, password, totp_key)
+    BROKER_CACHE[cache_key] = {
+        "client": client,
+        "credentials_hash": cred_hash
+    }
+    return client
+
+
+def get_all_active_broker_clients():
+    """
+    Returns a list of tuples: [(account_id, client_instance, account_dict)]
+    for all active accounts configured in config.get_angel_accounts().
+    """
+    if config.ENV != "LIVE" or config.ACTIVE_BROKER != "ANGEL":
+        primary = get_broker_client(config.OWNER_EMAIL)
+        return [(config.ANGEL_CLIENT_ID or "PRIMARY", primary, {"name": "Primary (Mock)", "active": True})]
+
+    accounts = config.get_angel_accounts()
+    active_clients = []
+    for acc in accounts:
+        if acc.get("active", False) and acc.get("client_id") and acc.get("api_key"):
+            client = get_angel_client_for_account(acc)
+            account_id = acc.get("account_id") or acc.get("client_id")
+            active_clients.append((account_id, client, acc))
+
+    if not active_clients:
+        primary = get_broker_client(config.OWNER_EMAIL)
+        active_clients.append((config.ANGEL_CLIENT_ID or "PRIMARY", primary, {"name": "Primary Fallback", "active": True}))
+
+    return active_clients
+

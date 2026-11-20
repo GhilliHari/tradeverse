@@ -40,6 +40,10 @@ class Config:
     ANGEL_API_KEY = os.getenv("ANGEL_API_KEY", "")
     ANGEL_TOTP_KEY = os.getenv("ANGEL_TOTP_KEY", "")
 
+    # Multi-Account Copy-Trading Configuration: list of dicts with keys:
+    # {"account_id", "name", "client_id", "password", "api_key", "totp_key", "active"}
+    ANGEL_ACCOUNTS = []
+
     # Active Broker: Default to ANGEL
     ACTIVE_BROKER = os.getenv("ACTIVE_BROKER", "ANGEL").upper()
     
@@ -78,11 +82,32 @@ class Config:
             "WHATSAPP_PHONE": self.WHATSAPP_PHONE,
             "WHATSAPP_API_KEY": self.WHATSAPP_API_KEY,
             "TELEGRAM_BOT_TOKEN": self.TELEGRAM_BOT_TOKEN,
-            "TELEGRAM_CHAT_ID": self.TELEGRAM_CHAT_ID
+            "TELEGRAM_CHAT_ID": self.TELEGRAM_CHAT_ID,
+            "ANGEL_ACCOUNTS": getattr(self, "ANGEL_ACCOUNTS", [])
         }
         settings_path = Path(__file__).resolve().parent / "settings.json"
         with open(settings_path, "w") as f:
-            json.dump(data, f)
+            json.dump(data, f, indent=2)
+
+    def get_angel_accounts(self):
+        """
+        Returns list of configured Angel One accounts for copy-trading.
+        Falls back to primary single account if ANGEL_ACCOUNTS is not populated.
+        """
+        accounts = getattr(self, "ANGEL_ACCOUNTS", None)
+        if accounts and isinstance(accounts, list) and len(accounts) > 0:
+            return accounts
+        if self.ANGEL_CLIENT_ID:
+            return [{
+                "account_id": self.ANGEL_CLIENT_ID,
+                "name": "Primary Account",
+                "client_id": self.ANGEL_CLIENT_ID,
+                "password": self.ANGEL_PASSWORD,
+                "api_key": self.ANGEL_API_KEY,
+                "totp_key": self.ANGEL_TOTP_KEY,
+                "active": True
+            }]
+        return []
 
     def load(self):
         import json
