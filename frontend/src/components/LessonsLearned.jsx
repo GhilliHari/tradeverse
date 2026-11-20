@@ -262,6 +262,18 @@ const LessonsLearned = () => {
                 { title: "Code-Level Timezone Guarantee", detail: "All trading time checks, pre-market logins, lunch lockouts, and EOD exits enforce get_ist_now() with explicit ZoneInfo('Asia/Kolkata'), eliminating dependence on server OS settings." },
                 { title: "Deterministic NSE Trading Calendar", detail: "Prevents day-of-week and holiday mismatches between overseas host servers and the National Stock Exchange." }
             ]
+        },
+        {
+            category: "16. 24/7 CLOUD SESSION AUTO-HEALING & 08:45 AM HANDSHAKE (20-NOV-2026 POST-MORTEM)",
+            icon: ShieldAlert,
+            color: "text-amber-400",
+            borderColor: "border-amber-500/20",
+            bgColor: "bg-amber-500/5",
+            items: [
+                { title: "Midnight JWT Invalidation Auto-Recovery", detail: "Angel One invalidates JWT tokens every midnight (AB1007/AG8003). Expanded _is_session_expired_response to recognize all invalidation codes and force TOTP renewal automatically." },
+                { title: "is_connected() Fallback Hardening", detail: "Eliminated false-positive connection checks on stale tokens. Any authentication exception now forces an immediate live re-login." },
+                { title: "Automated 08:45 AM Pre-Market Daemon Reset", detail: "A root cron executes at 08:45 AM IST on the Oracle Cloud static IP (129.225.125.13) to clean memory, renew TOTP, and pre-cache NFO contracts for 09:15 AM market open." }
+            ]
         }
     ];
 

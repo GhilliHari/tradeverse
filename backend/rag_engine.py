@@ -388,6 +388,17 @@ SEED_JOURNAL = [
             "3. Code-Level Timezone Guarantee: All trading time checks, pre-market warmups, lunch-lull lockouts, and EOD square-offs must strictly invoke get_ist_now() using ZoneInfo('Asia/Kolkata'). Never rely on host server default clocks."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "timezone_resilience_protocol", "priority": "critical", "date": "2026-11-19"}
+    },
+    {
+        "id": "trader_rule_22_session_auto_healing",
+        "document": (
+            "Trader Rule #22 (20-Nov-2026 Lesson) — 24/7 Cloud Session Auto-Healing & 08:45 AM Pre-Market Handshake Protocol:\n"
+            "1. Midnight JWT Invalidation Vulnerability: Angel One SmartAPI invalidates all active JWT tokens every night at midnight (AB1007: Invalid Token / AG8003: Token missing). A long-running 24/7 daemon process can silently retain stale tokens, causing is_connected() or getProfile() to fail or return misleading statuses.\n"
+            "2. Error Code Expansion: _is_session_expired_response() must explicitly recognize AB1007, AG8003, AB1010, AG8001, and AB1004 to trigger immediate force=True TOTP re-authentication on any broker API call.\n"
+            "3. is_connected() Auto-Recovery: If profile verification fails or throws any network/auth exception, the client must trigger an immediate forced TOTP renewal rather than falling back to True on stale token strings.\n"
+            "4. Automated 08:45 AM Pre-Market Daemon Reset: A root systemd cron (45 8 * * 1-5 /usr/bin/systemctl restart tradeverse) executes every weekday morning at 08:45 AM IST on the Oracle Cloud static IP (129.225.125.13). This cleans memory, executes a fresh TOTP handshake, downloads today's active NFO contracts, and guarantees the engine is 100% armed and ready for the 09:15:00 AM IST market bell."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "session_auto_healing_protocol", "priority": "critical", "date": "2026-11-20"}
     }
 ]
 

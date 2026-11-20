@@ -32,9 +32,9 @@ class AngelClient:
             return False
         err_code = str(res.get("errorCode") or res.get("errorcode") or "").upper()
         msg = str(res.get("message") or "").lower()
-        if err_code in {"AG8001", "AB1010", "AB1004"}:
+        if err_code in {"AG8001", "AB1010", "AB1004", "AB1007", "AG8003"}:
             return True
-        if any(k in msg for k in ("invalid token", "token expired", "session expired", "unauthorized", "jwt")):
+        if any(k in msg for k in ("invalid token", "token expired", "session expired", "unauthorized", "jwt", "token missing")):
             return True
         return False
 
@@ -247,11 +247,17 @@ class AngelClient:
             profile_ok = bool(p and (p.get('status') == True or p.get('success') == True) and p.get('data', {}).get('clientcode') is not None)
             self._cached_conn_status = profile_ok
             return profile_ok
-        except Exception:
-            if getattr(self.smart_api, 'jwtToken', None):
-                return True
-            self._cached_conn_status = False
-            return False
+        except Exception as ce:
+            logger.warning(f"Connection verification failed in is_connected ({ce}). Attempting forced session refresh...")
+            try:
+                self.ensure_session(force=True)
+                p = self.smart_api.getProfile(getattr(self.smart_api, 'jwtToken', ''))
+                profile_ok = bool(p and (p.get('status') == True or p.get('success') == True) and p.get('data', {}).get('clientcode') is not None)
+                self._cached_conn_status = profile_ok
+                return profile_ok
+            except Exception:
+                self._cached_conn_status = False
+                return False
 
     def profile(self):
         """
@@ -1009,22 +1015,25 @@ class AngelClient:
                 data = res.get('data', [])
                 if data is None: return [] # API returns None for empty book sometimes
                 
-                # Normalize keys to match Kite format roughly for UI compatibility
+                # Normalize keys to match Kite/Tradeverse format for UI compatibility
                 normalized_orders = []
                 for o in data:
+                    raw_status = o.get("status") or o.get("orderstatus") or "PENDING"
                     normalized_orders.append({
                         "order_id": o.get("orderid"),
                         "exchange_order_id": o.get("uniqueorderid"),
-                        "status": o.get("status"), # e.g. "complete", "rejected"
+                        "status": raw_status, # e.g. "complete", "rejected", "open"
                         "tradingsymbol": o.get("tradingsymbol"),
                         "exchange": o.get("exchange"),
                         "transaction_type": o.get("transactiontype"),
+                        "order_type": o.get("ordertype") or ("LIMIT" if float(o.get("price") or 0) > 0 else "MARKET"),
                         "quantity": o.get("quantity"),
-                        "filled_quantity": o.get("filledshares"),
+                        "filled_quantity": o.get("filledshares") or o.get("quantity"),
                         "price": o.get("price"),
-                        "average_price": o.get("averageprice"),
-                        "product": o.get("producttype"),
-                        "order_timestamp": o.get("updatetime")
+                        "average_price": o.get("averageprice") or o.get("price"),
+                        "product": o.get("producttype") or "MIS",
+                        "order_timestamp": o.get("updatetime") or o.get("ordertimestamp"),
+                        "status_message": o.get("text") or o.get("rejectionreason") or o.get("status_message")
                     })
                 return normalized_orders
             else:
