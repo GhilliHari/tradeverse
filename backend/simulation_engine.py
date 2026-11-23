@@ -307,6 +307,7 @@ class SimulationEngine:
             # 2. Require EMA-9 / EMA-21 separation (>= 0.035% of spot price)
             # 3. Require price alignment with EMA-9 & EMA-21 + RSI direction
             # 4. Require breakout outside today's 09:15-09:30 IST 15m Opening Range (if available)
+            # 5. Multi-Timeframe (15-Minute) Trend Anchor: veto counter-trend 5m entries
             ema_spread_pct = abs(ema_9 - ema_21) / (spot_price + 1e-9) * 100.0
             raw_sig = eval_res.get("signal", "HOLD")
             orb_high, orb_low = None, None
@@ -319,6 +320,26 @@ class SimulationEngine:
                     orb_low = float(orb_slice['Low'].min())
             except Exception:
                 pass
+
+            # Higher-Timeframe (15-Minute) Trend Anchor
+            is_15m_bullish = False
+            is_15m_bearish = False
+            try:
+                df_15m = df_5m.resample('15min').agg({
+                    'Open': 'first',
+                    'High': 'max',
+                    'Low': 'min',
+                    'Close': 'last',
+                    'Volume': 'sum'
+                }).dropna()
+                if len(df_15m) >= 4:
+                    df_15m['EMA_20'] = df_15m['Close'].ewm(span=20, adjust=False).mean()
+                    close_15m = float(df_15m['Close'].iloc[-1])
+                    ema_20_15m = float(df_15m['EMA_20'].iloc[-1])
+                    is_15m_bullish = close_15m > (ema_20_15m * 1.0002)
+                    is_15m_bearish = close_15m < (ema_20_15m * 0.9998)
+            except Exception as mtf_e:
+                logger.debug(f"15m MTF trend calculation error: {mtf_e}")
 
             if raw_sig in ("BUY_CE", "BUY_PE"):
                 if 45.0 <= rsi_val <= 55.0:
@@ -333,12 +354,26 @@ class SimulationEngine:
                 elif raw_sig == "BUY_PE" and not (spot_price < ema_9 and ema_9 <= ema_21 and rsi_val < 45.0):
                     eval_res["signal"] = "HOLD"
                     eval_res["regime"] = "WEAK_BEAR_CONFLUENCE"
+                elif raw_sig == "BUY_CE" and is_15m_bearish:
+                    eval_res["signal"] = "HOLD"
+                    eval_res["regime"] = "COUNTER_15M_TREND_VETO"
+                elif raw_sig == "BUY_PE" and is_15m_bullish:
+                    eval_res["signal"] = "HOLD"
+                    eval_res["regime"] = "COUNTER_15M_TREND_VETO"
                 elif raw_sig == "BUY_CE" and orb_high is not None and spot_price <= orb_high:
                     eval_res["signal"] = "HOLD"
                     eval_res["regime"] = "INSIDE_15M_ORB_RANGE"
                 elif raw_sig == "BUY_PE" and orb_low is not None and spot_price >= orb_low:
                     eval_res["signal"] = "HOLD"
                     eval_res["regime"] = "INSIDE_15M_ORB_RANGE"
+
+            # 15m Alignment Confidence Boost
+            if eval_res.get("signal") == "BUY_CE" and is_15m_bullish:
+                eval_res["confidence"] = min(0.95, round(float(eval_res.get("confidence", 0.70)) + 0.05, 2))
+                eval_res["regime"] = f"{eval_res.get('regime', 'TRENDING')}_15M_ALIGNED"
+            elif eval_res.get("signal") == "BUY_PE" and is_15m_bearish:
+                eval_res["confidence"] = min(0.95, round(float(eval_res.get("confidence", 0.70)) + 0.05, 2))
+                eval_res["regime"] = f"{eval_res.get('regime', 'TRENDING')}_15M_ALIGNED"
 
             eval_res["spot_price"] = round(spot_price, 2)
             eval_res["rsi"] = rsi_val

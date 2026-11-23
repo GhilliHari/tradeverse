@@ -282,14 +282,14 @@ def get_hybrid_trailing_profile(
             "regime_profile": "TRENDING_EXPANSION",
             "target_pct": target_pct,       # Ride high delta & gamma expansion multi-baggers
             "stop_loss_pct": base_sl_pct,   # ATR-calibrated stop loss (-14% to -18%)
-            "breakeven_trigger_pct": 20.0,  # Once +20.0% reached, lock breakeven
+            "breakeven_trigger_pct": 10.0,  # OPTIMIZED: Once +10.0% reached, lock breakeven (risk-free)
             "breakeven_lock_pct": 1.5,      # Lock +1.5% net profit (covers STT/charges + green)
-            "stage1_trigger_pct": 30.0,     # Once +30.0%, trail starts
-            "stage1_trail_gap": trail_gap,  # Trail behind peak (locks profit)
-            "stage2_trigger_pct": 50.0,     # Once +50.0%, super-runner engages
-            "stage2_trail_gap": trail_gap,  # Trail behind peak
-            "stage3_trigger_pct": 75.0,     # Once +75.0%, mega-gamma trail engages
-            "stage3_trail_gap": trail_gap + 3.0,  # Trail behind peak up to +100%+
+            "stage1_trigger_pct": 18.0,     # OPTIMIZED: Once +18.0%, trail starts (locks +8% profit)
+            "stage1_trail_gap": 10.0,       # Trail behind peak (locks profit)
+            "stage2_trigger_pct": 35.0,     # Once +35.0%, super-runner engages
+            "stage2_trail_gap": 15.0,       # Trail behind peak
+            "stage3_trigger_pct": 60.0,     # Once +60.0%, mega-gamma trail engages
+            "stage3_trail_gap": trail_gap,  # Trail behind peak up to +100%+
             "max_hold_minutes": 55,         # Base hold; Runner Exemption protects profitable trends
         }
     
@@ -299,31 +299,30 @@ def get_hybrid_trailing_profile(
             "regime_profile": "VOLATILITY_DEFENSE",
             "target_pct": 40.0 if vix >= 18.0 else 30.0,  # Swift target before mean reversion
             "stop_loss_pct": min(-12.0, base_sl_pct),      # Tighter risk cut (-12.0%)
-            "breakeven_trigger_pct": 15.0,  # Early breakeven lock at +15%
+            "breakeven_trigger_pct": 10.0,  # OPTIMIZED: Early breakeven lock at +10%
             "breakeven_lock_pct": 1.5,      # Cover brokerage + 1.5%
-            "stage1_trigger_pct": 25.0,     # Quick trail
-            "stage1_trail_gap": 12.0,       # 12.0% gap
-            "stage2_trigger_pct": 40.0,     # Tighter runner lock
-            "stage2_trail_gap": 14.0,       # 14.0% gap
-            "stage3_trigger_pct": 60.0,     # Stage 3 trail
-            "stage3_trail_gap": 16.0,       # 16.0% gap
+            "stage1_trigger_pct": 18.0,     # Quick trail locks in profit
+            "stage1_trail_gap": 8.0,        # 8.0% gap
+            "stage2_trigger_pct": 30.0,     # Tighter runner lock
+            "stage2_trail_gap": 12.0,       # 12.0% gap
+            "stage3_trigger_pct": 50.0,     # Stage 3 trail
+            "stage3_trail_gap": 15.0,       # 15.0% gap
             "max_hold_minutes": 25,         # Quick exit before theta decay hits
         }
 
     # 3. Standard / Balanced Market Regimes (Low VIX defense)
     target_bal = 35.0 if vix < 12.5 else 60.0
-    be_trig_bal = 15.0 if vix < 12.5 else 18.0
     return {
         "regime_profile": "BALANCED_NOMINAL",
         "target_pct": target_bal,
         "stop_loss_pct": base_sl_pct if base_sl_pct != -16.0 else -15.0,
-        "breakeven_trigger_pct": be_trig_bal,
+        "breakeven_trigger_pct": 10.0,      # OPTIMIZED: Early breakeven lock at +10%
         "breakeven_lock_pct": 1.5,
-        "stage1_trigger_pct": 30.0,
-        "stage1_trail_gap": 15.0,
-        "stage2_trigger_pct": 50.0,
+        "stage1_trigger_pct": 20.0,
+        "stage1_trail_gap": 10.0,
+        "stage2_trigger_pct": 35.0,
         "stage2_trail_gap": 15.0,
-        "stage3_trigger_pct": 75.0,
+        "stage3_trigger_pct": 60.0,
         "stage3_trail_gap": 18.0,
         "max_hold_minutes": 40,
     }
@@ -3915,7 +3914,7 @@ async def execute_autopilot(
             intra_action = intra_eval.get("signal", "HOLD")
             intra_conf = float(intra_eval.get("confidence") or 0.0)
             intra_reason = intra_eval.get("reason", "5m Intraday Confluence")
-            if intra_action in ("BUY_CE", "BUY_PE") and intra_conf >= 0.70:
+            if intra_action in ("BUY_CE", "BUY_PE") and intra_conf >= 0.68:
                 spot_now = float(intra_eval.get("spot_price") or 0.0)
                 step = 100 if "BANK" in symbol.upper() else (25 if "MID" in symbol.upper() else 50)
                 atm_strike = int(round(spot_now / step) * step) if spot_now > 0 else 0
@@ -3935,6 +3934,10 @@ async def execute_autopilot(
                 else:
                     selected_strike = atm_strike
                     moneyness_desc = "ATM (Delta ≈ 0.50 - Standard)"
+
+                cur_t = get_ist_now().time()
+                if time(13, 15) <= cur_t <= time(14, 30):
+                    moneyness_desc = f"{moneyness_desc} [0DTE Gamma Window]"
 
                 signal = intra_action
                 analysis["final_signal"] = signal
