@@ -120,9 +120,8 @@ class Config:
                 with open(settings_path, "r") as f:
                     data = json.load(f)
                     for k, v in data.items():
-                        # ONLY overwrite if not already set by Environment Variables and value is non-empty
-                        env_key = f"TRADEVERSE_{k}" if k == "ENV" else k
-                        if not os.getenv(env_key) and v not in ("", None):
+                        # Explicit settings.json takes precedence over stale cloud env vars when non-empty
+                        if v not in ("", None):
                             setattr(self, k, v)
                             logger.info(f"Loaded {k} from {settings_path.name}")
             except Exception as e:
