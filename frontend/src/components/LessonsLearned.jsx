@@ -286,6 +286,19 @@ const LessonsLearned = () => {
                 { title: "Independent Kelly Margin Isolation", detail: "Each account calculates position sizing strictly against its own available cash. Balances <= ₹12,000 enforce 1 lot, while a 40% margin cap prevents capital overexposure on any individual account." },
                 { title: "Isolated Position Monitoring & EOD Exits", detail: "Dynamic breakeven locks (+1.5%), trailing profit ladders, and 15:20 IST EOD square-offs are tracked and executed independently per account key without cross-account interference." }
             ]
+        },
+        {
+            category: "18. CRASH MOMENTUM, EARLY OPENING UNLOCK & RISK PAYLOAD INTEGRITY (23-NOV-2026 POST-MORTEM)",
+            icon: Zap,
+            color: "text-rose-400",
+            borderColor: "border-rose-500/20",
+            bgColor: "bg-rose-500/5",
+            items: [
+                { title: "09:20 AM Early Momentum & 5m ORB Unlock", detail: "Replaced flat 15m open freeze with a two-tier protocol: 09:15-09:20 AM spread guard to let option bid-ask spreads settle, and 09:20-09:30 AM early momentum unlock for high-conviction signals (>= 75% confidence) once the 1st 5-minute bar completes, capturing massive 500-1,000pt opening collapse moves." },
+                { title: "Risk Dictionary Payload Integrity", detail: "Guarantees that 'confidence' and 'is_high_conviction' are strictly passed in all order payloads from main.py to risk_engine.py, eliminating bugs where 96% confidence signals were evaluated as 0.0% and falsely rejected during trend days." },
+                { title: "Early Breakeven Lock (+10% Peak Trigger)", detail: "Lowered the breakeven lock trigger from +20% to +10.0% gain (locking Stop-Loss at +1.5% net profit). Winning trades become 100% risk-free immediately, eliminating profitable +12% trades from reversing into stop-outs." },
+                { title: "Multi-Timeframe 15m Trend Anchor", detail: "Resamples 5m bars to 15-minute intervals to enforce the 15m EMA-20 trend anchor, automatically vetoing 5m counter-trend trades and awarding a +5% confidence boost on macro alignment." }
+            ]
         }
     ];
 

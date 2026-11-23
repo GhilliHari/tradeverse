@@ -8,6 +8,39 @@ import HUDCard from './ui/HUDCard';
 
 const INITIAL_INCIDENTS = [
     {
+        id: "INC-20261123-001",
+        title: "Morning Angel One Credential Desync & Order Validation Data Omission Lockout",
+        category: "BROKER INTEGRATION & RISK ENGINE",
+        date: "2026-11-23",
+        session: "NSE Monday 2,400-Point Index Crash Session",
+        severity: "HIGH",
+        status: "RESOLVED",
+        capitalImpact: "₹0.00 (Zero Drawdown / Preservation Maintained, but Missed High-Probability 2x-4x Put Profit)",
+        symptom: "Autonomous trading engine accurately generated high-conviction BUY_PE signals (up to 96% confidence) during morning and midday market collapse, but zero live trades were placed on Angel One.",
+        rootCause: "Dual root cause: (1) Stale Angel One API key (PZMiGmaU) on Render cloud server caused live session authentication failure at market open (broker LTP is 0.0), blocking 09:25 AM PE entry; (2) main.py order validation dictionary omitted the 'confidence' parameter, causing risk_engine.py to evaluate confidence as 0.0 and falsely trigger the Midday Lunch-Lull Lockout at 12:45 PM; (3) Flat 09:15-09:30 AM blackout blocked early 5m momentum breakdown.",
+        timeline: [
+            { time: "09:15 - 09:30 IST", event: "NSE opened into steep sell-off. AI flagged BUY_PE (96% conf). Flat 15m opening range guard blocked entries, while stale cloud API key returned broker LTP 0.0." },
+            { time: "10:50 IST", event: "API key mismatch diagnosed and resolved via /api/settings/update. Live Angel One session verified for HARIDOSS LOGANATHAN (₹7,616.56 cash)." },
+            { time: "12:45 IST", event: "AI generated BUY_PE during midday sell-off. Blocked by Lunch-Lull Lockout because main.py omitted 'confidence' in order_data payload, defaulting to 0.0." },
+            { time: "15:15 IST", event: "Post-market audit revealed BankNifty dropped 2,400+ pts with 38 BUY_PE predictions unexecuted. Engineered 09:20 AM Early Momentum unlock and order dictionary parameter fix." },
+            { time: "18:46 IST", event: "Fixed and mock-verified: 09:18 spread guard, 09:25 (96% conf) allowed, and confidence pass-through confirmed. Pushed live to Render cloud." }
+        ],
+        fiveWhys: [
+            "Why were no PUT trades executed during the 2,400pt crash? Order placement was rejected by risk engine and broker check.",
+            "Why did the 09:25 AM order fail? The Render cloud container had an expired API key (PZMiGmaU) returning LTP 0.0, and risk engine had a flat 09:15-09:30 blackout.",
+            "Why did the 12:45 PM order fail? Midday Lunch-Lull Lockout blocked it because confidence was read as 0.0.",
+            "Why was confidence read as 0.0? main.py omitted 'confidence' and 'is_high_conviction' in order_data dictionary passed to validate_order.",
+            "Why was the opening move missed entirely? Flat 09:15-09:30 blackout failed to account for high-momentum post-09:20 5m candle breakouts."
+        ],
+        permanentFix: [
+            "Cloud Credential Parity: Synchronized active API key (mDNFnAXn) on Render cloud backend (angel_connected: true, live account verified).",
+            "Two-Tier Opening Protocol: 09:15-09:20 AM spread guard, unlocking 09:20-09:30 AM Early Momentum Window for high-conviction signals (>=75% confidence).",
+            "Order Payload Integrity: Passed 'confidence': conf and 'is_high_conviction': conf >= 75.0 into order_data in main.py.",
+            "Profit Optimization: Lowered breakeven lock trigger to +10% peak gain (locking +1.5% profit) and added 15m Higher-Timeframe Trend Anchor."
+        ],
+        commitHash: "9ca94ca"
+    },
+    {
         id: "INC-20261119-001",
         title: "Oracle Cloud Linux VM GMT/UTC Timezone Offset Execution Lockout",
         category: "INFRASTRUCTURE & CLOCK",

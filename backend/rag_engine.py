@@ -410,6 +410,26 @@ SEED_JOURNAL = [
             "4. Independent Trailing SL & Exit Orchestration: Stop-Loss (-15%), Target (+25%), Breakeven Locks (+1.5%), and EOD Auto Square-Off (15:20 IST) are tracked and executed per account key (account_id:symbol), ensuring one account's balance or execution status never impacts another."
         ),
         "metadata": {"author": "architect", "rule_type": "multi_account_copy_trading", "priority": "critical", "date": "2026-11-20"}
+    },
+    {
+        "id": "journal_rule_early_momentum_unlock",
+        "document": (
+            "Trader Rule #24 (23-Nov-2026 Lesson) — 09:20 AM Early Momentum & 5m ORB Unlock Protocol:\n"
+            "1. Two-Tier Market Open Protocol: Replaces the blunt 09:15-09:30 AM flat freeze. 09:15-09:20 IST (5 mins) acts as an Opening Spread Guard to absorb initial auction tick volatility and let option bid-ask spreads normalize.\n"
+            "2. 09:20 AM Early Momentum Unlock: Once the 1st 5-minute candle closes (09:20 IST), high-conviction momentum signals (Confidence >= 75%) are fully permitted to execute live.\n"
+            "3. Mega-Trend & Crash Capture: Prevents missing explosive morning breakdowns (such as the 23-Nov-2026 BankNifty 2,400-point collapse) while shielding capital from low-conviction opening whipsaws."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "early_momentum_unlock", "priority": "critical", "date": "2026-11-23"}
+    },
+    {
+        "id": "journal_rule_breakeven_mtf_risk_integrity",
+        "document": (
+            "Trader Rule #25 (23-Nov-2026 Lesson) — Early Breakeven Lock (+10%), MTF Trend Anchor & Risk Dictionary Integrity:\n"
+            "1. Early Breakeven Lock (+10% Peak): Lowers the breakeven ratchet trigger from +20% to +10.0% gain (locking Stop-Loss at +1.5% net profit). This renders winning trades 100% risk-free, covering taxes and STT, and eliminates profitable +12% trades from reversing into -15% stop-outs.\n"
+            "2. 15-Minute Higher-Timeframe Trend Anchor: Resamples 5m bars into 15m intervals to calculate the 15m EMA-20 trend anchor. 5m Call entries are strictly vetoed if 15m trend is bearish; 5m Put entries are vetoed if 15m trend is bullish. Trend alignment awards a +5% confidence boost.\n"
+            "3. Order Dictionary Parameter Integrity: Guarantees that 'confidence' and 'is_high_conviction' are always passed in order payloads from main.py to risk_engine.py, ensuring high-conviction crash/trend signals (>=75%) are never falsely blocked during market momentum windows."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "breakeven_mtf_risk_integrity", "priority": "critical", "date": "2026-11-23"}
     }
 ]
 
