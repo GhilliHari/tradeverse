@@ -129,8 +129,18 @@ class RiskEngine:
             self.last_reset_date = today_str
 
         if not order_details.get("is_exit"):
-            if now.hour == 9 and now.minute < 30:
-                return {"allowed": False, "reason": "OPENING RANGE GUARD: Waiting for 09:15-09:30 IST 15m opening range to settle."}
+            if now.hour == 9 and now.minute < 20:
+                return {"allowed": False, "reason": "OPENING SPREAD GUARD: Waiting for 09:15-09:20 IST first 5m opening bar & option bid-ask spreads to normalize."}
+            elif now.hour == 9 and 20 <= now.minute < 30:
+                # Early Momentum / 5m Opening Range Breakout Window (09:20 - 09:30 IST)
+                # Allows explosive high-conviction trend/crash moves (>= 75% confidence) once 1st 5m bar completes
+                conf = float(order_details.get("confidence") or 0.0)
+                is_high_conv = bool(order_details.get("is_high_conviction", False)) or (conf >= 75.0)
+                if not is_high_conv:
+                    return {
+                        "allowed": False,
+                        "reason": "OPENING RANGE CONVICTION GUARD: Early entries between 09:20-09:30 IST require high conviction (>= 75%) to prevent gap-fades."
+                    }
             if (now.hour == 14 and now.minute >= 35) or now.hour >= 15:
                 return {"allowed": False, "reason": "LATE-SESSION THETA GUARD: New option-buying entries blocked after 14:35 IST to avoid 3 PM institutional whipsaw & theta crush."}
             # MIDDAY LUNCH-LULL LOCKOUT (11:30 - 13:15 IST):
