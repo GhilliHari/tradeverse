@@ -4339,6 +4339,8 @@ async def execute_autopilot(
                 "price": ltp_val,
                 "require_live_price": not is_mock_broker,
                 "open_positions_count": len(active_syms),
+                "confidence": conf,
+                "is_high_conviction": conf >= 75.0,
             }
 
             # Validate order risk for this account
