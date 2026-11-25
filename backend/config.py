@@ -12,6 +12,8 @@ if hasattr(_time, "tzset"):
 
 try:
     from dotenv import load_dotenv
+    from pathlib import Path as _Path
+    load_dotenv(_Path(__file__).resolve().parent / ".env")
     load_dotenv()
 except ImportError:
     pass
@@ -29,8 +31,8 @@ class Config:
     # Offline Autonomous Cloud Mode (Runs 24/7 even when iMac / Browser is OFF)
     OFFLINE_AUTONOMOUS_MODE = os.getenv("OFFLINE_AUTONOMOUS_MODE", "true").lower() in ("true", "1", "yes")
     
-    # API Keys (Defaults to embedded operator key / GraphRAG fallback if not set in env)
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyAMxry7kyw7svsZumX6_hu7aGELVHamkm0")
+    # API Keys (Loaded strictly from git-ignored .env / environment variables to prevent GitHub leak auto-revocation)
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
     REDIS_URL = os.getenv("REDIS_URL", "")
     FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS", "")
     
@@ -69,7 +71,7 @@ class Config:
         data = {
             "ENV": self.ENV,
             "OFFLINE_AUTONOMOUS_MODE": getattr(self, "OFFLINE_AUTONOMOUS_MODE", True),
-            "GEMINI_API_KEY": self.GEMINI_API_KEY,
+            "GEMINI_API_KEY": "" if os.getenv("GEMINI_API_KEY") else self.GEMINI_API_KEY,
             "ANGEL_CLIENT_ID": self.ANGEL_CLIENT_ID,
             "ANGEL_PASSWORD": self.ANGEL_PASSWORD,
             "ANGEL_API_KEY": self.ANGEL_API_KEY,
@@ -120,6 +122,9 @@ class Config:
                 with open(settings_path, "r") as f:
                     data = json.load(f)
                     for k, v in data.items():
+                        # Never overwrite an explicit GEMINI_API_KEY from .env with a stale/empty settings.json value
+                        if k == "GEMINI_API_KEY" and os.getenv("GEMINI_API_KEY"):
+                            continue
                         # Explicit settings.json takes precedence over stale cloud env vars when non-empty
                         if v not in ("", None):
                             setattr(self, k, v)
