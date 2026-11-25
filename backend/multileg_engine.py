@@ -23,9 +23,9 @@ class MultiLegSpreadsEngine:
     def __init__(self):
         self.symbol_specs = {
             "BANKNIFTY": {"step": 100, "lot": 30, "fast_ticker": "^NSEBANK"},
-            "NIFTY": {"step": 50, "lot": 75, "fast_ticker": "^NSEI"},
-            "FINNIFTY": {"step": 50, "lot": 65, "fast_ticker": "NIFTY_FIN_SERVICE.NS"},
-            "MIDCPNIFTY": {"step": 25, "lot": 75, "fast_ticker": "^NSMIDCP"},
+            "NIFTY": {"step": 50, "lot": 65, "fast_ticker": "^NSEI"},
+            "FINNIFTY": {"step": 50, "lot": 60, "fast_ticker": "^CNXFIN"},
+            "MIDCPNIFTY": {"step": 25, "lot": 120, "fast_ticker": "NIFTY_MID_SELECT.NS"},
             "HDFCBANK": {"step": 10, "lot": 550, "fast_ticker": "HDFCBANK.NS"},
             "ICICIBANK": {"step": 10, "lot": 700, "fast_ticker": "ICICIBANK.NS"}
         }

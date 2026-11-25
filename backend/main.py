@@ -159,8 +159,8 @@ def normalize_symbol(symbol: str):
         return "^NSEBANK"
     if "FINNIFTY" in u_symbol or "FIN" in u_symbol:
         return "^CNXFIN" # yfinance symbol for Fin Nifty
-    if "MIDCAP" in u_symbol or "MIDCP" in u_symbol:
-        return "^NSMIDCP" # yfinance symbol for Midcap Nifty
+    if "MIDCAP" in u_symbol or "MIDCP" in u_symbol or "MID_SELECT" in u_symbol:
+        return "NIFTY_MID_SELECT.NS" # Exact Nifty Midcap Select (~14,236) matching NSE MIDCPNIFTY options
     if "NIFTY" in u_symbol:
         return "^NSEI"
     return symbol
@@ -600,31 +600,31 @@ async def monitor_live_positions_step():
 
 def get_daily_fno_basket() -> List[tuple]:
     """
-    Returns prioritized 4-Index F&O Basket with Day-of-Week Expiry Weighting:
-    - Monday (0): MIDCPNIFTY Expiry (Lot 50, Step 25)
-    - Tuesday (1): FINNIFTY Expiry (Lot 25, Step 50)
-    - Wednesday (2): BANKNIFTY Expiry (Lot 15, Step 100)
-    - Thursday (3): NIFTY 50 Expiry (Lot 25, Step 50)
-    - Friday (4): Multi-Index Momentum
+    Returns prioritized 4-Index F&O Basket aligned with 2026 SEBI Expiry & Lot-Size Rules:
+    - NIFTY 50 (^NSEI, Lot 65, Step 50): Weekly Tuesday Expiry — tightest bid-ask spreads, highest intraday gamma,
+      and lowest per-lot rupee margin requirement for small/growing accounts.
+    - BANKNIFTY (^NSEBANK, Lot 30, Step 100): Monthly last-Tuesday Expiry — high-beta institutional swings.
+    - FINNIFTY (^CNXFIN, Lot 60, Step 50): Monthly last-Tuesday Expiry — private financials & NBFCs.
+    - MIDCPNIFTY (NIFTY_MID_SELECT.NS, Lot 120, Step 25): Monthly last-Tuesday Expiry — Nifty Midcap Select (~14,250).
     Format: [(symbol, lot_qty, index_name)]
     """
-    weekday = get_ist_now().weekday()
+    now_ist = get_ist_now()
+    weekday = now_ist.weekday()
+    # Final week of month (day >= 24) puts monthly-expiry indices near 0DTE/1DTE gamma expansion
+    is_monthly_expiry_window = now_ist.day >= 24
     base_specs = {
-        "^NSMIDCP": (50, "MIDCPNIFTY"),
-        "^CNXFIN": (25, "FINNIFTY"),
-        "^NSEBANK": (15, "BANKNIFTY"),
-        "^NSEI": (25, "NIFTY")
+        "^NSEI": (65, "NIFTY"),
+        "^NSEBANK": (30, "BANKNIFTY"),
+        "^CNXFIN": (60, "FINNIFTY"),
+        "NIFTY_MID_SELECT.NS": (120, "MIDCPNIFTY"),
     }
-    if weekday == 0:  # Monday: Midcap
-        order = ["^NSMIDCP", "^CNXFIN", "^NSEBANK", "^NSEI"]
-    elif weekday == 1:  # Tuesday: FinNifty
-        order = ["^CNXFIN", "^NSEBANK", "^NSEI", "^NSMIDCP"]
-    elif weekday == 2:  # Wednesday: BankNifty
-        order = ["^NSEBANK", "^CNXFIN", "^NSEI", "^NSMIDCP"]
-    elif weekday == 3:  # Thursday: Nifty 50
-        order = ["^NSEI", "^NSEBANK", "^CNXFIN", "^NSMIDCP"]
-    else:  # Friday / Weekend
-        order = ["^NSEBANK", "^NSEI", "^CNXFIN", "^NSMIDCP"]
+    if is_monthly_expiry_window and weekday in (0, 1):
+        order = ["^NSEI", "^NSEBANK", "^CNXFIN", "NIFTY_MID_SELECT.NS"]
+    elif weekday == 1:  # Tuesday: NIFTY Weekly Expiry Day (0DTE Priority)
+        order = ["^NSEI", "^NSEBANK", "^CNXFIN", "NIFTY_MID_SELECT.NS"]
+    else:
+        # Prioritize NIFTY weekly liquidity first, followed by BankNifty, FinNifty, MidcpNifty
+        order = ["^NSEI", "^NSEBANK", "^CNXFIN", "NIFTY_MID_SELECT.NS"]
 
     return [(sym, base_specs[sym][0], base_specs[sym][1]) for sym in order]
 
@@ -3057,7 +3057,7 @@ async def get_strike_recommendations(symbol: str = "BANKNIFTY"):
         import yfinance as yf
         
         symbol_norm = symbol.replace("NSE:", "").upper()
-        ticker_map = {"BANKNIFTY": "^NSEBANK", "NIFTY": "^NSEI", "FINNIFTY": "^CNXFIN", "MIDCPNIFTY": "^NSMIDCP"}
+        ticker_map = {"BANKNIFTY": "^NSEBANK", "NIFTY": "^NSEI", "FINNIFTY": "^CNXFIN", "MIDCPNIFTY": "NIFTY_MID_SELECT.NS"}
         fast_sym = ticker_map.get(symbol_norm, "^NSEBANK")
         
         spot = 57885.85
@@ -4005,6 +4005,20 @@ async def execute_autopilot(
                 analysis["confidence"] = round(intra_conf * 100.0, 1)
                 analysis["regime"] = intra_eval.get("regime", "TRENDING_INTRADAY")
                 analysis["spot_atr"] = float(intra_eval.get("atr_14") or 0.0)
+                if spot_now > 0:
+                    analysis["spot_price"] = spot_now
+                # Sync 5m intraday model_scores into analysis so Gate 4 validates active 5m price action
+                # rather than self-vetoing 5m breakouts against yesterday's 1-Day candle score.
+                merged_scores = dict(analysis.get("model_scores") or {})
+                intra_scores = intra_eval.get("model_scores") or {}
+                for sk in ("technical", "tft", "rl", "order_flow", "pattern"):
+                    if sk in intra_scores:
+                        merged_scores[sk] = intra_scores[sk]
+                if opt_t == "CE" and float(merged_scores.get("technical") or 0.0) <= 0.0:
+                    merged_scores["technical"] = 0.65
+                elif opt_t == "PE" and float(merged_scores.get("technical") or 0.0) >= 0.0:
+                    merged_scores["technical"] = -0.65
+                analysis["model_scores"] = merged_scores
                 analysis["trade_recommendation"] = {
                     "strike": selected_strike,
                     "option_type": opt_t,
@@ -4215,13 +4229,15 @@ async def execute_autopilot(
         try:
             lot_size = int(broker.get_lot_size(target_exchange, target_symbol) or 1)
         except Exception:
-            lot_size = 15 if base_index == "BANKNIFTY" else (25 if base_index in ("NIFTY", "FINNIFTY") else (50 if base_index == "MIDCPNIFTY" else 1))
+            lot_size = 30 if base_index == "BANKNIFTY" else (65 if base_index == "NIFTY" else (60 if base_index == "FINNIFTY" else (120 if base_index == "MIDCPNIFTY" else 1)))
     elif base_index == "BANKNIFTY":
-        lot_size = 15
-    elif base_index in ("NIFTY", "FINNIFTY"):
-        lot_size = 25
+        lot_size = 30
+    elif base_index == "NIFTY":
+        lot_size = 65
+    elif base_index == "FINNIFTY":
+        lot_size = 60
     elif base_index == "MIDCPNIFTY":
-        lot_size = 50
+        lot_size = 120
 
     ltp_val = 0.0
     try:
@@ -4233,16 +4249,17 @@ async def execute_autopilot(
 
     # Optimization #5: Dynamic Capital Compounding (Fractional Kelly Sizing)
     lots = 1
+    avail_cash_cached = 0.0
     if not is_mock_broker and risk_engine and hasattr(broker, "get_funds"):
         try:
             funds_info = await asyncio.to_thread(broker.get_funds)
             if isinstance(funds_info, dict) and funds_info.get("status"):
-                avail_cash = float(funds_info.get("availablecash") or 0.0)
-                if avail_cash > 0:
-                    risk_engine.sync_with_capital(avail_cash)
+                avail_cash_cached = float(funds_info.get("availablecash") or 0.0)
+                if avail_cash_cached > 0:
+                    risk_engine.sync_with_capital(avail_cash_cached)
                     conf_val = float(analysis.get("confidence") or 70.0)
                     sizing_res = risk_engine.calculate_compounded_position_size(
-                        available_cash=avail_cash,
+                        available_cash=avail_cash_cached,
                         lot_size=lot_size,
                         option_ltp=ltp_val if ltp_val > 0 else 120.0,
                         confidence=conf_val
@@ -4250,27 +4267,21 @@ async def execute_autopilot(
                     lots = sizing_res["lots"]
                     logger.info(
                         f"💰 [Autopilot] Kelly Compounding: {lots} Lot(s) ({lots * lot_size} qty) | "
-                        f"Cap: ₹{avail_cash:,.2f} | Phase: {sizing_res['phase']}"
+                        f"Cap: ₹{avail_cash_cached:,.2f} | Phase: {sizing_res['phase']}"
                     )
         except Exception as k_err:
             logger.debug(f"Kelly position sizing fallback: {k_err}")
 
     quantity = lots * lot_size
 
-    # 3c. Dynamic OTM Strike Stepping if ATM Lot Cost exceeds 96% of MAX_POSITION_SIZE (₹9,600 buffer for charges/chasing)
-    max_budget = float(getattr(config, "MAX_POSITION_SIZE", 10000.0) or 10000.0) * 0.96
-    if not is_mock_broker and hasattr(broker, "get_funds"):
-        try:
-            funds_info = await asyncio.to_thread(broker.get_funds)
-            if isinstance(funds_info, dict) and funds_info.get("status"):
-                avail_cash = float(funds_info.get("availablecash") or 0.0)
-                if avail_cash > 0:
-                    max_budget = min(max_budget, avail_cash * 0.96)
-        except Exception:
-            pass
+    # 3c. Dynamic OTM Strike Stepping aligned strictly with RiskEngine.max_position_size
+    risk_pos_cap = float(getattr(risk_engine, "max_position_size", 0.0) or getattr(config, "MAX_POSITION_SIZE", 10000.0) or 10000.0)
+    max_budget = risk_pos_cap * 0.98
+    if avail_cash_cached > 0:
+        max_budget = min(max_budget, avail_cash_cached * 0.95)
 
     if base_index and strike > 0 and ltp_val > 0 and (ltp_val * quantity > max_budget):
-        strike_step = 100 if base_index == "BANKNIFTY" else 50
+        strike_step = 100 if base_index == "BANKNIFTY" else (25 if base_index == "MIDCPNIFTY" else 50)
         stepped_ok = False
         for step_idx in range(1, 20):
             cand_strike = strike + (step_idx * strike_step) if opt_type == "CE" else strike - (step_idx * strike_step)
@@ -4299,8 +4310,9 @@ async def execute_autopilot(
             except Exception:
                 continue
 
-        # If BANKNIFTY 1-lot (30 qty) still exceeds max_budget, check NIFTY 50 options (weekly expiry, lower lot cost)
-        if not stepped_ok and base_index == "BANKNIFTY":
+        # Universal Weekly Capital-Fit Fallback: if 1 monthly lot on BANKNIFTY/FINNIFTY/MIDCPNIFTY still exceeds max_budget,
+        # route into liquid NIFTY 50 weekly options (65 qty) within RiskEngine.max_position_size
+        if not stepped_ok and base_index in ("BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"):
             try:
                 nf_q = broker.ltp("NSE:NIFTY")
                 nf_spot = float((nf_q.get("NSE:NIFTY") or {}).get("last_price") or 0.0)
@@ -4312,13 +4324,13 @@ async def execute_autopilot(
                         c_ex, c_sym, c_tok = broker._get_token_and_exchange(f"NFO:{cand_short}")
                         if not (c_sym and c_tok):
                             continue
-                        nf_lot = int(broker.get_lot_size("NFO", cand_short) or 75) if hasattr(broker, "get_lot_size") else 75
+                        nf_lot = int(broker.get_lot_size("NFO", cand_short) or 65) if hasattr(broker, "get_lot_size") else 65
                         c_key = f"{c_ex}:{c_sym}"
                         c_res = broker.ltp(c_key)
                         c_ltp = float((c_res.get(c_key) or c_res.get(c_sym) or {}).get("last_price", 0.0) or 0.0)
                         if c_ltp > 5.0 and (c_ltp * nf_lot) <= max_budget:
                             logger.info(
-                                f"🎯 [Autopilot] Capital-fitted to NIFTY option {c_sym} "
+                                f"🎯 [Autopilot] Capital-fitted {base_index} -> NIFTY weekly option {c_sym} "
                                 f"(₹{c_ltp} x {nf_lot} = ₹{c_ltp * nf_lot:.0f} <= ₹{max_budget:.0f})"
                             )
                             target_symbol = cand_short
@@ -4381,7 +4393,8 @@ async def execute_autopilot(
                 acct_lots = lots
 
             acct_quantity = acct_lots * lot_size
-            acct_max_budget = min(float(getattr(config, "MAX_POSITION_SIZE", 10000.0) or 10000.0) * 0.96, acct_cash * 0.96) if acct_cash > 0 else float(getattr(config, "MAX_POSITION_SIZE", 10000.0) or 10000.0) * 0.96
+            acct_risk_cap = max(3800.0, round(acct_cash * 0.50, 2)) if acct_cash > 0 else float(getattr(config, "MAX_POSITION_SIZE", 10000.0) or 10000.0)
+            acct_max_budget = min(acct_risk_cap, acct_cash * 0.95) if acct_cash > 0 else acct_risk_cap * 0.96
 
             if ltp_val > 0 and (ltp_val * acct_quantity > acct_max_budget):
                 acct_quantity = lot_size  # Enforce 1-lot preservation if compounding lots exceed single-trade margin cap

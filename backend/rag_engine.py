@@ -439,6 +439,17 @@ SEED_JOURNAL = [
             "2. Sub-Model Scaler Schema Binding: TFTEngine and ModelEngine must always bind inference columns directly to self.scaler.feature_names_in_ with .reindex(columns=feats, fill_value=0.0) and isolate secondary TFT/RL sub-agent exceptions so independent retraining of daily/intraday ensembles never triggers a 500 feature-mismatch failure during market open."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "cluster_failover_and_schema_lock", "priority": "critical", "date": "2026-11-25"}
+    },
+    {
+        "id": "journal_rule_post_audit_20261125_funnel_and_sebi_lot_sync",
+        "document": (
+            "Trader Rule #27 (25-Nov-2026 Post-Market Audit Optimization) — Intraday Gate-4 Timeframe Sync, True MIDCPNIFTY Index Alignment & SEBI Weekly Capital Routing:\n"
+            "1. Gate 4 Timeframe Sync: When the 5m Intraday Sniper overrides a 1-Day HOLD signal with verified 5m/15m ORB momentum, analysis['model_scores']['technical'] must sync to the active 5m confluence score rather than retaining yesterday's 1D score (-1.0), which previously self-vetoed 97% of valid 5m BUY_CE setups (71.3% shadow win rate).\n"
+            "2. True MIDCPNIFTY Underlying Mapping: NSE MIDCPNIFTY options track Nifty Midcap Select (NIFTY_MID_SELECT.NS / Angel token 99926074 at ~14,250, Lot 120), NOT Nifty Midcap 100 (^NSMIDCP at ~72,778). Option scrip resolution must strictly enforce exact strike+option_type suffix matching and never fall back to fuzzy futures candidates.\n"
+            "3. SEBI 2026 Lot-Size & Risk-Cap Alignment: Enforce live NSE lot sizes (NIFTY=65 weekly, BANKNIFTY=30 monthly, FINNIFTY=60 monthly, MIDCPNIFTY=120 monthly). Bind OTM strike stepping strictly to RiskEngine.max_position_size (50% cash / ₹3,808.28 baseline) with universal NIFTY weekly option fallback when monthly index lots exceed capital limits.\n"
+            "4. Multi-Layer Rate-Limit & Latency Shield: Enforce TTL caches across Angel One get_funds (20s), get_option_chain (10s), LTP (2s), ComponentLeaderEngine baskets (30s, including dedicated MIDCPNIFTY leaders BSE/DIXON/PERSISTENT/COFORGE/POLYCAB), and DataPipeline CSV fetches (45s intraday / 15m daily)."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "funnel_and_sebi_lot_optimization", "priority": "critical", "date": "2026-11-25"}
     }
 ]
 
@@ -494,13 +505,13 @@ class TradeverseRAGEngine:
 
             for col_name, seed_items in seeds.items():
                 col = self.collections.get(col_name)
-                if col and col.count() == 0:
+                if col and col.count() < len(seed_items):
                     ids = [item["id"] for item in seed_items]
                     docs = [item["document"] for item in seed_items]
                     metas = [item["metadata"] for item in seed_items]
 
-                    col.add(ids=ids, documents=docs, metadatas=metas)
-                    logger.info(f"📚 Seeded {len(ids)} documents into '{col_name}' collection.")
+                    col.upsert(ids=ids, documents=docs, metadatas=metas)
+                    logger.info(f"📚 Synced {len(ids)} seed documents into '{col_name}' collection.")
         except Exception as e:
             logger.warning(f"⚠️ Warning seeding knowledge base: {e}")
 

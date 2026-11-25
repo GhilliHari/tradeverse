@@ -43,15 +43,15 @@ class SimulationEngine:
             logger.warning(f"Startup market-hours backfill warning: {bf_err}")
 
     def _get_lot_size(self, symbol: str) -> int:
-        """Standardized NSE index option lot size across Observatory and PaperManager."""
+        """Standardized 2026 SEBI NSE index option lot size across Observatory and PaperManager."""
         sym = (symbol or "BANKNIFTY").upper()
         if "MID" in sym:
-            return 50
+            return 120
         if "FIN" in sym:
-            return 25
+            return 60
         if "BANK" in sym:
-            return 15
-        return 25
+            return 30
+        return 65
 
     def _load_pending_predictions(self):
         """Restore any PENDING predictions from today's file on startup/restart and resolve expired ones."""
@@ -262,7 +262,7 @@ class SimulationEngine:
             elif "FIN" in symbol.upper():
                 yf_symbol = "^CNXFIN"
             elif "MID" in symbol.upper():
-                yf_symbol = "^NSMIDCP"
+                yf_symbol = "NIFTY_MID_SELECT.NS"
             elif "NIFTY" in symbol.upper() or "NSEI" in symbol.upper():
                 yf_symbol = "^NSEI"
 
@@ -417,7 +417,7 @@ class SimulationEngine:
             yf_symbol = symbol
             if "BANK" in symbol.upper(): yf_symbol = "^NSEBANK"
             elif "FIN" in symbol.upper(): yf_symbol = "^CNXFIN"
-            elif "MID" in symbol.upper(): yf_symbol = "^NSMIDCP"
+            elif "MID" in symbol.upper(): yf_symbol = "NIFTY_MID_SELECT.NS"
             elif "NIFTY" in symbol.upper(): yf_symbol = "^NSEI"
             
             pipeline = DataPipeline(symbol=yf_symbol, interval="5m")
@@ -587,9 +587,10 @@ class SimulationEngine:
                 formatted_symbol = f"NFO:{base}{strike}{opt_type}"
                 
                 res = broker.ltp(formatted_symbol)
-                ltp_val = res.get(formatted_symbol, {}).get('last_price', 0)
+                ltp_val = float(res.get(formatted_symbol, {}).get('last_price', 0) or 0.0)
+                max_sane_premium = min(spot_price * 0.06, 2500.0)
                 
-                if 0 < ltp_val < spot_price * 0.25:
+                if 1.0 <= ltp_val <= max_sane_premium:
                     logger.info(f"Live Option Pricing ({formatted_symbol}): ₹{ltp_val}")
                     return ltp_val
             except Exception as e:
@@ -700,7 +701,7 @@ class SimulationEngine:
                 yf_symbol = sym
                 if "BANK" in sym.upper(): yf_symbol = "^NSEBANK"
                 elif "FIN" in sym.upper(): yf_symbol = "^CNXFIN"
-                elif "MID" in sym.upper(): yf_symbol = "^NSMIDCP"
+                elif "MID" in sym.upper(): yf_symbol = "NIFTY_MID_SELECT.NS"
                 elif "NIFTY" in sym.upper(): yf_symbol = "^NSEI"
                 pipeline = DataPipeline(symbol=yf_symbol, interval="5m")
                 await asyncio.to_thread(pipeline.fetch_data)
@@ -927,10 +928,10 @@ class SimulationEngine:
         cache_dir = base_dir / "data" / "cache"
 
         symbol_map = {
-            "NIFTY": ("^NSEI", "NSEI_5m.csv", 25),
-            "BANKNIFTY": ("^NSEBANK", "NSEBANK_5m.csv", 15),
-            "FINNIFTY": ("^CNXFIN", "CNXFIN_5m.csv", 25),
-            "MIDCPNIFTY": ("^NSMIDCP", "NSMIDCP_5m.csv", 50)
+            "NIFTY": ("^NSEI", "NSEI_5m.csv", 65),
+            "BANKNIFTY": ("^NSEBANK", "NSEBANK_5m.csv", 30),
+            "FINNIFTY": ("^CNXFIN", "CNXFIN_5m.csv", 60),
+            "MIDCPNIFTY": ("NIFTY_MID_SELECT.NS", "NIFTY_MID_SELECT.NS_5m.csv", 120)
         }
 
         # Load VIX 5m series

@@ -14,7 +14,11 @@ class ComponentLeaderEngine:
     """
 
     def __init__(self):
-        # Index Heavyweight Constituent Weightings
+        import time as _time
+        self._time = _time
+        self._cache: Dict[str, Any] = {}
+        self._cache_ttl_sec: float = 30.0
+        # Index Heavyweight Constituent Weightings (including Nifty Midcap Select)
         self.baskets = {
             "BANKNIFTY": {
                 "HDFCBANK.NS": 0.291,
@@ -30,6 +34,13 @@ class ComponentLeaderEngine:
                 "BAJFINANCE.NS": 0.072,
                 "AXISBANK.NS": 0.069
             },
+            "MIDCPNIFTY": {
+                "BSE.NS": 0.095,
+                "DIXON.NS": 0.078,
+                "PERSISTENT.NS": 0.074,
+                "COFORGE.NS": 0.068,
+                "POLYCAB.NS": 0.059
+            },
             "NIFTY": {
                 "RELIANCE.NS": 0.092,
                 "HDFCBANK.NS": 0.086,
@@ -38,10 +49,12 @@ class ComponentLeaderEngine:
                 "TCS.NS": 0.038
             }
         }
-        logger.info("🏛️ ComponentLeaderEngine Initialized (BankNifty, FinNifty & Nifty Heavyweight Baskets)")
+        logger.info("🏛️ ComponentLeaderEngine Initialized (BankNifty, FinNifty, MidcpNifty & Nifty Heavyweight Baskets)")
 
     def _resolve_basket_key(self, symbol: str) -> str:
         u_sym = symbol.upper()
+        if "MID" in u_sym:
+            return "MIDCPNIFTY"
         if "FIN" in u_sym:
             return "FINNIFTY"
         if "BANK" in u_sym:
@@ -51,8 +64,14 @@ class ComponentLeaderEngine:
     def get_live_component_returns(self, symbol: str = "BANKNIFTY") -> Dict[str, Any]:
         """
         Fetches live returns for index constituent stocks and computes weighted return momentum.
+        Uses a 30-second per-basket TTL cache to eliminate sequential YFinance latency during 4-index scans.
         """
         basket_key = self._resolve_basket_key(symbol)
+        now_ts = self._time.time()
+        cached = self._cache.get(basket_key)
+        if cached and (now_ts - cached[0]) < self._cache_ttl_sec:
+            return cached[1]
+
         weights = self.baskets.get(basket_key, self.baskets["BANKNIFTY"])
         component_data = {}
         weighted_return = 0.0
@@ -85,13 +104,16 @@ class ComponentLeaderEngine:
         elif lead_score < -0.20:
             leading_signal = "BEARISH_LEAD"
 
-        return {
+        res = {
             "basket": basket_key,
             "lead_score": lead_score,
             "leading_signal": leading_signal,
             "weighted_return_pct": round(weighted_return_norm, 2),
             "components": component_data
         }
+        if component_data:
+            self._cache[basket_key] = (now_ts, res)
+        return res
 
     def validate_constituent_confluence(self, symbol: str, signal: str) -> Dict[str, Any]:
         """

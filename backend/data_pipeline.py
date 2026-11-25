@@ -20,6 +20,8 @@ _SYMBOL_PRICE_BOUNDS = {
     "NSEI": (4000.0, 32000.0),
     "CNXFIN": (10000.0, 35000.0),
     "NSMIDCP": (50000.0, 85000.0),
+    "NIFTY_MID_SELECT.NS": (8000.0, 25000.0),
+    "NIFTYMIDSELECT.NS": (8000.0, 25000.0),
     "INDIAVIX": (5.0, 85.0),
     "BANKBEES.NS": (100.0, 1000.0),
     "NIFTYBEES.NS": (50.0, 500.0),
@@ -111,11 +113,16 @@ class DataPipeline:
             cached_df = None
             if os.path.exists(cache_path):
                 try:
+                    import time as _time
+                    cache_age_s = _time.time() - os.path.getmtime(cache_path)
+                    fresh_ttl = 900.0 if interval == "1d" else 45.0
                     cached_df = pd.read_csv(cache_path, index_col=0, parse_dates=True)
                     cached_df = _sanitize_symbol_df(safe_sym, cached_df, interval=interval)
                     if not cached_df.empty:
                         cached_df.index = _normalize_intraday_index(cached_df.index, interval=interval)
                         cached_df = cached_df[~cached_df.index.duplicated(keep='last')].sort_index()
+                        if cache_age_s < fresh_ttl:
+                            return cached_df
                         last_time = cached_df.index[-1]
                         
                         overlap_time = last_time - timedelta(days=1)
@@ -237,12 +244,13 @@ class DataPipeline:
         logger.info(f"Fetching {self.symbol} data ({self.interval}) from {start_date.date()} to {end_date.date()}...")
         
         try:
-            # 1. Attempt Broker Fetch if available
-            # Check if we have an active broker connection passed in or available globally
+            # 1. Attempt Broker Fetch if available during active NSE market hours (09:15 - 15:35 IST)
             from broker_factory import get_broker_client
+            from datetime import time as dt_time
             broker = get_broker_client()
+            is_nse_live_window = (0 <= end_date.weekday() <= 4) and (dt_time(9, 15) <= end_date.time() <= dt_time(15, 35))
             
-            if broker and hasattr(broker, 'is_connected') and broker.is_connected() and self.interval != "1d":
+            if is_nse_live_window and broker and hasattr(broker, 'is_connected') and broker.is_connected() and self.interval != "1d" and self.symbol not in ("^INDIAVIX", "INDIA VIX"):
                 logger.info(f"Broker detected. Attempting to fetch {self.interval} data via Broker API...")
                 if self.fetch_live_data_broker(broker, start_date, end_date):
                     # Successfully fetched via Broker
@@ -260,11 +268,13 @@ class DataPipeline:
                 else:
                     logger.info(f"YFinance fallback: fetching {requested_days} days of {self.interval} data.")
 
-            # Ensure symbol is yfinance compatible (Bank Nifty specifically)
+            # Ensure symbol is yfinance compatible
             yf_symbol = self.symbol
             if "BANKNIFTY" in yf_symbol.upper() and not yf_symbol.startswith("^"):
                 yf_symbol = "^NSEBANK"
-            elif "NIFTY" in yf_symbol.upper() and "BANK" not in yf_symbol.upper() and not yf_symbol.startswith("^"):
+            elif ("MIDCP" in yf_symbol.upper() or yf_symbol == "^NSMIDCP"):
+                yf_symbol = "NIFTY_MID_SELECT.NS"
+            elif "NIFTY" in yf_symbol.upper() and "BANK" not in yf_symbol.upper() and "MID" not in yf_symbol.upper() and not yf_symbol.startswith("^"):
                 yf_symbol = "^NSEI"
 
             logger.info(f"Downloading from yfinance: {yf_symbol}...")

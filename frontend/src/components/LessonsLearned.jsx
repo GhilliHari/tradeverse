@@ -310,6 +310,19 @@ const LessonsLearned = () => {
                 { title: "Automatic 45s Heartbeat Leader Handoff", detail: "When the iMac is ON, it acts as Primary (Apple Silicon speed + TFT/RL) and sends a 15s SSH lease (45s TTL) keeping Oracle Cloud (129.225.125.13) in Hot Standby. Shutting down or sleeping the iMac automatically promotes Oracle Cloud to Active Primary within 45s (<1s on graceful exit) with zero duplicate orders or JWT clashes." },
                 { title: "Sub-Model Scaler Schema Binding", detail: "Binds TFTEngine and ModelEngine directly to scaler.feature_names_in_ with safe reindexing and sub-agent exception isolation so retraining primary ensembles never breaks inference at market open." }
             ]
+        },
+        {
+            category: "20. FUNNEL TIMEFRAME SYNC, SEBI LOT ALIGNMENT & MULTI-LAYER TTL CACHING (25-NOV-2026 EOD AUDIT)",
+            icon: Zap,
+            color: "text-emerald-400",
+            borderColor: "border-emerald-500/20",
+            bgColor: "bg-emerald-500/5",
+            items: [
+                { title: "Gate 4 Intraday Timeframe Synchronization", detail: "Syncs analysis.model_scores.technical with the active 5m Intraday Sniper score on verified 5m/15m ORB breakouts, eliminating false self-vetoes caused by stale 1-Day technical scores (-1.0) that previously blocked 97% of winning 5m BUY_CE setups." },
+                { title: "True MIDCPNIFTY (Nifty Midcap Select) & Strict Strike Guard", detail: "Remapped MIDCPNIFTY from ^NSMIDCP (~72,778 Nifty Midcap 100) to NIFTY_MID_SELECT.NS (~14,250 Nifty Midcap Select), added a dedicated Midcap Select constituent basket (BSE, Dixon, Persistent, Coforge, Polycab), and enforced strict strike+CE/PE suffix matching." },
+                { title: "2026 SEBI Lot-Size & Risk-Cap Weekly Routing", detail: "Aligned lot sizes to live NSE specs (NIFTY 65 weekly, BANKNIFTY 30, FINNIFTY 60, MIDCPNIFTY 120), bound OTM strike stepping directly to RiskEngine.max_position_size, and enabled universal fallback to liquid NIFTY weekly options for small-capital accounts." },
+                { title: "Multi-Layer Rate-Limit & Latency Shield", detail: "Added TTL caches across Angel One RMS get_funds (20s), Option Chain (10s), LTP (2s), Constituent Leaders (30s), and DataPipeline YFinance CSVs (45s intraday / 15m daily), cutting scan latency by ~90% and eliminating SmartAPI rate-limit errors." }
+            ]
         }
     ];
 

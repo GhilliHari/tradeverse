@@ -291,12 +291,23 @@ class AngelClient:
             logger.error(f"Error fetching Angel Profile: {e}")
             return {"user_id": self.client_id, "user_name": "Profile Error", "broker": "ANGEL", "status": "EXCEPTION"}
 
-    def get_funds(self):
+    def invalidate_funds_cache(self):
+        self._cached_funds = None
+        self._last_funds_ts = None
+
+    def get_funds(self, force: bool = False):
         """
         Fetches real-time RMS funds and margin limits from Angel One.
+        Includes a 20-second TTL cache (invalidated immediately on order activity) to prevent
+        Angel One SmartAPI 'Access denied because of exceeding access rate' throttling during 4-index scans.
         """
         if not self.smart_api:
             return {"status": False, "availablecash": 0.0, "net": 0.0}
+        now = datetime.now()
+        cached_funds = getattr(self, "_cached_funds", None)
+        last_funds_ts = getattr(self, "_last_funds_ts", None)
+        if not force and cached_funds and last_funds_ts and (now - last_funds_ts).total_seconds() < 20.0:
+            return cached_funds
         try:
             self.ensure_session(force=False)
             res = self.smart_api.rmsLimit()
@@ -305,7 +316,7 @@ class AngelClient:
                 res = self.smart_api.rmsLimit()
             if res and res.get('status') and res.get('data'):
                 d = res['data']
-                return {
+                out = {
                     "status": True,
                     "availablecash": float(d.get('availablecash') or 0.0),
                     "net": float(d.get('net') or 0.0),
@@ -316,8 +327,16 @@ class AngelClient:
                     "m2mrealized": float(d.get('m2mrealized') or 0.0),
                     "raw": d
                 }
+                self._cached_funds = out
+                self._last_funds_ts = now
+                return out
+            if cached_funds:
+                return cached_funds
             return {"status": False, "availablecash": 0.0, "net": 0.0, "message": res.get('message') if isinstance(res, dict) else "Failed"}
         except Exception as e:
+            if cached_funds:
+                logger.debug(f"Angel RMS rate-limit fallback to cached funds: {e}")
+                return cached_funds
             logger.error(f"Error fetching Angel RMS funds: {e}")
             return {"status": False, "availablecash": 0.0, "net": 0.0, "error": str(e)}
             
@@ -364,15 +383,17 @@ class AngelClient:
                 "BANKNIFTY": ("NSE", "Nifty Bank", "99926009"),
                 "NIFTY": ("NSE", "Nifty 50", "99926000"),
                 "FINNIFTY": ("NSE", "Nifty Fin Services", "99926037"),
-                "MIDCPNIFTY": ("NSE", "Nifty Midcap 100", "99926074"),
+                "MIDCPNIFTY": ("NSE", "NIFTY MID SELECT", "99926074"),
+                "NIFTY MID SELECT": ("NSE", "NIFTY MID SELECT", "99926074"),
+                "NIFTY_MID_SELECT.NS": ("NSE", "NIFTY MID SELECT", "99926074"),
                 "Nifty Bank": ("NSE", "Nifty Bank", "99926009"),
                 "Nifty 50": ("NSE", "Nifty 50", "99926000"),
-                "NIFTY MIDCAP 100": ("NSE", "Nifty Midcap 100", "99926074"),
+                "NIFTY MIDCAP 100": ("NSE", "NIFTY MIDCAP 100", "99926011"),
                 "SBIN": ("NSE", "SBIN-EQ", "3045"),
                 "^NSEBANK": ("NSE", "Nifty Bank", "99926009"),
                 "^NSEI": ("NSE", "Nifty 50", "99926000"),
                 "^CNXFIN": ("NSE", "Nifty Fin Services", "99926037"),
-                "^NSMIDCP": ("NSE", "Nifty Midcap 100", "99926074"),
+                "^NSMIDCP": ("NSE", "NIFTY MID SELECT", "99926074"),
                 "INDIA VIX": ("NSE", "India VIX", "99926017"),
                 "^INDIAVIX": ("NSE", "India VIX", "99926017"),
             }
@@ -551,13 +572,13 @@ class AngelClient:
             logger.debug(f"Lot size lookup fallback for {clean_sym}: {e}")
 
         if "BANKNIFTY" in clean_sym:
-            return 15
+            return 30
         if "MIDCPNIFTY" in clean_sym:
-            return 50
+            return 120
         if "FINNIFTY" in clean_sym:
-            return 25
+            return 60
         if "NIFTY" in clean_sym:
-            return 25
+            return 65
         return 1
 
     def _resolve_option_or_scrip(self, exchange: str, symbol: str):
@@ -618,8 +639,10 @@ class AngelClient:
                             if str(c.get('tradingsymbol', '')).upper().startswith(underlying)
                             and str(c.get('tradingsymbol', '')).upper().endswith(suffix)
                         ]
-                        if filtered:
-                            candidates = filtered
+                        if not filtered:
+                            # Strict strike safety: never fall back to an arbitrary futures/wrong-strike scrip!
+                            continue
+                        candidates = filtered
                     picked = candidates[0]
                     tsym = picked['tradingsymbol']
                     tok = picked['symboltoken']
@@ -632,6 +655,16 @@ class AngelClient:
 
     def ltp(self, instrument_token):
         if not self.smart_api: return {}
+
+        import time as _time
+        ltp_cache = getattr(self, "_ltp_cache", None)
+        if ltp_cache is None:
+            ltp_cache = {}
+            self._ltp_cache = ltp_cache
+        now_ts = _time.time()
+        c_hit = ltp_cache.get(instrument_token)
+        if c_hit and (now_ts - c_hit[0]) < 2.0:
+            return c_hit[1]
              
         # Initial resolution (includes ScripMaster + searchScrip + negative-lookup cooldown)
         exchange, tradingsymbol, token = self._get_token_and_exchange(instrument_token)
@@ -664,7 +697,10 @@ class AngelClient:
                 if res.get('status'):
                     data_node = res['data']
                     ltp_val = data_node.get('ltp', data_node.get('last_price', 0))
-                    return {instrument_token: {"instrument_token": token, "last_price": ltp_val}}
+                    out = {instrument_token: {"instrument_token": token, "last_price": ltp_val}}
+                    if ltp_val:
+                        ltp_cache[instrument_token] = (now_ts, out)
+                    return out
                 elif res.get('errorCode') == 'AG8001':
                     logger.warning("Session Expired (AG8001) in SDK LTP. Refreshing...")
                     self._login() # Refresh session
@@ -673,7 +709,10 @@ class AngelClient:
                     if res.get('status'):
                         data_node = res['data']
                         ltp_val = data_node.get('ltp', data_node.get('last_price', 0))
-                        return {instrument_token: {"instrument_token": token, "last_price": ltp_val}}
+                        out = {instrument_token: {"instrument_token": token, "last_price": ltp_val}}
+                        if ltp_val:
+                            ltp_cache[instrument_token] = (now_ts, out)
+                        return out
 
             except Exception as e:
                 logger.warning(f"SDK LTP failed: {e}. Trying manual fallback...")
@@ -784,7 +823,7 @@ class AngelClient:
             if product == "NRML": angel_product = "CARRYFORWARD"
             
             # 1. TRADABLE RESOLUTION: If it's a non-tradable index, try to resolve to Future
-            if tradingsymbol.upper() in ["BANKNIFTY", "NIFTY", "FINNIFTY"]:
+            if tradingsymbol.upper() in ["BANKNIFTY", "NIFTY", "FINNIFTY", "MIDCPNIFTY"]:
                 logger.info(f"Attempting to resolve {tradingsymbol} to a tradable instrument...")
                 f_exchange, f_symbol, f_token = self._resolve_future(tradingsymbol.upper())
                 if f_symbol:
@@ -833,6 +872,7 @@ class AngelClient:
             if isinstance(raw_res, dict):
                 if raw_res.get("status") is True and raw_res.get("data") and raw_res["data"].get("orderid"):
                     order_id = raw_res["data"]["orderid"]
+                    self.invalidate_funds_cache()
                     logger.info(f"Order placed via Angel. ID: {order_id}")
                     return order_id
                 err_code = raw_res.get("errorCode") or raw_res.get("errorcode") or "UNKNOWN"
@@ -888,9 +928,21 @@ class AngelClient:
     def get_option_chain(self, symbol="NSE:BANKNIFTY", expiry=None):
         """
         Fetches the option chain with real-time OI and LTP using marketData API.
+        Includes a 10-second per-symbol TTL cache to prevent redundant bulk chain calls.
         """
         if not self.smart_api:
             return []
+
+        import time as _time
+        oc_cache = getattr(self, "_oc_cache", None)
+        if oc_cache is None:
+            oc_cache = {}
+            self._oc_cache = oc_cache
+        cache_key = f"{symbol}:{expiry}"
+        now_ts = _time.time()
+        c_hit = oc_cache.get(cache_key)
+        if c_hit and (now_ts - c_hit[0]) < 10.0:
+            return c_hit[1]
 
         try:
             # 1. Get Spot Price
@@ -991,6 +1043,8 @@ class AngelClient:
                     "oi_pe": int(sd['oi_pe'])
                 })
 
+            if strikes:
+                oc_cache[cache_key] = (now_ts, strikes)
             return strikes
         except Exception as e:
             logger.error(f"Error fetching option chain: {e}")
