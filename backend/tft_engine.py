@@ -141,8 +141,10 @@ class TFTEngine:
 
     def predict(self, recent_df):
         self.model.eval()
-        # Ensure we only use the features the model was trained on
-        X_data = recent_df[self.features]
+        # Use the exact feature list stored inside the fitted scaler when present
+        feats = list(self.scaler.feature_names_in_) if hasattr(self.scaler, "feature_names_in_") else self.features
+        X_data = recent_df.reindex(columns=feats, fill_value=0.0)
+        X_data = X_data.replace([np.inf, -np.inf], 0.0).fillna(0.0)
         data = self.scaler.transform(X_data)
         X = torch.FloatTensor(data).unsqueeze(0).to(self.device)
         with torch.no_grad():
@@ -158,11 +160,16 @@ class TFTEngine:
     def load_model(self):
         if os.path.exists(self.model_path):
             try:
-                self.model.load_state_dict(torch.load(self.model_path, map_location=self.device))
                 import joblib
                 if os.path.exists(self.scaler_path):
                     self.scaler = joblib.load(self.scaler_path)
-                logger.info("TFT Model Loaded successfully.")
+                    if hasattr(self.scaler, "feature_names_in_"):
+                        scaler_feats = list(self.scaler.feature_names_in_)
+                        if len(scaler_feats) != len(self.features):
+                            self.model = SimplifiedTFT(len(scaler_feats), self.model.hidden_size).to(self.device)
+                        self.features = scaler_feats
+                self.model.load_state_dict(torch.load(self.model_path, map_location=self.device))
+                logger.info(f"TFT Model Loaded successfully ({len(self.features)} features).")
                 return True
             except Exception as e:
                 logger.warning(f"⚠️ TFT Model loading failed due to checkpoint/feature mismatch: {e}. Retraining recommended.")

@@ -430,6 +430,15 @@ SEED_JOURNAL = [
             "3. Order Dictionary Parameter Integrity: Guarantees that 'confidence' and 'is_high_conviction' are always passed in order payloads from main.py to risk_engine.py, ensuring high-conviction crash/trend signals (>=75%) are never falsely blocked during market momentum windows."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "breakeven_mtf_risk_integrity", "priority": "critical", "date": "2026-11-23"}
+    },
+    {
+        "id": "journal_rule_cluster_heartbeat_and_scaler_schema_lock",
+        "document": (
+            "Trader Rule #26 (25-Nov-2026 Lesson) — Automatic iMac-Cloud Heartbeat Failover & Scaler Feature Schema Lock:\n"
+            "1. Zero-Split-Brain Heartbeat Election: When the local iMac engine is active, it broadcasts a 15-second SSH lease (45s TTL) to the Oracle Cloud VM (129.225.125.13). Oracle Cloud remains in HOT_STANDBY (pausing order entry, Angel One JWT polling, and Telegram getUpdates) while the lease is valid, and automatically promotes to ACTIVE_PRIMARY within 45s (or <1s on clean shutdown) whenever the iMac shuts down, sleeps, or loses connectivity.\n"
+            "2. Sub-Model Scaler Schema Binding: TFTEngine and ModelEngine must always bind inference columns directly to self.scaler.feature_names_in_ with .reindex(columns=feats, fill_value=0.0) and isolate secondary TFT/RL sub-agent exceptions so independent retraining of daily/intraday ensembles never triggers a 500 feature-mismatch failure during market open."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "cluster_failover_and_schema_lock", "priority": "critical", "date": "2026-11-25"}
     }
 ]
 

@@ -77,6 +77,10 @@ class TelegramBotService:
 
         while self._running:
             try:
+                from cluster_coordinator import is_cloud_standby
+                if is_cloud_standby():
+                    await asyncio.sleep(5)
+                    continue
                 params = {"timeout": 20, "offset": self._last_update_id + 1}
                 async with httpx.AsyncClient(timeout=30.0) as client:
                     resp = await client.get(url, params=params)

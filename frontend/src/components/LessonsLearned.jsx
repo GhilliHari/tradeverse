@@ -299,6 +299,17 @@ const LessonsLearned = () => {
                 { title: "Early Breakeven Lock (+10% Peak Trigger)", detail: "Lowered the breakeven lock trigger from +20% to +10.0% gain (locking Stop-Loss at +1.5% net profit). Winning trades become 100% risk-free immediately, eliminating profitable +12% trades from reversing into stop-outs." },
                 { title: "Multi-Timeframe 15m Trend Anchor", detail: "Resamples 5m bars to 15-minute intervals to enforce the 15m EMA-20 trend anchor, automatically vetoing 5m counter-trend trades and awarding a +5% confidence boost on macro alignment." }
             ]
+        },
+        {
+            category: "19. AUTOMATIC iMAC ↔ CLOUD HEARTBEAT FAILOVER & SCALER SCHEMA LOCK (25-NOV-2026 POST-MORTEM)",
+            icon: ShieldAlert,
+            color: "text-cyan-400",
+            borderColor: "border-cyan-500/20",
+            bgColor: "bg-cyan-500/5",
+            items: [
+                { title: "Automatic 45s Heartbeat Leader Handoff", detail: "When the iMac is ON, it acts as Primary (Apple Silicon speed + TFT/RL) and sends a 15s SSH lease (45s TTL) keeping Oracle Cloud (129.225.125.13) in Hot Standby. Shutting down or sleeping the iMac automatically promotes Oracle Cloud to Active Primary within 45s (<1s on graceful exit) with zero duplicate orders or JWT clashes." },
+                { title: "Sub-Model Scaler Schema Binding", detail: "Binds TFTEngine and ModelEngine directly to scaler.feature_names_in_ with safe reindexing and sub-agent exception isolation so retraining primary ensembles never breaks inference at market open." }
+            ]
         }
     ];
 

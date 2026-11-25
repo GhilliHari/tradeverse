@@ -566,9 +566,13 @@ class IntelligenceLayer:
         
         tft_pred = "NEUTRAL"
         if self.tft_engine and df is not None and len(df) >= 30:
-            recent = df.tail(30)
-            prob = self.tft_engine.predict(recent)
-            tft_pred = "UP" if prob > 0.55 else "DOWN" if prob < 0.45 else "NEUTRAL"
+            try:
+                recent = df.tail(30)
+                prob = self.tft_engine.predict(recent)
+                tft_pred = "UP" if prob > 0.55 else "DOWN" if prob < 0.45 else "NEUTRAL"
+            except Exception as te:
+                logger.warning(f"TFT inference skipped: {te}")
+                tft_pred = "NEUTRAL"
         
         return {"tft_prediction": tft_pred, "technical_analysis": state['technical_analysis'] + f" [TFT Context: {tft_pred}]"}
 
@@ -589,10 +593,14 @@ class IntelligenceLayer:
         
         rl_action = 0
         if self.rl_agent and self.model_engine and df is not None and not df.empty:
-            latest_row = df.tail(1)
-            obs = latest_row[self.model_engine.features].values[0]
-            obs = np.append(obs, [1.0, 0.0]).astype(np.float32)
-            rl_action = self.rl_agent.get_action(obs)
+            try:
+                latest_row = df.tail(1).reindex(columns=self.model_engine.features, fill_value=0.0).replace([np.inf, -np.inf], 0.0).fillna(0.0)
+                obs = latest_row.values[0]
+                obs = np.append(obs, [1.0, 0.0]).astype(np.float32)
+                rl_action = self.rl_agent.get_action(obs)
+            except Exception as re_err:
+                logger.warning(f"RL sniper inference skipped: {re_err}")
+                rl_action = 0
             
         return {"rl_action": rl_action}
 

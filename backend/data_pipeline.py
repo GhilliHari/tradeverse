@@ -724,6 +724,8 @@ class DataPipeline:
         # PCR usually increases as price drops (hedging) and decreases as price rises.
         # It's a mean-reverting oscillator.
         # Use a fixed random state seed to ensure full reproducibility and remove training noise variance
+        # De-fragment DataFrame before adding synthetic options/sentiment columns
+        df = df.copy()
         rng_synth = np.random.RandomState(42)
         noise_pcr = rng_synth.normal(0, 0.05, len(df))
         df['PCR'] = 1.0 - (df['RSI'] - 50) / 100 + noise_pcr

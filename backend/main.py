@@ -634,10 +634,40 @@ async def run_autonomous_trading():
     1. Performs Pre-Market Angel One TOTP Session Refresh & NFO Scrip Master warmup (08:45–09:14 IST)
     2. Continuously monitors open positions (-15% SL, +25% Target, 15m Time-Exit, 15:20 IST EOD Square-Off)
     3. Executes real-money autonomous trades during NSE market hours (09:15–15:30 IST) when TRADING_MODE == 'AUTO',
-       completely independent of whether the user's iMac or browser is on or off.
+       with automatic iMac Primary <-> Oracle Cloud Hot Standby failover (45s heartbeat lease).
     """
+    from cluster_coordinator import is_cloud_standby, IS_CLOUD_NODE
+    _was_standby = False
+
     while True:
         try:
+            # 0. Automatic Cluster Leader Election (iMac Primary when ON -> Cloud auto-takes over within 45s on shutdown)
+            if is_cloud_standby():
+                if not _was_standby:
+                    logger.info("⏸️ [Cluster] iMac Primary heartbeat active — Oracle Cloud entering HOT_STANDBY.")
+                    _was_standby = True
+                autonomous_state["cluster_role"] = "HOT_STANDBY"
+                autonomous_state["last_status"] = "STANDBY_IMAC_PRIMARY"
+                autonomous_state["last_reason"] = "iMac Primary is active; Cloud standing by for automatic 45s failover."
+                await asyncio.sleep(10)
+                continue
+
+            if _was_standby and IS_CLOUD_NODE:
+                _was_standby = False
+                logger.info("⚡ [Cluster] iMac heartbeat expired/released — PROMOTING Oracle Cloud to ACTIVE_PRIMARY!")
+                try:
+                    active_clients = await asyncio.to_thread(get_all_active_broker_clients)
+                    for _, b_inst, _ in active_clients:
+                        if hasattr(b_inst, "ensure_session"):
+                            await asyncio.to_thread(b_inst.ensure_session, True)
+                    notifier.notify_sync(
+                        "☁️ *Tradeverse Auto-Failover:* iMac went offline — Oracle Cloud (`129.225.125.13`) promoted to *ACTIVE PRIMARY*."
+                    )
+                except Exception as fe:
+                    logger.warning(f"Failover session refresh warning: {fe}")
+
+            autonomous_state["cluster_role"] = "CLOUD_PRIMARY" if IS_CLOUD_NODE else "IMAC_PRIMARY"
+
             # 1. Wait for system initialization
             if not initialization_status["ready"] or not intelligence:
                 await asyncio.sleep(30)
@@ -754,17 +784,18 @@ async def run_autonomous_trading():
 
 async def keep_awake_pinger():
     """
-    Background task to ping the external Render URL every 10 minutes to prevent Render free tier from sleeping.
-    Render sleeps after 15 mins of external inactivity.
+    Background task to ping local server (or Render only when hosted on Render).
     """
     import httpx
-    external_url = os.getenv("RENDER_EXTERNAL_URL", "https://tradeverse-1-aosu.onrender.com").rstrip("/")
+    if not os.getenv("RENDER"):
+        return
+    external_url = os.getenv("RENDER_EXTERNAL_URL", "").rstrip("/")
     while True:
         try:
             await asyncio.sleep(10 * 60) # Ping every 10 minutes
             port = os.getenv("PORT", "8000")
             local_url = f"http://127.0.0.1:{port}/api/ping"
-            remote_url = f"{external_url}/api/ping"
+            remote_url = f"{external_url}/api/ping" if external_url else local_url
             
             async with httpx.AsyncClient(timeout=10.0) as client:
                 try:
@@ -774,11 +805,17 @@ async def keep_awake_pinger():
                     res = await client.get(local_url)
                     logger.info(f"Local Keep-Awake Ping: {res.status_code}")
         except Exception as e:
-            # We don't want this to crash the server if httpx fails
             logger.debug(f"Self-Ping Error (ignoring): {e}")
 
 @app.on_event("startup")
 async def startup_event():
+    import atexit
+    from cluster_coordinator import run_imac_heartbeat_beacon, release_imac_lease_sync, send_imac_lease_once, IS_IMAC_NODE
+    if IS_IMAC_NODE:
+        atexit.register(release_imac_lease_sync)
+        # Immediately claim primary lease before Angel login so Cloud yields cleanly
+        await send_imac_lease_once()
+        asyncio.create_task(run_imac_heartbeat_beacon())
     # Start systems initialization in background so we don't block port bind
     asyncio.create_task(initialize_systems())
     # Start watchdog
@@ -798,10 +835,15 @@ async def startup_event():
     except Exception as e:
         logger.warning(f"Telegram Bot Startup skipped/failed: {e}")
 
-    logger.info("🚀 Tradeverse Backend Startup Sequence Initiated (with Telegram Bot)")
+    logger.info("🚀 Tradeverse Backend Startup Sequence Initiated (with Cluster Failover & Telegram Bot)")
 
 @app.on_event("shutdown")
 async def shutdown_event():
+    try:
+        from cluster_coordinator import release_imac_lease_sync
+        release_imac_lease_sync()
+    except Exception:
+        pass
     try:
         from telegram_bot_service import telegram_bot
         await telegram_bot.stop()
@@ -858,12 +900,30 @@ async def receive_heartbeat(user: dict = Depends(get_current_user)):
 async def cloud_autonomous_pulse(trigger_cycle: bool = False):
     """
     External 24/7 Cloud Heartbeat & Autonomous Pulse Endpoint (called by GitHub Actions Cron & Dashboard).
-    Ensures the Render cloud server stays awake during NSE market hours even when the iMac is powered OFF,
-    verifies Angel One session health, monitors open positions, and triggers autonomous cycle if overdue.
+    Respects automatic iMac Primary <-> Oracle Cloud Hot Standby failover lease.
     """
+    from cluster_coordinator import is_cloud_standby, get_cluster_status
     now = get_ist_now()
     is_trading_day = simulation_engine.is_trading_day(now)
     is_market_hours = is_trading_day and (time(9, 15) <= now.time() <= time(15, 30))
+
+    if is_cloud_standby():
+        return {
+            "status": "HOT_STANDBY",
+            "ist_time": now.strftime("%Y-%m-%d %H:%M:%S IST"),
+            "is_trading_day": is_trading_day,
+            "is_market_hours": is_market_hours,
+            "env": config.ENV,
+            "active_broker": config.ACTIVE_BROKER,
+            "trading_mode": config.TRADING_MODE,
+            "offline_autonomous_mode": getattr(config, "OFFLINE_AUTONOMOUS_MODE", True),
+            "imac_required": False,
+            "angel_connected": True,
+            "cluster": get_cluster_status(),
+            "autonomous_state": autonomous_state,
+            "risk": risk_engine.get_risk_status() if risk_engine else {},
+            "triggered_cycle": "STANDBY_IMAC_PRIMARY",
+        }
 
     broker_connected = False
     funds_summary = {"availablecash": 0.0, "net": 0.0}
@@ -925,6 +985,7 @@ async def cloud_autonomous_pulse(trigger_cycle: bool = False):
         "offline_autonomous_mode": getattr(config, "OFFLINE_AUTONOMOUS_MODE", True),
         "imac_required": False,
         "angel_connected": broker_connected,
+        "cluster": get_cluster_status(),
         "funds": funds_summary,
         "active_live_positions": list(active_live_positions.values()),
         "autonomous_state": autonomous_state,

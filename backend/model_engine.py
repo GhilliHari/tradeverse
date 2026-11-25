@@ -336,7 +336,9 @@ class ModelEngine:
         """
         Classifies the market regime: NOMINAL, VOLATILE, or CRASH.
         """
-        scaled_features = self.scaler.transform(current_features_df[self.features])
+        feats = list(self.scaler.feature_names_in_) if hasattr(self.scaler, "feature_names_in_") else self.features
+        X_df = current_features_df.reindex(columns=feats, fill_value=0.0).replace([np.inf, -np.inf], 0.0).fillna(0.0)
+        scaled_features = self.scaler.transform(X_df)
         
         # 1. Volatility Regime (Current vs Hist)
         # We use ATR or Std Dev. Since features include ATR_14, we can use it.
@@ -367,7 +369,9 @@ class ModelEngine:
             if not self.load_artifacts():
                 return None
         
-        scaled_features = self.scaler.transform(current_features_df[self.features])
+        feats = list(self.scaler.feature_names_in_) if hasattr(self.scaler, "feature_names_in_") else self.features
+        X_df = current_features_df.reindex(columns=feats, fill_value=0.0).replace([np.inf, -np.inf], 0.0).fillna(0.0)
+        scaled_features = self.scaler.transform(X_df)
         
         # 1. OOD Check: How close is this to a known training cluster?
         # If the distance is too high, marked as OOD (High Risk)
