@@ -3,6 +3,7 @@ import json
 import logging
 from dotenv import load_dotenv
 
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 load_dotenv()
 
 logger = logging.getLogger("tradeverse.gemini")
@@ -21,19 +22,19 @@ if not GEMINI_API_KEY:
 
 genai_client = None
 genai_legacy = None
-CANDIDATE_MODELS = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-lite-latest", "gemini-2.5-flash"]
+CANDIDATE_MODELS = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite"]
 MODEL_NAME = "gemini-3.8-flash"
 
 # Hybrid Task-Specialized Model Hierarchies (F&O Optimization Matrix)
 TASK_MODELS = {
     # 1. Live Market Scanning & Rapid Alerts (Sub-second low latency agent loops)
-    "scanner": ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-lite-latest", "gemini-2.5-flash"],
+    "scanner": ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite"],
     # 2. Option Chain, Greeks & Strategy Structuring (Deep reasoning, IV skew & multi-leg math)
-    "strategy": ["gemini-4-argon", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.5-flash"],
+    "strategy": ["gemini-4-argon", "gemini-3.8-flash", "gemini-3.5-flash"],
     # 3. High-Frequency Breaking News & Sentiment Filtering (Ultra-fast binary / calibrated scoring)
-    "sentiment": ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-flash-lite-latest", "gemini-3.8-flash"],
+    "sentiment": ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash"],
     # 4. Pre/Post-Market Backtesting, Journaling & RAG Synthesis (1M context heavy log ingestion)
-    "journal": ["gemini-4-hydrogen", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.5-flash"],
+    "journal": ["gemini-4-hydrogen", "gemini-3.8-flash", "gemini-3.5-flash"],
 }
 
 class ModelRouter:
@@ -58,7 +59,7 @@ class ModelRouter:
         import google.generativeai as genai_module
         if key:
             try:
-                genai_module.configure(api_key=key)
+                genai_module.configure(api_key=key, transport="rest")
             except Exception:
                 pass
 
@@ -114,7 +115,7 @@ def _init_gemini(api_key: str):
     except Exception:
         try:
             import google.generativeai as genai_legacy_module
-            genai_legacy_module.configure(api_key=api_key)
+            genai_legacy_module.configure(api_key=api_key, transport="rest")
             genai_legacy = genai_legacy_module
             logger.info("Gemini AI Legacy (google.generativeai) initialized.")
         except Exception as e:

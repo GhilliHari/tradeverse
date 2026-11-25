@@ -72,15 +72,16 @@ class IntelligenceLayer:
     LangGraph-based Committee of Agents logic for Tradeverse.
     """
     def __init__(self, gemini_api_key: str):
-        if gemini_api_key:
+        self.api_key = gemini_api_key or config.GEMINI_API_KEY
+        if self.api_key:
             try:
-                genai.configure(api_key=gemini_api_key)
+                genai.configure(api_key=self.api_key, transport="rest")
             except Exception as e:
                 logger.warning(f"genai.configure failed: {e}")
         from gemini_service import ModelRouter
-        self.scanner_model, self.scanner_model_name = ModelRouter.get_scanner_model(gemini_api_key)
-        self.sentiment_model, self.sentiment_model_name = ModelRouter.get_sentiment_model(gemini_api_key)
-        self.strategy_model, self.strategy_model_name = ModelRouter.get_strategy_model(gemini_api_key)
+        self.scanner_model, self.scanner_model_name = ModelRouter.get_scanner_model(self.api_key)
+        self.sentiment_model, self.sentiment_model_name = ModelRouter.get_sentiment_model(self.api_key)
+        self.strategy_model, self.strategy_model_name = ModelRouter.get_strategy_model(self.api_key)
         self.model = self.scanner_model
         self.model_name = self.scanner_model_name
         self.scraper = NewsScraper()
