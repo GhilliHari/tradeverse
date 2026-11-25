@@ -516,13 +516,17 @@ class TradeverseRAGEngine:
 
             for col_name, seed_items in seeds.items():
                 col = self.collections.get(col_name)
-                if col and col.count() < len(seed_items):
+                if col and seed_items:
                     ids = [item["id"] for item in seed_items]
-                    docs = [item["document"] for item in seed_items]
-                    metas = [item["metadata"] for item in seed_items]
-
-                    col.upsert(ids=ids, documents=docs, metadatas=metas)
-                    logger.info(f"📚 Synced {len(ids)} seed documents into '{col_name}' collection.")
+                    existing = set((col.get(ids=ids) or {}).get("ids") or [])
+                    missing = [item for item in seed_items if item["id"] not in existing]
+                    if missing:
+                        col.upsert(
+                            ids=[m["id"] for m in missing],
+                            documents=[m["document"] for m in missing],
+                            metadatas=[m["metadata"] for m in missing],
+                        )
+                        logger.info(f"📚 Synced {len(missing)} new seed documents into '{col_name}' collection.")
         except Exception as e:
             logger.warning(f"⚠️ Warning seeding knowledge base: {e}")
 
