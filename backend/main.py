@@ -4152,6 +4152,43 @@ async def execute_autopilot(
     except Exception as cge:
         logger.debug(f"Constituent confluence check skipped: {cge}")
 
+    # Gate 7: Front-Month Futures Basis & Institutional ΔOI Buildup Gate (Rule #28)
+    try:
+        broker_fut = get_broker_client(config.OWNER_EMAIL)
+        if broker_fut and hasattr(broker_fut, "get_futures_basis") and "Mock" not in broker_fut.__class__.__name__:
+            fut_info = await asyncio.to_thread(broker_fut.get_futures_basis, symbol)
+            if isinstance(fut_info, dict) and fut_info.get("available"):
+                analysis["futures_analytics"] = fut_info
+                b_pct = float(fut_info.get("basis_pct") or 0.0)
+                b_pts = float(fut_info.get("basis_pts") or 0.0)
+                buildup = str(fut_info.get("buildup") or "NEUTRAL_CARRY")
+                d_oi_pct = float(fut_info.get("delta_fut_oi_pct") or 0.0)
+                if opt_type == "CE":
+                    if b_pct < -0.20:
+                        return {
+                            "status": "HOLD",
+                            "reason": f"Futures Discount Trap Veto: {fut_info.get('fut_symbol')} trading in steep backwardation ({b_pts:+.1f} pts / {b_pct:+.2f}%) below spot (Rule #28).",
+                            "analysis": analysis,
+                        }
+                    if buildup == "SHORT_BUILDUP" and d_oi_pct >= 1.5 and b_pct < 0.0:
+                        return {
+                            "status": "HOLD",
+                            "reason": f"Futures Short-Buildup Veto: Institutional {fut_info.get('fut_symbol')} OI expanding (+{d_oi_pct:.2f}%) into futures discount (Rule #28).",
+                            "analysis": analysis,
+                        }
+                elif opt_type == "PE":
+                    if b_pct > 0.90 and buildup == "LONG_BUILDUP" and d_oi_pct >= 1.5:
+                        return {
+                            "status": "HOLD",
+                            "reason": f"Futures Super-Premium Veto: {fut_info.get('fut_symbol')} in strong institutional Long Buildup (+{b_pct:.2f}% basis, +{d_oi_pct:.2f}% OI) (Rule #28).",
+                            "analysis": analysis,
+                        }
+                logger.info(
+                    f"⚡ [Autopilot] Gate 7 Passed: Futures Basis ({fut_info.get('fut_symbol')} Basis: {b_pts:+.1f} pts / {b_pct:+.2f}%, Regime: {buildup})"
+                )
+    except Exception as fbe:
+        logger.debug(f"Futures basis check skipped: {fbe}")
+
     u_sym = symbol.upper().replace("NSE:", "").replace("NFO:", "")
     base_index = None
     if "BANK" in u_sym:
@@ -4274,11 +4311,19 @@ async def execute_autopilot(
 
     quantity = lots * lot_size
 
-    # 3c. Dynamic OTM Strike Stepping aligned strictly with RiskEngine.max_position_size
+    # 3c. Dynamic OTM Strike Stepping aligned strictly with RiskEngine.max_position_size + Minimum |Delta| >= 0.28 Floor
     risk_pos_cap = float(getattr(risk_engine, "max_position_size", 0.0) or getattr(config, "MAX_POSITION_SIZE", 10000.0) or 10000.0)
     max_budget = risk_pos_cap * 0.98
     if avail_cash_cached > 0:
         max_budget = min(max_budget, avail_cash_cached * 0.95)
+
+    from greeks_engine import GreeksEngine
+    _ge = GreeksEngine(risk_free_rate=0.07)
+    live_vix_val = float(simulation_engine._get_vix(broker=broker) if simulation_engine else 14.5)
+    vix_dec = max(0.08, live_vix_val / 100.0)
+    eff_spot_price = float(analysis.get("spot_price") or strike or 0.0)
+    eff_strike = strike
+    eff_base_index = base_index
 
     if base_index and strike > 0 and ltp_val > 0 and (ltp_val * quantity > max_budget):
         strike_step = 100 if base_index == "BANKNIFTY" else (25 if base_index == "MIDCPNIFTY" else 50)
@@ -4291,6 +4336,15 @@ async def execute_autopilot(
                 c_ex, c_sym, c_tok = broker._get_token_and_exchange(f"NFO:{cand_short}")
                 if c_sym and c_tok:
                     cand_exch, cand_sym = c_ex, c_sym
+            cand_dte = float(broker.get_days_to_expiry(cand_exch, cand_sym)) if hasattr(broker, "get_days_to_expiry") else 7.0
+            if eff_spot_price > 0:
+                cand_greeks = _ge.calculate_greeks(S=eff_spot_price, K=cand_strike, T=max(0.15, cand_dte) / 365.0, v=vix_dec, option_type=opt_type)
+                cand_abs_delta = abs(float(cand_greeks.get("Delta") or 0.0))
+                if cand_abs_delta < 0.28:
+                    logger.info(
+                        f"🛡️ [Autopilot] Stopping {base_index} OTM step at {cand_short}: |Delta| {cand_abs_delta:.2f} < 0.28 floor."
+                    )
+                    break
             try:
                 c_key = f"{cand_exch}:{cand_sym}"
                 c_res = broker.ltp(c_key)
@@ -4305,13 +4359,14 @@ async def execute_autopilot(
                     resolved_symbol = cand_sym
                     ltp_val = c_ltp
                     quantity = lot_size
+                    eff_strike = cand_strike
                     stepped_ok = True
                     break
             except Exception:
                 continue
 
-        # Universal Weekly Capital-Fit Fallback: if 1 monthly lot on BANKNIFTY/FINNIFTY/MIDCPNIFTY still exceeds max_budget,
-        # route into liquid NIFTY 50 weekly options (65 qty) within RiskEngine.max_position_size
+        # Universal Weekly Capital-Fit Fallback: if 1 monthly lot on BANKNIFTY/FINNIFTY/MIDCPNIFTY exceeds max_budget
+        # (or hits the 0.28 Delta floor), route into liquid NIFTY 50 weekly options (65 qty) with |Delta| >= 0.25
         if not stepped_ok and base_index in ("BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"):
             try:
                 nf_q = broker.ltp("NSE:NIFTY")
@@ -4324,6 +4379,10 @@ async def execute_autopilot(
                         c_ex, c_sym, c_tok = broker._get_token_and_exchange(f"NFO:{cand_short}")
                         if not (c_sym and c_tok):
                             continue
+                        nf_dte = float(broker.get_days_to_expiry(c_ex, c_sym)) if hasattr(broker, "get_days_to_expiry") else 4.0
+                        nf_greeks = _ge.calculate_greeks(S=nf_spot, K=cand_strike, T=max(0.15, nf_dte) / 365.0, v=vix_dec, option_type=opt_type)
+                        if abs(float(nf_greeks.get("Delta") or 0.0)) < 0.25:
+                            break
                         nf_lot = int(broker.get_lot_size("NFO", cand_short) or 65) if hasattr(broker, "get_lot_size") else 65
                         c_key = f"{c_ex}:{c_sym}"
                         c_res = broker.ltp(c_key)
@@ -4331,7 +4390,7 @@ async def execute_autopilot(
                         if c_ltp > 5.0 and (c_ltp * nf_lot) <= max_budget:
                             logger.info(
                                 f"🎯 [Autopilot] Capital-fitted {base_index} -> NIFTY weekly option {c_sym} "
-                                f"(₹{c_ltp} x {nf_lot} = ₹{c_ltp * nf_lot:.0f} <= ₹{max_budget:.0f})"
+                                f"(₹{c_ltp} x {nf_lot} = ₹{c_ltp * nf_lot:.0f} <= ₹{max_budget:.0f}, |Delta|={abs(float(nf_greeks.get('Delta', 0.0))):.2f})"
                             )
                             target_symbol = cand_short
                             target_exchange = c_ex
@@ -4339,9 +4398,94 @@ async def execute_autopilot(
                             ltp_val = c_ltp
                             lot_size = nf_lot
                             quantity = nf_lot
+                            eff_spot_price = nf_spot
+                            eff_strike = cand_strike
+                            eff_base_index = "NIFTY"
+                            stepped_ok = True
                             break
             except Exception as nfe:
                 logger.debug(f"NIFTY capital-fit fallback skipped: {nfe}")
+
+        if not stepped_ok and (ltp_val * quantity > max_budget):
+            return {
+                "status": "HOLD",
+                "reason": f"Delta & Capital Floor Guard: No {base_index}/NIFTY option fits within ₹{max_budget:.0f} while maintaining |Delta| >= 0.25 (Rule #28 — No Deep-OTM Lottery Gambling).",
+                "analysis": analysis,
+            }
+
+    # Gate 8: Contract IV-Crush, Live Greeks & 5-Depth Bid-Ask Microstructure Gate (Rule #28)
+    if not is_mock_broker and eff_base_index and eff_strike > 0 and ltp_val > 0 and eff_spot_price > 0:
+        try:
+            from iv_surface_engine import IVSurfaceEngine
+            from institutional_radar import InstitutionalRadar
+            _iv_eng = IVSurfaceEngine(risk_free_rate=0.07)
+            dte_days = float(broker.get_days_to_expiry(target_exchange, resolved_symbol)) if hasattr(broker, "get_days_to_expiry") else 4.0
+            T_years = max(0.15, dte_days) / 365.0
+            solved_iv_pct = round(_iv_eng.solve_iv(market_price=ltp_val, S=eff_spot_price, K=eff_strike, T=T_years, option_type=opt_type) * 100.0, 2)
+            iv_radar = InstitutionalRadar.calculate_iv_rank()
+            iv_pct_rank = float(iv_radar.get("iv_percentile") or 35.0)
+            live_greeks = _ge.calculate_greeks(S=eff_spot_price, K=eff_strike, T=T_years, v=max(0.08, solved_iv_pct / 100.0), option_type=opt_type)
+
+            spread_pct = 0.0
+            ob_imbalance = 0.5
+            if hasattr(broker, "quote"):
+                q_key = f"{target_exchange}:{resolved_symbol}"
+                q_res = await asyncio.to_thread(broker.quote, q_key)
+                q_node = q_res.get(q_key) or q_res.get(resolved_symbol) or {}
+                depth = q_node.get("depth") or {}
+                bids = depth.get("buy") or []
+                asks = depth.get("sell") or []
+                if bids and asks:
+                    best_bid = float(bids[0].get("price") or 0.0)
+                    best_ask = float(asks[0].get("price") or 0.0)
+                    if best_bid > 0 and best_ask >= best_bid:
+                        spread_pct = round(((best_ask - best_bid) / best_bid) * 100.0, 3)
+                    tot_b = sum(int(x.get("qty") or x.get("quantity") or 0) for x in bids[:5])
+                    tot_a = sum(int(x.get("qty") or x.get("quantity") or 0) for x in asks[:5])
+                    if (tot_b + tot_a) > 0:
+                        ob_imbalance = round(tot_b / float(tot_b + tot_a), 3)
+
+            analysis["option_microstructure"] = {
+                "contract": resolved_symbol,
+                "dte_days": dte_days,
+                "contract_iv_pct": solved_iv_pct,
+                "india_vix": live_vix_val,
+                "iv_percentile_252d": iv_pct_rank,
+                "delta": round(float(live_greeks.get("Delta") or 0.0), 3),
+                "gamma": round(float(live_greeks.get("Gamma") or 0.0), 6),
+                "theta_daily": round(float(live_greeks.get("Theta") or 0.0), 2),
+                "vega": round(float(live_greeks.get("Vega") or 0.0), 2),
+                "spread_pct": spread_pct,
+                "ob_imbalance": ob_imbalance,
+            }
+
+            if abs(float(live_greeks.get("Delta") or 0.0)) < 0.25:
+                return {
+                    "status": "HOLD",
+                    "reason": f"Delta Floor Guard: {resolved_symbol} |Delta| ({abs(float(live_greeks.get('Delta') or 0.0)):.2f}) is below 0.25 minimum threshold (Rule #28).",
+                    "analysis": analysis,
+                }
+
+            if solved_iv_pct > max(42.0, live_vix_val * 2.35) and iv_pct_rank > 85.0:
+                return {
+                    "status": "HOLD",
+                    "reason": f"IV-Crush Veto: {resolved_symbol} IV ({solved_iv_pct:.1f}%) is severely inflated vs India VIX ({live_vix_val:.1f}) at 252d IVP {iv_pct_rank:.0f}% (Rule #28).",
+                    "analysis": analysis,
+                }
+
+            if spread_pct > 5.0:
+                return {
+                    "status": "HOLD",
+                    "reason": f"Illiquid Option Spread Veto: {resolved_symbol} bid-ask spread ({spread_pct:.2f}%) exceeds 5.0% execution safety ceiling (Rule #28).",
+                    "analysis": analysis,
+                }
+
+            logger.info(
+                f"⚡ [Autopilot] Gate 8 Passed: {resolved_symbol} | Delta={live_greeks.get('Delta', 0.0):.2f} | "
+                f"IV={solved_iv_pct:.1f}% (IVP {iv_pct_rank:.0f}%) | Spread={spread_pct:.2f}% | OB Imb={ob_imbalance:.2f}"
+            )
+        except Exception as m_err:
+            logger.debug(f"Option microstructure gate check skipped: {m_err}")
 
     # 4. Multi-Account Execution via SmartExecutionEngine (Fan-out Copy-Trading)
     try:

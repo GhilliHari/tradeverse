@@ -323,6 +323,19 @@ const LessonsLearned = () => {
                 { title: "2026 SEBI Lot-Size & Risk-Cap Weekly Routing", detail: "Aligned lot sizes to live NSE specs (NIFTY 65 weekly, BANKNIFTY 30, FINNIFTY 60, MIDCPNIFTY 120), bound OTM strike stepping directly to RiskEngine.max_position_size, and enabled universal fallback to liquid NIFTY weekly options for small-capital accounts." },
                 { title: "Multi-Layer Rate-Limit & Latency Shield", detail: "Added TTL caches across Angel One RMS get_funds (20s), Option Chain (10s), LTP (2s), Constituent Leaders (30s), and DataPipeline YFinance CSVs (45s intraday / 15m daily), cutting scan latency by ~90% and eliminating SmartAPI rate-limit errors." }
             ]
+        },
+        {
+            category: "21. FULL INSTITUTIONAL F&O MICROSTRUCTURE, DELTA FLOOR & FUTURES BASIS GATES (25-NOV-2026)",
+            icon: ShieldAlert,
+            color: "text-purple-400",
+            borderColor: "border-purple-500/20",
+            bgColor: "bg-purple-500/5",
+            items: [
+                { title: "5-Depth Option Bid-Ask & Order-Book Imbalance (AngelClient.quote)", detail: "Implemented SmartAPI FULL marketData quotes on AngelClient, activating real 5-level NFO option bid/ask spread protection (>3.5% pause, >5.0% illiquidity veto) and L2 order-book imbalance telemetry." },
+                { title: "Minimum |Delta| >= 0.25–0.28 Floor on OTM Stepping", detail: "Uses exact ScripMaster contract DTE and Black-Scholes Delta during capital-fit OTM stepping so small-capital accounts never step into deep-OTM (<0.25 Delta) lottery options." },
+                { title: "Gate 7 Front-Month Futures Basis & ΔOI Buildup", detail: "Tracks live NIFTY/BANKNIFTY/FINNIFTY/MIDCPNIFTY futures premium/discount (Fut - Spot) and institutional ΔOI buildup, blocking Calls in futures backwardation traps (<-0.20%) and Puts against institutional Long Buildup." },
+                { title: "Gate 8 Strike IV-Crush & Vega Guard", detail: "Solves Newton-Raphson strike IV alongside 252-day India VIX percentile before order placement, blocking naked option entries when strike IV is severely bloated at >85% IVP." }
+            ]
         }
     ];
 

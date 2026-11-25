@@ -450,6 +450,17 @@ SEED_JOURNAL = [
             "4. Multi-Layer Rate-Limit & Latency Shield: Enforce TTL caches across Angel One get_funds (20s), get_option_chain (10s), LTP (2s), ComponentLeaderEngine baskets (30s, including dedicated MIDCPNIFTY leaders BSE/DIXON/PERSISTENT/COFORGE/POLYCAB), and DataPipeline CSV fetches (45s intraday / 15m daily)."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "funnel_and_sebi_lot_optimization", "priority": "critical", "date": "2026-11-25"}
+    },
+    {
+        "id": "journal_rule_20261125_full_fno_microstructure_gates",
+        "document": (
+            "Trader Rule #28 (25-Nov-2026 Institutional F&O Microstructure Completion) — 5-Depth Option Quotes, Minimum Delta Floor, IV-Crush Veto & Futures Basis Gate:\n"
+            "1. AngelClient.quote() 5-Depth Microstructure: Queries SmartAPI getMarketData('FULL') with 2s micro-caching to feed real 5-level NFO option bid/ask spreads and L2 order-book imbalance into SmartExecutionEngine (>3.5% pause, >5.0% illiquidity veto).\n"
+            "2. Minimum |Delta| Floor on OTM Capital-Fit Stepping: Calculates exact Black-Scholes Greeks using ScripMaster contract DTE. Stops monthly OTM stepping below |Delta| 0.28 and rejects any fallback contract below |Delta| 0.25 to eliminate deep-OTM theta-decay lottery trades.\n"
+            "3. Gate 7 Front-Month Futures Basis & Buildup Guard: Tracks live NIFTY/BANKNIFTY/FINNIFTY/MIDCPNIFTY front-month futures basis (Fut - Spot) and ΔOI buildup. Vetoes BUY_CE during steep futures backwardation (< -0.20% discount trap) or active institutional Short Buildup, and vetoes BUY_PE into strong institutional Long Buildup (> +0.90% premium).\n"
+            "4. Gate 8 Contract IV-Crush Protection: Solves exact strike Implied Volatility (Newton-Raphson) + 252-day IV Percentile before execution, vetoing naked option buys when contract IV is severely bloated (> max(42%, 2.35x VIX) at IVP > 85%)."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "fno_microstructure_and_greeks_guard", "priority": "critical", "date": "2026-11-25"}
     }
 ]
 

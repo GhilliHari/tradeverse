@@ -581,6 +581,35 @@ class AngelClient:
             return 65
         return 1
 
+    def get_days_to_expiry(self, exchange: str, tradingsymbol: str) -> float:
+        """
+        Returns exact calendar + intraday fractional days-to-expiry (DTE) from ScripMaster
+        for accurate Black-Scholes Delta, Theta, and Implied Volatility calculations.
+        """
+        import re
+        clean_sym = (tradingsymbol or "").strip().upper()
+        if ":" in clean_sym:
+            _, clean_sym = clean_sym.split(":", 1)
+        now = datetime.now()
+        intraday_frac = max(0.15, min(1.0, (15.5 - (now.hour + now.minute / 60.0)) / 6.25))
+        try:
+            sm_index = self._load_nfo_scrip_master() or {}
+            hit = sm_index.get(clean_sym)
+            if not hit:
+                opt_match = re.match(r"^(BANKNIFTY|FINNIFTY|MIDCPNIFTY|NIFTY)(\d+)(CE|PE)$", clean_sym)
+                if opt_match:
+                    u_name, s_val, o_type = opt_match.groups()
+                    hit = sm_index.get(f"{u_name}:{int(s_val)}:{o_type}")
+            if hit and hit.get("exp_dt"):
+                diff_days = (hit["exp_dt"] - now.date()).days
+                return round(max(0.15, float(diff_days) + intraday_frac - 0.5), 3)
+        except Exception as e:
+            logger.debug(f"DTE lookup fallback for {clean_sym}: {e}")
+
+        if "NIFTY" in clean_sym and not any(k in clean_sym for k in ("BANK", "FIN", "MID")):
+            return 4.0
+        return 14.0
+
     def _resolve_option_or_scrip(self, exchange: str, symbol: str):
         """
         Resolves shorthand option symbols like BANKNIFTY57900CE or NIFTY24600PE
@@ -741,6 +770,82 @@ class AngelClient:
              logger.error(f"Angel LTP Error: {e}")
              return {}
 
+    def quote(self, instrument_token: str) -> dict:
+        """
+        Fetches FULL 5-level Level-2 Order Book depth, LTP, Open Interest, and Volume via Angel One SmartAPI
+        getMarketData('FULL', ...). Normalized for both SmartExecutionEngine (spread guard) and OrderFlowEngine.
+        """
+        if not self.smart_api:
+            return {}
+        import time as _time
+        q_cache = getattr(self, "_quote_cache", None)
+        if q_cache is None:
+            q_cache = {}
+            self._quote_cache = q_cache
+        now_ts = _time.time()
+        c_hit = q_cache.get(instrument_token)
+        if c_hit and (now_ts - c_hit[0]) < 2.0:
+            return c_hit[1]
+
+        exchange, tradingsymbol, token = self._get_token_and_exchange(instrument_token)
+        if not token:
+            return {}
+
+        try:
+            self.ensure_session(force=False)
+            res = self.smart_api.getMarketData("FULL", {exchange: [str(token)]})
+            if self._is_session_expired_response(res):
+                self.ensure_session(force=True)
+                res = self.smart_api.getMarketData("FULL", {exchange: [str(token)]})
+
+            if res and isinstance(res, dict) and res.get("status") and res.get("data"):
+                fetched = res["data"].get("fetched", []) if isinstance(res["data"], dict) else res["data"]
+                if fetched:
+                    item = fetched[0]
+                    ltp_val = float(item.get("ltp") or item.get("last_price") or 0.0)
+                    oi_val = int(float(item.get("opnInterest") or item.get("oi") or 0))
+                    vol_val = int(float(item.get("tradeVolume") or item.get("volume") or 0))
+                    depth_raw = item.get("depth") or {}
+                    buy_levels = [
+                        {
+                            "price": float(b.get("price") or 0.0),
+                            "quantity": int(float(b.get("quantity") or b.get("qty") or 0)),
+                            "qty": int(float(b.get("quantity") or b.get("qty") or 0)),
+                            "orders": int(float(b.get("orders") or 0)),
+                        }
+                        for b in (depth_raw.get("buy") or [])
+                        if float(b.get("price") or 0.0) > 0
+                    ]
+                    sell_levels = [
+                        {
+                            "price": float(s.get("price") or 0.0),
+                            "quantity": int(float(s.get("quantity") or s.get("qty") or 0)),
+                            "qty": int(float(s.get("quantity") or s.get("qty") or 0)),
+                            "orders": int(float(s.get("orders") or 0)),
+                        }
+                        for s in (depth_raw.get("sell") or [])
+                        if float(s.get("price") or 0.0) > 0
+                    ]
+                    payload_out = {
+                        "instrument_token": str(token),
+                        "tradingsymbol": tradingsymbol,
+                        "exchange": exchange,
+                        "last_price": ltp_val,
+                        "oi": oi_val,
+                        "volume": vol_val,
+                        "depth": {"buy": buy_levels, "sell": sell_levels},
+                    }
+                    out = {
+                        instrument_token: payload_out,
+                        f"{exchange}:{tradingsymbol}": payload_out,
+                        tradingsymbol: payload_out,
+                    }
+                    q_cache[instrument_token] = (now_ts, out)
+                    return out
+        except Exception as qe:
+            logger.debug(f"Angel quote() fetch fallback for {instrument_token}: {qe}")
+        return {}
+
     def get_historical_data(self, exchange, token, interval, from_date, to_date):
         """
         Fetches historical candle data from Angel One.
@@ -811,6 +916,115 @@ class AngelClient:
         except Exception as e:
             logger.error(f"Future resolution failed: {e}")
             return None, None, None
+
+    def get_futures_basis(self, symbol: str = "NIFTY") -> dict:
+        """
+        Computes real-time Front-Month Futures Basis (Fut LTP - Spot LTP), Basis %,
+        Futures Volume, Futures Open Interest, and institutional ΔOI buildup classification.
+        Uses a 15-second TTL cache per index.
+        """
+        import time as _time
+        u_sym = (symbol or "NIFTY").upper()
+        if "BANK" in u_sym:
+            base_idx = "BANKNIFTY"
+        elif "FIN" in u_sym:
+            base_idx = "FINNIFTY"
+        elif "MID" in u_sym:
+            base_idx = "MIDCPNIFTY"
+        else:
+            base_idx = "NIFTY"
+
+        fb_cache = getattr(self, "_fut_basis_cache", None)
+        if fb_cache is None:
+            fb_cache = {}
+            self._fut_basis_cache = fb_cache
+        now_ts = _time.time()
+        c_hit = fb_cache.get(base_idx)
+        if c_hit and (now_ts - c_hit[0]) < 15.0:
+            return c_hit[1]
+
+        try:
+            spot_key = f"NSE:{base_idx}"
+            spot_res = self.ltp(spot_key)
+            spot_ltp = float((spot_res.get(spot_key) or {}).get("last_price") or 0.0)
+
+            f_exch, f_sym, f_tok = self._resolve_future(base_idx)
+            if not (f_sym and f_tok) or spot_ltp <= 0:
+                return {"available": False, "index": base_idx}
+
+            fut_key = f"{f_exch}:{f_sym}"
+            q_res = self.quote(fut_key)
+            q_node = q_res.get(fut_key) or {}
+            fut_ltp = float(q_node.get("last_price") or 0.0)
+            if fut_ltp <= 0:
+                l_res = self.ltp(fut_key)
+                fut_ltp = float((l_res.get(fut_key) or {}).get("last_price") or 0.0)
+            if fut_ltp <= 0:
+                return {"available": False, "index": base_idx}
+
+            fut_oi = int(q_node.get("oi") or 0)
+            fut_vol = int(q_node.get("volume") or 0)
+            basis_pts = round(fut_ltp - spot_ltp, 2)
+            basis_pct = round((basis_pts / spot_ltp) * 100.0, 4)
+
+            hist_map = getattr(self, "_fut_oi_history", None)
+            if hist_map is None:
+                hist_map = {}
+                self._fut_oi_history = hist_map
+            hist = hist_map.get(base_idx, [])
+
+            delta_fut_oi = 0
+            delta_fut_oi_pct = 0.0
+            price_chg = 0.0
+            if hist:
+                ref_snap = hist[-1]
+                for snap in reversed(hist):
+                    age_m = (now_ts - snap["ts"]) / 60.0
+                    if 3.0 <= age_m <= 20.0:
+                        ref_snap = snap
+                        break
+                prev_oi = int(ref_snap.get("oi") or fut_oi)
+                prev_p = float(ref_snap.get("fut_ltp") or fut_ltp)
+                delta_fut_oi = fut_oi - prev_oi
+                delta_fut_oi_pct = round((delta_fut_oi / prev_oi) * 100.0, 3) if prev_oi > 0 else 0.0
+                price_chg = round(fut_ltp - prev_p, 2)
+
+            if fut_oi > 0:
+                hist.append({"ts": now_ts, "fut_ltp": fut_ltp, "oi": fut_oi})
+                if len(hist) > 30:
+                    hist = hist[-30:]
+                hist_map[base_idx] = hist
+
+            buildup = "NEUTRAL_CARRY"
+            if price_chg > 0 and delta_fut_oi > 0:
+                buildup = "LONG_BUILDUP"
+            elif price_chg < 0 and delta_fut_oi > 0:
+                buildup = "SHORT_BUILDUP"
+            elif price_chg > 0 and delta_fut_oi < 0:
+                buildup = "SHORT_COVERING"
+            elif price_chg < 0 and delta_fut_oi < 0:
+                buildup = "LONG_UNWINDING"
+
+            out = {
+                "available": True,
+                "index": base_idx,
+                "fut_symbol": f_sym,
+                "spot_ltp": round(spot_ltp, 2),
+                "fut_ltp": round(fut_ltp, 2),
+                "basis_pts": basis_pts,
+                "basis_pct": basis_pct,
+                "fut_oi": fut_oi,
+                "fut_volume": fut_vol,
+                "delta_fut_oi": delta_fut_oi,
+                "delta_fut_oi_pct": delta_fut_oi_pct,
+                "buildup": buildup,
+                "discount_trap": basis_pct < -0.20,
+            }
+            fb_cache[base_idx] = (now_ts, out)
+            return out
+        except Exception as fe:
+            logger.debug(f"Futures basis check fallback for {base_idx}: {fe}")
+            return {"available": False, "index": base_idx}
 
     def place_order(self, variety, exchange, tradingsymbol, transaction_type, quantity, product, order_type, price=None, validity="DAY", tag=None):
         if not self.smart_api:
