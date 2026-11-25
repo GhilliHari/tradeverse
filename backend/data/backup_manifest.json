@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-11-24T15:35:08.348143",
+  "updated_at": "2026-11-25T15:35:13.157313",
   "repo": "GhilliHari/tradeverse",
   "branch": "main",
   "raw_base_url": "https://raw.githubusercontent.com/GhilliHari/tradeverse/main",
-  "latest_session_date": "2026-11-23",
-  "observatory_files_count": 47,
+  "latest_session_date": "2026-11-25",
+  "observatory_files_count": 48,
   "observatory_files": [
     "simulation_2026-08-14.json",
     "simulation_2026-08-18.json",
@@ -52,9 +52,10 @@
     "simulation_2026-11-18.json",
     "simulation_2026-11-19.json",
     "simulation_2026-11-20.json",
-    "simulation_2026-11-23.json"
+    "simulation_2026-11-23.json",
+    "simulation_2026-11-25.json"
   ],
-  "market_cache_files_count": 36,
+  "market_cache_files_count": 37,
   "market_cache_files": [
     "AXISBANK.NS_1d.csv",
     "AXISBANK.NS_1m.csv",
@@ -63,6 +64,7 @@
     "BANKBEES.NS_1m.csv",
     "BANKBEES.NS_5m.csv",
     "BZF_1d.csv",
+    "CNXFIN_1d.csv",
     "CNXFIN_5m.csv",
     "DXY.NYB_1d.csv",
     "HDFCBANK.NS_1d.csv",
@@ -93,7 +95,7 @@
     "USDINRX_1d.csv",
     "USDINRX_NSEI_BZF_DXY.NYB_1d.csv"
   ],
-  "paper_trades_entries": 5799,
-  "all_time_closed_trades": 2899,
-  "all_time_pnl": 1338599.34
+  "paper_trades_entries": 6265,
+  "all_time_closed_trades": 3127,
+  "all_time_pnl": 833806.29
 }
