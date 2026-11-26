@@ -54,8 +54,10 @@ class RiskEngine:
         confidence: float = 70.0
     ) -> Dict:
         """
-        Calculates Position Sizing with Capital Compounding Guardrails:
-        - Single-trade exposure cap: 100% of available cash margin (with 2% buffer for exchange fees)
+        Calculates Position Sizing with Dynamic Conviction Scaling:
+        - High Conviction (confidence >= 80%): 100% Position Sizing Cap (aggressive compounding)
+        - Normal Setup (confidence < 80%): 50% Position Sizing Cap (defensive risk preservation)
+        - Account Floor: If cash <= ₹10,000 (e.g. Doss), 1 lot is always permitted
         - Drawdown defense: If daily loss > 0, downsize to 1 lot immediately
         """
         if available_cash <= 0 or lot_size <= 0:
@@ -63,21 +65,25 @@ class RiskEngine:
 
         opt_price = max(10.0, float(option_ltp))
         cost_per_lot = opt_price * lot_size
-        max_trade_budget = available_cash * 0.98
+
+        is_high_conviction = confidence >= 80.0
+        sizing_pct = 0.98 if is_high_conviction else 0.50
+        max_trade_budget = available_cash * sizing_pct
+
+        # For smaller accounts (<= ₹10,000, like Doss), ensure 1 lot is funded even at 50% cap
+        if available_cash <= 10000.0 and cost_per_lot <= (available_cash * 0.98):
+            max_trade_budget = max(max_trade_budget, cost_per_lot)
 
         # Drawdown defense: If nursing any daily loss today, strictly 1 lot
         if self.current_daily_loss > 0:
             phase = "DRAWDOWN_DEFENSE (1 Lot Cap)"
             max_allowed_lots = 1
-        elif available_cash >= 20000.0 and confidence >= 75.0:
-            phase = "COMPOUNDING_PHASE (Up to 3 Lots)"
-            max_allowed_lots = 3
-        elif available_cash >= 12000.0 and confidence >= 72.0:
-            phase = "GROWTH_PHASE (Up to 2 Lots)"
-            max_allowed_lots = 2
+        elif is_high_conviction:
+            phase = f"HIGH_CONVICTION_100% ({confidence:.0f}% Conviction)"
+            max_allowed_lots = max(1, int(max_trade_budget // cost_per_lot))
         else:
-            phase = "PRESERVATION_PHASE (1 Lot Strict)"
-            max_allowed_lots = 1
+            phase = f"NORMAL_DEFENSIVE_50% ({confidence:.0f}% Conviction)"
+            max_allowed_lots = max(1, int(max_trade_budget // cost_per_lot))
 
         raw_lots = int(max_trade_budget // cost_per_lot) if cost_per_lot > 0 else 1
         final_lots = max(1, min(max_allowed_lots, raw_lots))
@@ -90,7 +96,8 @@ class RiskEngine:
             "exposure": total_exposure,
             "phase": phase,
             "max_budget": max_trade_budget,
-            "cost_per_lot": round(cost_per_lot, 2)
+            "cost_per_lot": round(cost_per_lot, 2),
+            "sizing_pct": sizing_pct
         }
 
     def validate_order(self, order_details: Dict) -> Dict:

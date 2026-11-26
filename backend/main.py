@@ -4540,8 +4540,11 @@ async def execute_autopilot(
                 acct_lots = lots
 
             acct_quantity = acct_lots * lot_size
-            acct_risk_cap = round(acct_cash * 1.00, 2) if acct_cash > 0 else float(getattr(config, "MAX_POSITION_SIZE", 50000.0) or 50000.0)
-            acct_max_budget = round(acct_cash * 0.98, 2) if acct_cash > 0 else acct_risk_cap * 0.98
+            sizing_pct = sizing_res.get("sizing_pct", 0.98 if conf_val >= 80.0 else 0.50) if acct_cash > 0 and risk_engine else (0.98 if conf >= 80.0 else 0.50)
+            acct_risk_cap = round(acct_cash * sizing_pct, 2) if acct_cash > 0 else float(getattr(config, "MAX_POSITION_SIZE", 50000.0) or 50000.0)
+            if acct_cash > 0 and acct_cash <= 10000.0:
+                acct_risk_cap = round(acct_cash * 0.98, 2)  # Floor for Doss to always fund 1 lot
+            acct_max_budget = min(acct_risk_cap, acct_cash * 0.98) if acct_cash > 0 else acct_risk_cap * 0.98
 
             if ltp_val > 0 and (ltp_val * acct_quantity > acct_max_budget):
                 acct_quantity = lot_size  # Enforce 1-lot preservation if compounding lots exceed single-trade margin cap
