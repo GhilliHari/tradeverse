@@ -58,9 +58,9 @@ class Config:
     # Active Broker: Default to ANGEL
     ACTIVE_BROKER = os.getenv("ACTIVE_BROKER", "ANGEL").upper()
     
-    # Risk Settings
-    DAILY_LOSS_LIMIT = float(os.getenv("DAILY_LOSS_LIMIT", 1000.0))
-    MAX_POSITION_SIZE = float(os.getenv("MAX_POSITION_SIZE", 10000.0))
+    # Risk Settings (10% Daily Loss Limit, 100% Max Position Sizing Cap)
+    DAILY_LOSS_LIMIT = float(os.getenv("DAILY_LOSS_LIMIT", 5760.0))
+    MAX_POSITION_SIZE = float(os.getenv("MAX_POSITION_SIZE", 57616.0))
     MAX_OPEN_POSITIONS = int(os.getenv("MAX_OPEN_POSITIONS", 1))
     
     # WhatsApp Notifications (CallMeBot)

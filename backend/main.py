@@ -1034,6 +1034,9 @@ async def get_broker_funds():
                 "collateral": collat,
             })
 
+        if risk_engine and total_cash > 0:
+            risk_engine.sync_with_capital(total_cash)
+
         return {
             "status": "success",
             "env": config.ENV,
@@ -1044,8 +1047,8 @@ async def get_broker_funds():
             "utiliseddebits": total_utilised,
             "collateral": total_collateral,
             "accounts": accounts_data,
-            "max_position_size": config.MAX_POSITION_SIZE,
-            "daily_loss_limit": config.DAILY_LOSS_LIMIT,
+            "max_position_size": total_cash,
+            "daily_loss_limit": round(total_cash * 0.10, 2),
             "risk": risk_engine.get_risk_status() if risk_engine else {},
         }
     except Exception as e:
@@ -4537,8 +4540,8 @@ async def execute_autopilot(
                 acct_lots = lots
 
             acct_quantity = acct_lots * lot_size
-            acct_risk_cap = max(3800.0, round(acct_cash * 0.50, 2)) if acct_cash > 0 else float(getattr(config, "MAX_POSITION_SIZE", 10000.0) or 10000.0)
-            acct_max_budget = min(acct_risk_cap, acct_cash * 0.95) if acct_cash > 0 else acct_risk_cap * 0.96
+            acct_risk_cap = round(acct_cash * 1.00, 2) if acct_cash > 0 else float(getattr(config, "MAX_POSITION_SIZE", 50000.0) or 50000.0)
+            acct_max_budget = round(acct_cash * 0.98, 2) if acct_cash > 0 else acct_risk_cap * 0.98
 
             if ltp_val > 0 and (ltp_val * acct_quantity > acct_max_budget):
                 acct_quantity = lot_size  # Enforce 1-lot preservation if compounding lots exceed single-trade margin cap

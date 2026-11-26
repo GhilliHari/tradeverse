@@ -40,11 +40,11 @@ class RiskEngine:
         """
         Dynamically scales daily risk limit and max position size as capital compounds.
         - Daily Loss Limit: 10% of portfolio, floored at ₹1,000 minimum.
-        - Max Single Position Size: 50% of available cash.
+        - Max Single Position Size: 100% of available cash.
         """
         if available_cash > 0:
             self.daily_loss_limit = max(1000.0, round(available_cash * 0.10, 2))
-            self.max_position_size = max(3800.0, round(available_cash * 0.50, 2))
+            self.max_position_size = round(available_cash * 1.00, 2)
 
     def calculate_compounded_position_size(
         self,
@@ -54,11 +54,8 @@ class RiskEngine:
         confidence: float = 70.0
     ) -> Dict:
         """
-        Calculates Fractional Kelly Position Sizing with Capital Compounding Guardrails:
-        - Strict preservation phase (Cash <= ₹12,000): 1 Lot only
-        - Single-trade exposure cap: Maximum 40% of available cash margin
-        - Growth phase (Cash ₹12,000 - ₹20,000): Up to 2 Lots (if cost <= 40% cash)
-        - Compounding phase (Cash >= ₹20,000): Up to 3 Lots
+        Calculates Position Sizing with Capital Compounding Guardrails:
+        - Single-trade exposure cap: 100% of available cash margin (with 2% buffer for exchange fees)
         - Drawdown defense: If daily loss > 0, downsize to 1 lot immediately
         """
         if available_cash <= 0 or lot_size <= 0:
@@ -66,7 +63,7 @@ class RiskEngine:
 
         opt_price = max(10.0, float(option_ltp))
         cost_per_lot = opt_price * lot_size
-        max_trade_budget = available_cash * 0.40
+        max_trade_budget = available_cash * 0.98
 
         # Drawdown defense: If nursing any daily loss today, strictly 1 lot
         if self.current_daily_loss > 0:
