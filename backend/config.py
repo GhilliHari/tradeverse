@@ -122,7 +122,7 @@ class Config:
         p_key = (os.getenv("ANGEL_API_KEY") or self.ANGEL_API_KEY or "").strip()
         p_pwd = (os.getenv("ANGEL_PASSWORD") or self.ANGEL_PASSWORD or "").strip()
         p_totp = (os.getenv("ANGEL_TOTP_KEY") or self.ANGEL_TOTP_KEY or "").strip()
-        p_name = (os.getenv("ANGEL_ACCOUNT_NAME") or getattr(self, "ANGEL_ACCOUNT_NAME", "Primary Account (Hari)") or "Primary Account").strip()
+        p_name = (os.getenv("ANGEL_ACCOUNT_NAME") or getattr(self, "ANGEL_ACCOUNT_NAME", "Doss") or "Doss").strip()
         if p_cid and p_key:
             accounts_out.append({
                 "account_id": p_cid,
