@@ -336,6 +336,17 @@ const LessonsLearned = () => {
                 { title: "Gate 7 Front-Month Futures Basis & ΔOI Buildup", detail: "Tracks live NIFTY/BANKNIFTY/FINNIFTY/MIDCPNIFTY futures premium/discount (Fut - Spot) and institutional ΔOI buildup, blocking Calls in futures backwardation traps (<-0.20%) and Puts against institutional Long Buildup." },
                 { title: "Gate 8 Strike IV-Crush & Vega Guard", detail: "Solves Newton-Raphson strike IV alongside 252-day India VIX percentile before order placement, blocking naked option entries when strike IV is severely bloated at >85% IVP." }
             ]
+        },
+        {
+            category: "22. ^NSEI OPTION-CHAIN NORMALIZATION & ZERO-OI WALL GUARD (26-NOV-2026 INTRADAY FIX)",
+            icon: Zap,
+            color: "text-amber-400",
+            borderColor: "border-amber-500/20",
+            bgColor: "bg-amber-500/5",
+            items: [
+                { title: "^NSEI -> NIFTY Option-Chain Mapping", detail: "Explicitly matched '^NSEI' alongside 'NIFTY' in AngelClient.get_option_chain() and strike calculators so autonomous scans never misroute Nifty 50 spot (~25,950) to non-existent BANKNIFTY 26000 strikes." },
+                { title: "GEX Zero-OI False-Wall Prevention", detail: "Hardened GEXEngine.get_safety_gate() to verify is_live (total_ce_oi > 0) before checking Call/Put wall proximity, preventing empty OI snapshots from creating phantom Call Walls." }
+            ]
         }
     ];
 

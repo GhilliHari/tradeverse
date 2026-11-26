@@ -549,7 +549,7 @@ class SimulationEngine:
             strike_step = 50 
         elif "MID" in symbol.upper():
             strike_step = 25 
-        elif "NIFTY" in symbol.upper() and "BANK" not in symbol.upper():
+        elif ("NIFTY" in symbol.upper() or "NSEI" in symbol.upper()) and "BANK" not in symbol.upper():
             strike_step = 50 
 
         atm_strike = round(spot_price / strike_step) * strike_step

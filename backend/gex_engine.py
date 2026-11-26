@@ -304,8 +304,8 @@ class GEXEngine:
         Institutional Safety Gate checking against Call/Put walls, PCR barriers,
         Zero Gamma cascades, and Delta OI bull/bear trap setups.
         """
-        if not self.last_analysis:
-            return {"allow": True, "reason": "No GEX/OI data available"}
+        if not self.last_analysis or not self.last_analysis.get("is_live"):
+            return {"allow": True, "reason": "No live GEX/OI data available (fallback pass)"}
 
         call_wall = self.last_analysis.get("call_wall", 0)
         put_wall = self.last_analysis.get("put_wall", 0)

@@ -575,9 +575,9 @@ class AngelClient:
             return 30
         if "MIDCPNIFTY" in clean_sym:
             return 120
-        if "FINNIFTY" in clean_sym:
+        if "FINNIFTY" in clean_sym or "CNXFIN" in clean_sym:
             return 60
-        if "NIFTY" in clean_sym:
+        if "NIFTY" in clean_sym or "NSEI" in clean_sym:
             return 65
         return 1
 
@@ -1170,13 +1170,14 @@ class AngelClient:
             strike_step = 100
             search_query = "BANKNIFTY"
             
-            if "FIN" in symbol.upper():
-                strike_step = 50 # Fin Nifty usually 50/100
+            u_sym_oc = symbol.upper()
+            if "FIN" in u_sym_oc:
+                strike_step = 50 # Fin Nifty 50 step
                 search_query = "FINNIFTY"
-            elif "MID" in symbol.upper():
-                strike_step = 25 # Midcap Nifty is 25/50
+            elif "MID" in u_sym_oc:
+                strike_step = 25 # Midcap Nifty Select 25 step
                 search_query = "MIDCPNIFTY"
-            elif "NIFTY" in symbol.upper() and "BANK" not in symbol.upper():
+            elif ("NIFTY" in u_sym_oc or "NSEI" in u_sym_oc) and "BANK" not in u_sym_oc:
                 strike_step = 50 
                 search_query = "NIFTY"
             

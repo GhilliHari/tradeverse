@@ -461,6 +461,15 @@ SEED_JOURNAL = [
             "4. Gate 8 Contract IV-Crush Protection: Solves exact strike Implied Volatility (Newton-Raphson) + 252-day IV Percentile before execution, vetoing naked option buys when contract IV is severely bloated (> max(42%, 2.35x VIX) at IVP > 85%)."
         ),
         "metadata": {"author": "post_mortem", "rule_type": "fno_microstructure_and_greeks_guard", "priority": "critical", "date": "2026-11-25"}
+    },
+    {
+        "id": "journal_rule_20261126_nsei_option_chain_and_zero_oi_guard",
+        "document": (
+            "Trader Rule #29 (26-Nov-2026 Intraday Audit Fix) — ^NSEI Option-Chain Symbol Normalization & Zero-OI Wall Veto Guard:\n"
+            "1. Yahoo-to-NFO Ticker Normalization in get_option_chain(): When autonomous scanning passes '^NSEI' (Nifty 50), AngelClient.get_option_chain() and SimulationEngine._calculate_strike_price() must explicitly match 'NSEI' alongside 'NIFTY' so option-chain queries resolve to NIFTY (step 50) rather than defaulting to BANKNIFTY at 26,000 strikes.\n"
+            "2. GEX Zero-OI Safety Bypass: GEXEngine.get_safety_gate() must check last_analysis.get('is_live') (total_ce_oi > 0) before enforcing Call/Put Wall proximity vetoes, preventing an all-zero OI fallback chain from setting call_wall to the lowest strike and falsely blocking valid breakouts."
+        ),
+        "metadata": {"author": "post_mortem", "rule_type": "option_chain_symbol_normalization", "priority": "critical", "date": "2026-11-26"}
     }
 ]
 
