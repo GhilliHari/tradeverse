@@ -4501,9 +4501,8 @@ async def execute_autopilot(
         last_order_id = None
         last_telemetry = {}
 
-        for acct_id, b_client, acct_dict in active_clients:
+        async def _execute_single_account(acct_id, b_client, acct_dict):
             acct_name = acct_dict.get("name", acct_id)
-            # Check if this account already has open positions on this contract
             active_syms = set()
             if not is_mock_broker and hasattr(b_client, "positions"):
                 try:
@@ -4511,12 +4510,10 @@ async def execute_autopilot(
                     active_syms = {p.get("tradingsymbol") for p in (live_pos or []) if int(p.get("netqty", 0) or 0) != 0}
                     if resolved_symbol in active_syms or target_symbol in active_syms:
                         logger.info(f"⏭️ [Autopilot Copy-Trade] Account {acct_name} ({acct_id}) already holds {resolved_symbol}. Skipping duplicate.")
-                        skipped_accounts.append({"account_id": acct_id, "reason": "DUPLICATE_POSITION"})
-                        continue
+                        return {"status": "SKIPPED", "account_id": acct_id, "account_name": acct_name, "reason": "DUPLICATE_POSITION"}
                 except Exception as pe:
                     logger.debug(f"Positions check for account {acct_id}: {pe}")
 
-            # Account-specific Kelly position sizing based on this account's available cash margin
             acct_cash = 0.0
             if not is_mock_broker and hasattr(b_client, "get_funds"):
                 try:
@@ -4527,8 +4524,9 @@ async def execute_autopilot(
                     pass
 
             acct_lots = 1
+            sizing_res = {}
+            conf_val = float(analysis.get("confidence") or 70.0)
             if acct_cash > 0 and risk_engine:
-                conf_val = float(analysis.get("confidence") or 70.0)
                 sizing_res = risk_engine.calculate_compounded_position_size(
                     available_cash=acct_cash,
                     lot_size=lot_size,
@@ -4540,7 +4538,7 @@ async def execute_autopilot(
                 acct_lots = lots
 
             acct_quantity = acct_lots * lot_size
-            sizing_pct = sizing_res.get("sizing_pct", 0.98 if conf_val >= 80.0 else 0.50) if acct_cash > 0 and risk_engine else (0.98 if conf >= 80.0 else 0.50)
+            sizing_pct = sizing_res.get("sizing_pct", 0.98 if conf >= 80.0 else 0.50) if acct_cash > 0 and risk_engine else (0.98 if conf >= 80.0 else 0.50)
             acct_risk_cap = round(acct_cash * sizing_pct, 2) if acct_cash > 0 else float(getattr(config, "MAX_POSITION_SIZE", 50000.0) or 50000.0)
             if acct_cash > 0 and acct_cash <= 10000.0:
                 acct_risk_cap = round(acct_cash * 0.98, 2)  # Floor for Doss to always fund 1 lot
@@ -4551,8 +4549,7 @@ async def execute_autopilot(
 
             if acct_cash > 0 and ltp_val > 0 and (ltp_val * acct_quantity > acct_cash):
                 logger.warning(f"⚠️ [Autopilot Copy-Trade] Account {acct_name} ({acct_id}) insufficient cash (₹{acct_cash:.2f} < ₹{ltp_val * acct_quantity:.2f}). Skipping.")
-                skipped_accounts.append({"account_id": acct_id, "reason": "INSUFFICIENT_FUNDS"})
-                continue
+                return {"status": "SKIPPED", "account_id": acct_id, "account_name": acct_name, "reason": "INSUFFICIENT_FUNDS"}
 
             order_data = {
                 "account_id": acct_id,
@@ -4569,19 +4566,15 @@ async def execute_autopilot(
                 "is_high_conviction": conf >= 75.0,
             }
 
-            # Validate order risk for this account
             risk_val = risk_engine.validate_order(order_data)
             if not risk_val["allowed"]:
                 logger.warning(f"🛡️ [Autopilot Copy-Trade] Risk engine rejected order for {acct_name}: {risk_val['reason']}")
-                skipped_accounts.append({"account_id": acct_id, "reason": risk_val["reason"]})
-                continue
+                return {"status": "SKIPPED", "account_id": acct_id, "account_name": acct_name, "reason": risk_val["reason"]}
 
-            # Execute Smart Order on this account
             try:
-                from smart_execution import smart_execution_engine
-                smart_execution_engine.set_broker(b_client)
-                smart_execution_engine.notifier = notifier
-                telemetry = await smart_execution_engine.execute_smart_order(
+                from smart_execution import SmartExecutionEngine
+                engine = SmartExecutionEngine(broker=b_client, notifier=notifier)
+                telemetry = await engine.execute_smart_order(
                     order_request=order_data,
                     broker=b_client,
                     user_id=acct_id
@@ -4589,71 +4582,124 @@ async def execute_autopilot(
                 exec_status = telemetry.get("status", "ERROR")
                 if exec_status in ["COMPLETE", "FILLED", "MOCK_FILLED"]:
                     fill_price = float(telemetry.get("executed_price") or ltp_val or 0.0)
-                    if risk_engine:
-                        if not hasattr(risk_engine, "trades_today_by_account"):
-                            risk_engine.trades_today_by_account = {}
-                        risk_engine.trades_today_by_account[acct_id] = int(risk_engine.trades_today_by_account.get(acct_id, 0)) + 1
-                        risk_engine.trades_today_count = max(risk_engine.trades_today_by_account.values())
-
-                    detected_regime = analysis.get("regime") or autonomous_state.get("last_regime") or "NOMINAL"
-                    sent_score = float((analysis.get("model_scores") or {}).get("sentiment") or 0.0)
-                    tech_score = float((analysis.get("model_scores") or {}).get("technical") or 0.0)
-                    conf_val = float(analysis.get("confidence") or 0.0)
-                    profile = get_hybrid_trailing_profile(
-                        detected_regime,
-                        sentiment_score=sent_score,
-                        confidence=conf_val,
-                        technical_score=tech_score,
-                        spot_atr=float(analysis.get("spot_atr") or 0.0),
-                        entry_price=fill_price
-                    )
-
-                    acct_pos_key = f"{acct_id}:{resolved_symbol}"
-                    active_live_positions[acct_pos_key] = {
+                    return {
+                        "status": "FILLED",
                         "account_id": acct_id,
                         "account_name": acct_name,
-                        "tradingsymbol": resolved_symbol,
-                        "exchange": target_exchange,
-                        "quantity": acct_quantity,
-                        "entry_price": fill_price,
-                        "entry_time": datetime.now(),
-                        "peak_price": fill_price,
-                        "regime_profile": profile["regime_profile"],
-                        "stop_loss_pct": profile["stop_loss_pct"],
-                        "target_pct": profile["target_pct"],
-                        "breakeven_trigger_pct": profile["breakeven_trigger_pct"],
-                        "breakeven_lock_pct": profile["breakeven_lock_pct"],
-                        "stage1_trigger_pct": profile["stage1_trigger_pct"],
-                        "stage1_trail_gap": profile["stage1_trail_gap"],
-                        "stage2_trigger_pct": profile["stage2_trigger_pct"],
-                        "stage2_trail_gap": profile["stage2_trail_gap"],
-                        "stage3_trigger_pct": profile.get("stage3_trigger_pct", 75.0),
-                        "stage3_trail_gap": profile.get("stage3_trail_gap", 18.0),
-                        "max_hold_minutes": profile["max_hold_minutes"],
-                        "analysis": analysis,
-                    }
-                    logger.info(f"🎯 [Autopilot Copy-Trade] Registered position for [{acct_name}] {resolved_symbol}: Qty {acct_quantity} @ ₹{fill_price:.2f}")
-                    executed_accounts.append({
-                        "account_id": acct_id,
-                        "account_name": acct_name,
+                        "telemetry": telemetry,
                         "order_id": telemetry.get("order_id"),
                         "quantity": acct_quantity,
                         "fill_price": fill_price,
-                    })
-                    last_order_id = telemetry.get("order_id")
-                    last_telemetry = telemetry
-                    notifier.notify_sync(
-                        f"🚀 *Autonomous Copy-Trade Executed*\n"
-                        f"👤 *Account:* `{acct_name}` (`{acct_id}`)\n"
-                        f"📊 *Contract:* `{resolved_symbol}` ({tx_type} x {acct_quantity} qty)\n"
-                        f"💰 *Fill Price:* *₹{fill_price:.2f}* (Margin: ₹{fill_price * acct_quantity:,.2f})\n"
-                        f"🎯 *Profile:* `{profile['regime_profile']}` | Target: `+{profile['target_pct']}%` | SL: `{profile['stop_loss_pct']}%`"
-                    )
+                        "order_data": order_data
+                    }
                 else:
-                    skipped_accounts.append({"account_id": acct_id, "reason": f"Execution status {exec_status}"})
+                    return {"status": "SKIPPED", "account_id": acct_id, "account_name": acct_name, "reason": f"Execution status {exec_status}"}
             except Exception as exec_err:
                 logger.error(f"Execution error on account {acct_id}: {exec_err}")
-                skipped_accounts.append({"account_id": acct_id, "reason": str(exec_err)})
+                return {"status": "SKIPPED", "account_id": acct_id, "account_name": acct_name, "reason": str(exec_err)}
+
+        # Launch zero-latency concurrent fan-out across all active copy accounts
+        results = await asyncio.gather(
+            *[_execute_single_account(aid, bc, ad) for aid, bc, ad in active_clients],
+            return_exceptions=True
+        )
+
+        for res in results:
+            if isinstance(res, Exception):
+                logger.error(f"Unexpected parallel execution exception: {res}")
+                skipped_accounts.append({"account_id": "UNKNOWN", "reason": str(res)})
+                continue
+            if not isinstance(res, dict):
+                continue
+
+            if res.get("status") == "FILLED":
+                acct_id = res["account_id"]
+                acct_name = res["account_name"]
+                telemetry = res["telemetry"]
+                fill_price = res["fill_price"]
+                acct_quantity = res["quantity"]
+
+                if risk_engine:
+                    if not hasattr(risk_engine, "trades_today_by_account"):
+                        risk_engine.trades_today_by_account = {}
+                    risk_engine.trades_today_by_account[acct_id] = int(risk_engine.trades_today_by_account.get(acct_id, 0)) + 1
+                    risk_engine.trades_today_count = max(risk_engine.trades_today_by_account.values())
+
+                detected_regime = analysis.get("regime") or autonomous_state.get("last_regime") or "NOMINAL"
+                sent_score = float((analysis.get("model_scores") or {}).get("sentiment") or 0.0)
+                tech_score = float((analysis.get("model_scores") or {}).get("technical") or 0.0)
+                conf_val = float(analysis.get("confidence") or 0.0)
+                profile = get_hybrid_trailing_profile(
+                    detected_regime,
+                    sentiment_score=sent_score,
+                    confidence=conf_val,
+                    technical_score=tech_score,
+                    spot_atr=float(analysis.get("spot_atr") or 0.0),
+                    entry_price=fill_price
+                )
+
+                acct_pos_key = f"{acct_id}:{resolved_symbol}"
+                active_live_positions[acct_pos_key] = {
+                    "account_id": acct_id,
+                    "account_name": acct_name,
+                    "tradingsymbol": resolved_symbol,
+                    "exchange": target_exchange,
+                    "quantity": acct_quantity,
+                    "entry_price": fill_price,
+                    "entry_time": datetime.now(),
+                    "peak_price": fill_price,
+                    "regime_profile": profile["regime_profile"],
+                    "stop_loss_pct": profile["stop_loss_pct"],
+                    "target_pct": profile["target_pct"],
+                    "breakeven_trigger_pct": profile["breakeven_trigger_pct"],
+                    "breakeven_lock_pct": profile["breakeven_lock_pct"],
+                    "stage1_trigger_pct": profile["stage1_trigger_pct"],
+                    "stage1_trail_gap": profile["stage1_trail_gap"],
+                    "stage2_trigger_pct": profile["stage2_trigger_pct"],
+                    "stage2_trail_gap": profile["stage2_trail_gap"],
+                    "stage3_trigger_pct": profile.get("stage3_trigger_pct", 75.0),
+                    "stage3_trail_gap": profile.get("stage3_trail_gap", 18.0),
+                    "max_hold_minutes": profile["max_hold_minutes"],
+                    "analysis": analysis,
+                }
+                logger.info(f"🎯 [Autopilot Copy-Trade] Registered position for [{acct_name}] {resolved_symbol}: Qty {acct_quantity} @ ₹{fill_price:.2f}")
+                executed_accounts.append({
+                    "account_id": acct_id,
+                    "account_name": acct_name,
+                    "order_id": telemetry.get("order_id"),
+                    "quantity": acct_quantity,
+                    "fill_price": fill_price,
+                })
+                last_order_id = telemetry.get("order_id")
+                last_telemetry = telemetry
+            else:
+                skipped_accounts.append({
+                    "account_id": res.get("account_id"),
+                    "account_name": res.get("account_name"),
+                    "reason": res.get("reason", "SKIPPED")
+                })
+
+        if executed_accounts:
+            acct_bullets = [
+                f"• *{ea['account_name']}:* {ea['quantity']} qty @ *₹{ea['fill_price']:.2f}* (Margin: ₹{ea['fill_price'] * ea['quantity']:,.2f})"
+                for ea in executed_accounts
+            ]
+            detected_reg = analysis.get("regime") or autonomous_state.get("last_regime") or "NOMINAL"
+            ref_profile = get_hybrid_trailing_profile(
+                detected_reg,
+                sentiment_score=float((analysis.get("model_scores") or {}).get("sentiment") or 0.0),
+                confidence=float(analysis.get("confidence") or 0.0),
+                technical_score=float((analysis.get("model_scores") or {}).get("technical") or 0.0),
+                spot_atr=float(analysis.get("spot_atr") or 0.0),
+                entry_price=executed_accounts[0]["fill_price"]
+            )
+            notifier.notify_sync(
+                f"⚡ *Parallel Copy-Trade Executed (Zero Latency)*\n"
+                f"📊 *Contract:* `{resolved_symbol}` ({tx_type})\n"
+                f"👥 *Accounts Synchronized ({len(executed_accounts)}):*\n" +
+                "\n".join(acct_bullets) + "\n"
+                f"🎯 *Profile:* `{ref_profile['regime_profile']}` | Target: `+{ref_profile['target_pct']}%` | SL: `{ref_profile['stop_loss_pct']}%`"
+            )
 
         if not executed_accounts:
             if skipped_accounts and all(s.get("reason") == "DUPLICATE_POSITION" for s in skipped_accounts):
