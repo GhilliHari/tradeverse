@@ -36,11 +36,20 @@ class Config:
     REDIS_URL = os.getenv("REDIS_URL", "")
     FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS", "")
     
-    # Angel Broking Keys
+    # Angel Broking Primary Account Keys (Account #1)
     ANGEL_CLIENT_ID = os.getenv("ANGEL_CLIENT_ID", "")
     ANGEL_PASSWORD = os.getenv("ANGEL_PASSWORD", "")
     ANGEL_API_KEY = os.getenv("ANGEL_API_KEY", "")
     ANGEL_TOTP_KEY = os.getenv("ANGEL_TOTP_KEY", "")
+    ANGEL_ACCOUNT_NAME = os.getenv("ANGEL_ACCOUNT_NAME", "Primary Account (Hari)")
+
+    # Angel Broking Secondary Copy-Trade Account Keys (Account #2 — loaded strictly from git-ignored .env)
+    ANGEL2_CLIENT_ID = os.getenv("ANGEL2_CLIENT_ID", "")
+    ANGEL2_PASSWORD = os.getenv("ANGEL2_PASSWORD", "")
+    ANGEL2_API_KEY = os.getenv("ANGEL2_API_KEY", "")
+    ANGEL2_TOTP_KEY = os.getenv("ANGEL2_TOTP_KEY", "")
+    ANGEL2_NAME = os.getenv("ANGEL2_NAME", "Account 2")
+    ANGEL2_ACTIVE = os.getenv("ANGEL2_ACTIVE", "true").lower() in ("true", "1", "yes")
 
     # Multi-Account Copy-Trading Configuration: list of dicts with keys:
     # {"account_id", "name", "client_id", "password", "api_key", "totp_key", "active"}
@@ -94,22 +103,69 @@ class Config:
     def get_angel_accounts(self):
         """
         Returns list of configured Angel One accounts for copy-trading.
-        Falls back to primary single account if ANGEL_ACCOUNTS is not populated.
+        Dynamically merges git-ignored .env accounts (Primary ANGEL_* + Secondary ANGEL2_*, ANGEL3_*)
+        with any explicit ANGEL_ACCOUNTS entries without ever writing secrets to git-tracked settings.json.
         """
-        accounts = getattr(self, "ANGEL_ACCOUNTS", None)
-        if accounts and isinstance(accounts, list) and len(accounts) > 0:
-            return accounts
-        if self.ANGEL_CLIENT_ID:
-            return [{
-                "account_id": self.ANGEL_CLIENT_ID,
-                "name": "Primary Account",
-                "client_id": self.ANGEL_CLIENT_ID,
-                "password": self.ANGEL_PASSWORD,
-                "api_key": self.ANGEL_API_KEY,
-                "totp_key": self.ANGEL_TOTP_KEY,
-                "active": True
-            }]
-        return []
+        # Re-read .env dynamically so newly added accounts activate without code changes
+        try:
+            from dotenv import load_dotenv
+            from pathlib import Path as _Path
+            load_dotenv(_Path(__file__).resolve().parent / ".env", override=True)
+        except Exception:
+            pass
+
+        accounts_out = []
+        seen_ids = set()
+
+        # 1. Primary Account (ANGEL_*)
+        p_cid = (os.getenv("ANGEL_CLIENT_ID") or self.ANGEL_CLIENT_ID or "").strip()
+        p_key = (os.getenv("ANGEL_API_KEY") or self.ANGEL_API_KEY or "").strip()
+        p_pwd = (os.getenv("ANGEL_PASSWORD") or self.ANGEL_PASSWORD or "").strip()
+        p_totp = (os.getenv("ANGEL_TOTP_KEY") or self.ANGEL_TOTP_KEY or "").strip()
+        p_name = (os.getenv("ANGEL_ACCOUNT_NAME") or getattr(self, "ANGEL_ACCOUNT_NAME", "Primary Account (Hari)") or "Primary Account").strip()
+        if p_cid and p_key:
+            accounts_out.append({
+                "account_id": p_cid,
+                "name": p_name,
+                "client_id": p_cid,
+                "password": p_pwd,
+                "api_key": p_key,
+                "totp_key": p_totp,
+                "active": True,
+            })
+            seen_ids.add(p_cid)
+
+        # 2. Additional Accounts from .env (ANGEL2_*, ANGEL3_*, ANGEL4_*)
+        for idx in (2, 3, 4):
+            prefix = f"ANGEL{idx}_"
+            cid = (os.getenv(f"{prefix}CLIENT_ID") or "").strip()
+            akey = (os.getenv(f"{prefix}API_KEY") or "").strip()
+            pwd = (os.getenv(f"{prefix}PASSWORD") or "").strip()
+            totp = (os.getenv(f"{prefix}TOTP_KEY") or "").strip()
+            aname = (os.getenv(f"{prefix}NAME") or f"Account {idx}").strip()
+            is_act = (os.getenv(f"{prefix}ACTIVE", "true") or "true").strip().lower() in ("true", "1", "yes")
+            if cid and akey and cid not in seen_ids:
+                accounts_out.append({
+                    "account_id": cid,
+                    "name": aname,
+                    "client_id": cid,
+                    "password": pwd,
+                    "api_key": akey,
+                    "totp_key": totp,
+                    "active": is_act,
+                })
+                seen_ids.add(cid)
+
+        # 3. Merge any extra runtime ANGEL_ACCOUNTS entries not already covered
+        extra_accounts = getattr(self, "ANGEL_ACCOUNTS", None)
+        if extra_accounts and isinstance(extra_accounts, list):
+            for acc in extra_accounts:
+                cid = (acc.get("client_id") or "").strip()
+                if cid and cid not in seen_ids:
+                    accounts_out.append(acc)
+                    seen_ids.add(cid)
+
+        return accounts_out
 
     def load(self):
         import json

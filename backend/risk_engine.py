@@ -26,6 +26,7 @@ class RiskEngine:
         self.max_trades_per_day = int(getattr(config, "MAX_TRADES_PER_DAY", 2))
         self.current_daily_loss = 0.0
         self.trades_today_count = 0
+        self.trades_today_by_account: Dict[str, int] = {}
         self.last_reset_date = datetime.now().strftime("%Y-%m-%d")
         self.circuit_breaker_active = False
         self.kill_switch = KillSwitch()
@@ -125,6 +126,7 @@ class RiskEngine:
         if getattr(self, "last_reset_date", None) != today_str:
             self.current_daily_loss = 0.0
             self.trades_today_count = 0
+            self.trades_today_by_account = {}
             self.circuit_breaker_active = False
             self.last_reset_date = today_str
 
@@ -154,8 +156,13 @@ class RiskEngine:
                         "allowed": False, 
                         "reason": "MIDDAY LUNCH-LULL LOCKOUT (11:30 - 13:15 IST): Institutional volume dry-up window. Preserving buying power for 13:15 European Open & Power-Hour gamma expansion."
                     }
-            if getattr(self, "trades_today_count", 0) >= getattr(self, "max_trades_per_day", 2):
-                return {"allowed": False, "reason": f"FEE DISCIPLINE CAP: Max daily trades ({self.max_trades_per_day}) reached for today."}
+            acct_id = order_details.get("account_id")
+            if acct_id:
+                acct_trades = int(getattr(self, "trades_today_by_account", {}).get(acct_id, 0))
+            else:
+                acct_trades = int(getattr(self, "trades_today_count", 0))
+            if acct_trades >= getattr(self, "max_trades_per_day", 2):
+                return {"allowed": False, "reason": f"FEE DISCIPLINE CAP: Max daily trades ({self.max_trades_per_day}) reached for account {acct_id or 'PRIMARY'}."}
 
         qty = float(order_details.get("quantity") or 0)
         price = float(order_details.get("price") or 0.0)
@@ -170,9 +177,10 @@ class RiskEngine:
             return {"allowed": False, "reason": f"Max open positions limit ({self.max_open_positions}) reached."}
 
         order_value = qty * price
+        eff_max_pos = float(order_details.get("account_max_position_size") or self.max_position_size)
 
-        if order_value > self.max_position_size:
-            return {"allowed": False, "reason": f"Order value ({order_value}) exceeds max position size."}
+        if order_value > eff_max_pos:
+            return {"allowed": False, "reason": f"Order value ({order_value:.2f}) exceeds max position size ({eff_max_pos:.2f})."}
 
         return {"allowed": True, "reason": "Safe to proceed."}
 

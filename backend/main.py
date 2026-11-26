@@ -4549,6 +4549,8 @@ async def execute_autopilot(
                 continue
 
             order_data = {
+                "account_id": acct_id,
+                "account_max_position_size": acct_risk_cap,
                 "tradingsymbol": resolved_symbol,
                 "transaction_type": tx_type,
                 "quantity": acct_quantity,
@@ -4582,7 +4584,10 @@ async def execute_autopilot(
                 if exec_status in ["COMPLETE", "FILLED", "MOCK_FILLED"]:
                     fill_price = float(telemetry.get("executed_price") or ltp_val or 0.0)
                     if risk_engine:
-                        risk_engine.trades_today_count = int(getattr(risk_engine, "trades_today_count", 0)) + 1
+                        if not hasattr(risk_engine, "trades_today_by_account"):
+                            risk_engine.trades_today_by_account = {}
+                        risk_engine.trades_today_by_account[acct_id] = int(risk_engine.trades_today_by_account.get(acct_id, 0)) + 1
+                        risk_engine.trades_today_count = max(risk_engine.trades_today_by_account.values())
 
                     detected_regime = analysis.get("regime") or autonomous_state.get("last_regime") or "NOMINAL"
                     sent_score = float((analysis.get("model_scores") or {}).get("sentiment") or 0.0)
